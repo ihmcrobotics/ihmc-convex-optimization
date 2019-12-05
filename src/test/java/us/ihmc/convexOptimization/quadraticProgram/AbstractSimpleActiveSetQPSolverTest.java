@@ -2175,7 +2175,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns, double maxAbsoluteValue)
    {
-      return RandomMatrices.createRandom(numberOfColumns, numberOfRows, -maxAbsoluteValue, maxAbsoluteValue, random);
+      return RandomMatrices.createRandom(numberOfRows, numberOfColumns, -maxAbsoluteValue, maxAbsoluteValue, random);
    }
 
    public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns, double boundaryOne, double boundaryTwo)
