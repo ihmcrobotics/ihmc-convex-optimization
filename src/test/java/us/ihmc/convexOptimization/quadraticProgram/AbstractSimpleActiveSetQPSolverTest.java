@@ -37,8 +37,10 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(1, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers); // Make sure ok to solve twice in a row without changing stuff.
+      int numberOfIterations = solver.solve(solution);
+      numberOfIterations = solver.solve(solution); // Make sure ok to solve twice in a row without changing stuff.
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(0, numberOfIterations);
       assertEquals(1, solution.getNumRows());
       assertEquals(0.0, solution.get(0), 1e-7);
@@ -52,7 +54,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       solution = new DenseMatrix64F(1, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -71,7 +75,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -95,7 +101,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(0.5, solution.get(0), 1e-7);
@@ -119,7 +127,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(2, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -157,8 +167,10 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
 
-      int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      int numberOfIterations = solver.solve(solution);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -179,7 +191,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(1, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -200,7 +214,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(1, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -226,7 +242,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(2, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -258,7 +276,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -290,7 +310,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(2, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -335,16 +357,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
       DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
 
-      int numberOfIterations = solver.solve(solution,
-                                            lagrangeEqualityMultipliers,
-                                            lagrangeInequalityMultipliers,
-                                            lagrangeLowerBoundMultipliers,
-                                            lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      int numberOfIterations = solver.solve(solution);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -368,11 +386,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -396,11 +414,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -424,11 +442,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -452,11 +470,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -480,11 +498,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
       assertEquals(1, solution.getNumRows());
@@ -516,16 +534,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations3, numberOfIterations);
 
       assertEquals(3, solution.getNumRows());
@@ -575,16 +589,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations4, numberOfIterations);
 
       assertEquals(3, solution.getNumRows());
@@ -633,16 +643,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
       DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
-      int numberOfIterations = solver.solve(solution1,
-                                            lagrangeEqualityMultipliers,
-                                            lagrangeInequalityMultipliers,
-                                            lagrangeLowerBoundMultipliers,
-                                            lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      int numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       //assertEquals(expectedNumberOfIterations1, numberOfIterations);
 
       assertEquals(solution1.get(0), solution2.get(0), 1e-7);
@@ -695,16 +701,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
 
-      numberOfIterations = solver.solve(solution1,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
       assertEquals(3, solution1.getNumRows());
@@ -741,16 +743,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
 
-      numberOfIterations = solver.solve(solution1,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(3, solution1.getNumRows());
@@ -782,16 +780,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
 
-      numberOfIterations = solver.solve(solution1,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(3, solution1.getNumRows());
@@ -819,16 +813,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
 
-      numberOfIterations = solver.solve(solution1,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(0, numberOfIterations);
 
       assertEquals(3, solution1.getNumRows());
@@ -857,16 +847,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
 
-      numberOfIterations = solver.solve(solution1,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
       assertEquals(3, solution1.getNumRows());
@@ -894,16 +880,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
       lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
-      numberOfIterations = solver.solve(solution1,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
-      numberOfIterations = solver.solve(solution2,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution1);
+      numberOfIterations = solver.solve(solution2);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations1, numberOfIterations);
 
       assertEquals(3, solution1.getNumRows());
@@ -962,7 +944,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      int numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -1012,7 +996,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solutionMatrix64F = new DenseMatrix64F(quadraticCostMatrix64F.getNumRows(), 1);
       DenseMatrix64F lagrangeEqualityMultipliers64F = new DenseMatrix64F(linearEqualityConstraintsAMatrix.getNumRows(), 1);
       DenseMatrix64F lagrangeInequalityMultipliers64F = new DenseMatrix64F(linearInequalityConstraintsCMatrix.getNumRows(), 1);
-      numberOfIterations = solver.solve(solutionMatrix64F, lagrangeEqualityMultipliers64F, lagrangeInequalityMultipliers64F);
+      numberOfIterations = solver.solve(solutionMatrix64F);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers64F);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers64F);
 
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
@@ -1074,7 +1060,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(4, 1);
-      int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      int numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(firstExpectedNumberOfIterations, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -1100,7 +1088,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(2, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(secondExpectedNumberOfIterations, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -1137,7 +1127,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      int numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations1, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -1164,7 +1156,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solution = new DenseMatrix64F(2, 1);
       lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
       assertEquals(2, solution.getNumRows());
@@ -1197,8 +1191,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
-
+      solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(2, solution.getNumRows());
       assertTrue(Double.isNaN(solution.get(0)));
       assertTrue(Double.isNaN(solution.get(1)));
@@ -1236,8 +1231,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
-
+      solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
       assertEquals(2, solution.getNumRows());
       assertEquals(Double.NaN, solution.get(0), 1e-7);
       assertEquals(Double.NaN, solution.get(1), 1e-7);
@@ -1291,7 +1287,9 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          DenseMatrix64F linearInequalityConstraintsDVector = nextDenseMatrix64F(random, numberOfInequalityConstraints, 1);
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
-         int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+         int numberOfIterations = solver.solve(solution);
+         solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+         solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
          if (numberOfIterations > maxNumberOfIterations)
             maxNumberOfIterations = numberOfIterations;
          //         System.out.println("numberOfIterations = " + numberOfIterations);
@@ -1423,7 +1421,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F solutionWithSmallPerturbation = new DenseMatrix64F(numberOfVariables,1);
+      DenseMatrix64F solutionWithSmallPerturbation = new DenseMatrix64F(numberOfVariables, 1);
 
       DenseMatrix64F augmentedLinearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 1);
       DenseMatrix64F augmentedLinearEqualityConstraintsBVector = new DenseMatrix64F(0, 1);
@@ -1456,11 +1454,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          DenseMatrix64F variableUpperBounds = nextDenseMatrix64F(random, numberOfVariables, 1, 0.01, 5.0);
          solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-         int numberOfIterations = solver.solve(solution,
-                                               lagrangeEqualityMultipliers,
-                                               lagrangeInequalityMultipliers,
-                                               lagrangeLowerBoundMultipliers,
-                                               lagrangeUpperBoundMultipliers);
+         int numberOfIterations = solver.solve(solution);
+         solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+         solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+         solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+         solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
+
          if (numberOfIterations > maxNumberOfIterations)
             maxNumberOfIterations = numberOfIterations;
 
@@ -1746,11 +1745,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       solver.setMaxNumberOfIterations(maxForSolution - 1);
-      int numberOfIterations = solver.solve(solution,
-                                            lagrangeEqualityMultipliers,
-                                            lagrangeInequalityMultipliers,
-                                            lagrangeLowerBoundMultipliers,
-                                            lagrangeUpperBoundMultipliers);
+      int numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(maxForSolution - 1, numberOfIterations);
 
       assertTrue(Double.isNaN(solution.get(0)));
@@ -1758,11 +1757,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertTrue(Double.isNaN(solution.get(2)));
 
       solver.setMaxNumberOfIterations(maxForSolution);
-      numberOfIterations = solver.solve(solution,
-                                        lagrangeEqualityMultipliers,
-                                        lagrangeInequalityMultipliers,
-                                        lagrangeLowerBoundMultipliers,
-                                        lagrangeUpperBoundMultipliers);
+      numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
+      solver.getLagrangeLowerBoundsMultipliers(lagrangeLowerBoundMultipliers);
+      solver.getLagrangeUpperBoundsMultipliers(lagrangeUpperBoundMultipliers);
       assertEquals(maxForSolution, numberOfIterations);
 
       assertEquals(3, solution.getNumRows());

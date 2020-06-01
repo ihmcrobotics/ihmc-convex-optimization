@@ -129,7 +129,9 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
          quadProg.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
          quadProgTimer.startMeasurement();
-         quadProg.solve(quadProgSolution, quadProgLagrangeEqualityMultipliers, quadProgLagrangeInequalityMultipliers);
+         quadProg.solve(quadProgSolution);
+         quadProg.getLagrangeEqualityConstraintMultipliers(quadProgLagrangeEqualityMultipliers);
+         quadProg.getLagrangeInequalityConstraintMultipliers(quadProgLagrangeInequalityMultipliers);
          quadProgTimer.stopMeasurement();
 
          quadProgTotalTimer.stopMeasurement();
@@ -141,7 +143,7 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
          simpleSolver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
          simpleTimer.startMeasurement();
-         simpleSolver.solve(simpleSolution, simpleLagrangeEqualityMultipliers, simpleLagrangeInequalityMultipliers);
+         simpleSolver.solve(simpleSolution);
          simpleTimer.stopMeasurement();
 
          simpleTotalTimer.stopMeasurement();
@@ -338,7 +340,9 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
 
       assertEquals(2, solution.getNumRows());
       assertEquals(solution.get(0), 1.0, epsilon);

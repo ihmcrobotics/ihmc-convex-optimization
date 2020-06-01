@@ -107,7 +107,9 @@ public class JavaQuadProgSolverWithInactiveVariablesTest extends AbstractSimpleA
       DenseMatrix64F solution = new DenseMatrix64F(2, 1);
       DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
-      solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
 
       assertEquals(2, solution.getNumRows());
       assertEquals(solution.get(0), 1.0, epsilon);

@@ -250,19 +250,13 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeUpperBoundConstraintMultipliersToPack)
+   public int solve(DenseMatrix64F solutionToPack)
    {
       removeInactiveVariables();
 
       solutionToPack.reshape(originalQuadraticCostQMatrix.numRows, 1);
 
-      int numberOfIterations = super.solve(activeVariableSolution,
-                                           lagrangeEqualityConstraintMultipliersToPack,
-                                           lagrangeInequalityConstraintMultipliersToPack,
-                                           lagrangeLowerBoundConstraintMultipliersToPack,
-                                           lagrangeUpperBoundConstraintMultipliersToPack);
+      int numberOfIterations = super.solve(activeVariableSolution);
 
       copyActiveVariableSolutionToAllVariables(solutionToPack, activeVariableSolution);
 

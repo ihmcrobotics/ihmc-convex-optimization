@@ -34,10 +34,11 @@ public interface ActiveSetQPSolver
 
    int solve(DenseMatrix64F solutionToPack);
 
-   int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-             DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundMultipliersToPack,
-             DenseMatrix64F lagrangeUpperBoundMultipliersToPack);
+   void getLagrangeEqualityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack);
 
-   int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-             DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack);
+   void getLagrangeInequalityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack);
+
+   void getLagrangeLowerBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack);
+
+   void getLagrangeUpperBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack);
 }
