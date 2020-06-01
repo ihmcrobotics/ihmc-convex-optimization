@@ -959,22 +959,22 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-0.5, -3.0, 3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      double[] solution = new double[2];
-      double[] lagrangeEqualityMultipliers = new double[1];
-      double[] lagrangeInequalityMultipliers = new double[3];
+      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
       int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(2, solution.length);
-      assertEquals(-1.0, solution[0], 1e-7);
-      assertEquals(3.0, solution[1], 1e-7);
-      assertEquals(2.0, lagrangeEqualityMultipliers[0], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
-      assertEquals(8.0, lagrangeInequalityMultipliers[1], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[2], 1e-7);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(-1.0, solution.get(0), 1e-7);
+      assertEquals(3.0, solution.get(1), 1e-7);
+      assertEquals(2.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
+      assertEquals(8.0, lagrangeInequalityMultipliers.get(1), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(2), 1e-7);
 
       DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(10.0, objectiveCost, 1e-7);
 
@@ -987,15 +987,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(2, solution.length);
-      assertEquals(-1.0, solution[0], 1e-7);
-      assertEquals(3.0, solution[1], 1e-7);
-      assertEquals(2.0, lagrangeEqualityMultipliers[0], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
-      assertEquals(8.0, lagrangeInequalityMultipliers[1], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[2], 1e-7);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(-1.0, solution.get(0), 1e-7);
+      assertEquals(3.0, solution.get(1), 1e-7);
+      assertEquals(2.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
+      assertEquals(8.0, lagrangeInequalityMultipliers.get(1), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(2), 1e-7);
 
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(10.0, objectiveCost, 1e-7);
 

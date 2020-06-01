@@ -30,8 +30,6 @@ public interface ActiveSetQPSolver
 
    void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector);
 
-   int solve(double[] solutionToPack) throws NoConvergenceException;
-
    int solve(DenseMatrix64F solutionToPack) throws NoConvergenceException;
 
 }

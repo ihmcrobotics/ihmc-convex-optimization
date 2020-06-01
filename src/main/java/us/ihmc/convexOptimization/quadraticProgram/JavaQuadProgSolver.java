@@ -247,18 +247,6 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public int solve(double[] solutionToPack)
-   {
-      int numberOfEqualityConstraints = linearEqualityConstraintsBVector.getNumRows();
-      int numberOfInequalityConstraints = linearInequalityConstraintsDVectorO.getNumRows();
-
-      double[] lagrangeEqualityConstraintMultipliersToPack = new double[numberOfEqualityConstraints];
-      double[] lagrangeInequalityConstraintMultipliersToPack = new double[numberOfInequalityConstraints];
-
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToPack, lagrangeInequalityConstraintMultipliersToPack);
-   }
-
-   @Override
    public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
    {
       int numberOfLowerBoundConstraints = variableLowerBounds.getNumRows();

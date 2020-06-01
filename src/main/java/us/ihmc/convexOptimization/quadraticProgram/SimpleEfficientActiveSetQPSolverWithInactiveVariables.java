@@ -250,18 +250,6 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public int solve(double[] solutionToPack)
-   {
-      int numberOfEqualityConstraints = originalLinearEqualityConstraintsAMatrix.getNumRows();
-      int numberOfInequalityConstraints = originalLinearInequalityConstraintsCMatrixO.getNumRows();
-
-      double[] lagrangeEqualityConstraintMultipliersToPack = new double[numberOfEqualityConstraints];
-      double[] lagrangeInequalityConstraintMultipliersToPack = new double[numberOfInequalityConstraints];
-
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToPack, lagrangeInequalityConstraintMultipliersToPack);
-   }
-
-   @Override
    public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
    {
       int numberOfLowerBoundConstraints = originalVariableLowerBounds.getNumRows();

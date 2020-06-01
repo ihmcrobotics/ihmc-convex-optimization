@@ -186,18 +186,6 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public int solve(double[] solutionToPack)
-   {
-      int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
-      int numberOfInequalityConstraints = linearInequalityConstraintsCMatrixO.getNumRows();
-
-      double[] lagrangeEqualityConstraintMultipliersToPack = new double[numberOfEqualityConstraints];
-      double[] lagrangeInequalityConstraintMultipliersToPack = new double[numberOfInequalityConstraints];
-
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToPack, lagrangeInequalityConstraintMultipliersToPack);
-   }
-
-   @Override
    public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
    {
       int numberOfLowerBoundConstraints = variableLowerBounds.getNumRows();

@@ -179,18 +179,6 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public int solve(double[] solutionToPack)
-   {
-      int numberOfEqualityConstraints = originalLinearEqualityConstraintsBVector.getNumRows();
-      int numberOfInequalityConstraints = originalLinearInequalityConstraintsDVectorO.getNumRows();
-
-      double[] lagrangeEqualityConstraintMultipliersToPack = new double[numberOfEqualityConstraints];
-      double[] lagrangeInequalityConstraintMultipliersToPack = new double[numberOfInequalityConstraints];
-
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToPack, lagrangeInequalityConstraintMultipliersToPack);
-   }
-
-   @Override
    public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
    {
       int numberOfLowerBoundConstraints = originalVariableLowerBounds.getNumRows();
