@@ -89,7 +89,7 @@ public class JavaQuadProgSolverWithInactiveVariablesTest extends AbstractSimpleA
    @Test
    public void testChallengingCasesWithPolygonConstraintsCheckFailsWithSimpleSolver()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setMaxNumberOfIterations(10);
 
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),

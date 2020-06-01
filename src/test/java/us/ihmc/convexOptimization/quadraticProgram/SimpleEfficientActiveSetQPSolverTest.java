@@ -40,7 +40,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    }
 
    @Override
-   public SimpleActiveSetQPSolverInterface createSolverToTest()
+   public ActiveSetQPSolver createSolverToTest()
    {
       SimpleEfficientActiveSetQPSolver simpleEfficientActiveSetQPSolver = new SimpleEfficientActiveSetQPSolver();
       simpleEfficientActiveSetQPSolver.setUseWarmStart(false);
@@ -51,7 +51,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    @Test
    public void testChallengingCasesWithPolygonConstraintsCheckFailsWithSimpleSolverWithWarmStart()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setMaxNumberOfIterations(10);
       solver.setUseWarmStart(true);
 
@@ -90,7 +90,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    public void testFindValidSolutionForDataset20160319WithWarmStart()
    {
       ActualDatasetFrom20160319 dataset = new ActualDatasetFrom20160319();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();
@@ -108,7 +108,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    public void testFindValidSolutionForKiwiDataset20170712WithWarmStart()
    {
       ActualDatasetFromKiwi20170712 dataset = new ActualDatasetFromKiwi20170712();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();
@@ -131,7 +131,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    public void testFindValidSolutionForKiwiDataset20171013WithWarmStart()
    {
       ActualDatasetFromKiwi20171013 dataset = new ActualDatasetFromKiwi20171013();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();
@@ -152,7 +152,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
       ActualDatasetFromKiwi20171015B datasetB = new ActualDatasetFromKiwi20171015B();
       DenseMatrix64F solution = new DenseMatrix64F(datasetA.getProblemSize(), 1);
 
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();

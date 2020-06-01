@@ -2,13 +2,15 @@ package us.ihmc.convexOptimization.quadraticProgram;
 
 import org.ejml.data.DenseMatrix64F;
 
-import us.ihmc.convexOptimization.exceptions.NoConvergenceException;
-
 public interface ActiveSetQPSolver
 {
    void setConvergenceThreshold(double convergenceThreshold);
 
    void setMaxNumberOfIterations(int maxNumberOfIterations);
+
+   void setUseWarmStart(boolean useWarmStart);
+
+   void resetActiveConstraints();
 
    void clear();
 
@@ -30,6 +32,12 @@ public interface ActiveSetQPSolver
 
    void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector);
 
-   int solve(DenseMatrix64F solutionToPack) throws NoConvergenceException;
+   int solve(DenseMatrix64F solutionToPack);
 
+   int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
+             DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundMultipliersToPack,
+             DenseMatrix64F lagrangeUpperBoundMultipliersToPack);
+
+   int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
+             DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack);
 }

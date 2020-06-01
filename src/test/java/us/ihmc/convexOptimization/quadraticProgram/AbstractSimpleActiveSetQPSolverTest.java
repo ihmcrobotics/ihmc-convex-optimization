@@ -21,12 +21,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 {
    private static final boolean VERBOSE = false;
 
-   public abstract SimpleActiveSetQPSolverInterface createSolverToTest();
+   public abstract ActiveSetQPSolver createSolverToTest();
 
    @Test
    public void testSimpleCasesWithNoInequalityConstraints()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x
       DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
@@ -141,7 +141,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public void testSimpleCasesWithInequalityConstraints(int expectedNumberOfIterations)
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x subject to x <= 1
       DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
@@ -317,7 +317,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    public void testSimpleCasesWithBoundsConstraints(int expectedNumberOfIterations, int expectedNumberOfIterations2, int expectedNumberOfIterations3,
                                                     int expectedNumberOfIterations4, boolean ignoreLagrangeMultipliers)
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x
       DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
@@ -606,7 +606,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public void testClear(int expectedNumberOfIterations1, int expectedNumberOfIterations2, boolean avoidProblematicLagrangeMultipliers)
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
@@ -942,7 +942,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public void testSolutionMethodsAreAllConsistent(int expectedNumberOfIterations) throws NoConvergenceException
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, y >= 0.5, y >= 3.0, y >= x-3  (-y <= -0.5, -y <= -3.0, x - y <= 3
       solver.clear();
@@ -1059,7 +1059,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public void test2DCasesWithPolygonConstraints(int firstExpectedNumberOfIterations, int secondExpectedNumberOfIterations)
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^2 + y^2 subject to 3 <= x <= 5, 2 <= y <= 4
       DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
@@ -1119,7 +1119,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public void testChallengingCasesWithPolygonConstraints(int expectedNumberOfIterations1, int expectedNumberOfIterations2)
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setMaxNumberOfIterations(10);
 
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
@@ -1179,7 +1179,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    @Test
    public void testChallengingCasesWithPolygonConstraintsCheckFailsWithSimpleSolver()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setMaxNumberOfIterations(10);
 
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
@@ -1215,7 +1215,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    @Test
    public void testCaseWithNoSolution()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       int maxNumberOfIterations = 10;
       solver.setMaxNumberOfIterations(maxNumberOfIterations);
 
@@ -1250,7 +1250,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    {
       Random random = new Random(1776L);
 
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       int numberOfTests = 100;
 
@@ -1407,7 +1407,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    {
       Random random = new Random(1776L);
 
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       int numberOfTests = 100;
 
@@ -1663,7 +1663,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    public void testFindValidSolutionForDataset20160319()
    {
       ActualDatasetFrom20160319 dataset = new ActualDatasetFrom20160319();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
@@ -1682,7 +1682,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    public void testFindValidSolutionForKiwiDataset20170712()
    {
       ActualDatasetFromKiwi20170712 dataset = new ActualDatasetFromKiwi20170712();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
@@ -1701,7 +1701,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    public void testFindValidSolutionForKiwiDataset20171013()
    {
       ActualDatasetFromKiwi20171013 dataset = new ActualDatasetFromKiwi20171013();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
@@ -1719,7 +1719,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
    public void testMaxIterations(int maxForSolution, boolean checkLagrangeMultipliers)
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
@@ -1803,7 +1803,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    @Test
    public void testSomeExceptions()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
 
       DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}});
       DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);

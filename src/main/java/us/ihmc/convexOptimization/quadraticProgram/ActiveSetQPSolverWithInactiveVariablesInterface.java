@@ -4,7 +4,7 @@ import org.ejml.data.DenseMatrix64F;
 
 import us.ihmc.matrixlib.MatrixTools;
 
-public interface ActiveSetQPSolverWithInactiveVariablesInterface extends SimpleActiveSetQPSolverInterface
+public interface ActiveSetQPSolverWithInactiveVariablesInterface extends ActiveSetQPSolver
 {
    void setActiveVariables(DenseMatrix64F activeVariables);
 

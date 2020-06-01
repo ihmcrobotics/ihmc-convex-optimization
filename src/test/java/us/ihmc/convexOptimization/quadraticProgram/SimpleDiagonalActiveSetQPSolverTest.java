@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 public class SimpleDiagonalActiveSetQPSolverTest extends AbstractSimpleActiveSetQPSolverTest
 {
    @Override
-   public SimpleActiveSetQPSolverInterface createSolverToTest()
+   public ActiveSetQPSolver createSolverToTest()
    {
       return new SimpleDiagonalActiveSetQPSolver();
    }
