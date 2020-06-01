@@ -29,8 +29,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       SimpleActiveSetQPSolverInterface solver = createSolverToTest();
 
       // Minimize x^T * x
-      double[][] costQuadraticMatrix = new double[][] {{2.0}};
-      double[] costLinearVector = new double[] {0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -45,8 +45,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) = x^2 - 10x + 25
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {-10.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(-10.0);
       quadraticCostScalar = 25.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -57,15 +57,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       assertEquals(1, solution.length);
       assertEquals(5.0, solution[0], 1e-7);
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {-10.0, -6.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(-10.0, -6.0);
       quadraticCostScalar = 34.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -77,15 +77,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(2, solution.length);
       assertEquals(5.0, solution[0], 1e-7);
       assertEquals(3.0, solution[1], 1e-7);
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 1.0
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -101,15 +101,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.5, solution[0], 1e-7);
       assertEquals(0.5, solution[1], 1e-7);
       assertEquals(-1.0, lagrangeEqualityMultipliers[0], 1e-7); // Lagrange multiplier is -1.0;
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.5, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -127,7 +127,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(1.0, solution[1], 1e-7);
       assertEquals(-2.0, lagrangeEqualityMultipliers[0], 1e-7); // Lagrange multiplier
       assertEquals(0.0, lagrangeEqualityMultipliers[1], 1e-7); // Lagrange multiplier
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -144,8 +144,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       SimpleActiveSetQPSolverInterface solver = createSolverToTest();
 
       // Minimize x^T * x subject to x <= 1
-      double[][] costQuadraticMatrix = new double[][] {{2.0}};
-      double[] costLinearVector = new double[] {0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -167,8 +167,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x >= 1 (-x <= -1)
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -188,8 +188,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) = x^2 - 10x + 25 subject to x <= 3.0
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {-10.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(-10.0);
       quadraticCostScalar = 25.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -207,15 +207,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(3.0, solution[0], 1e-7);
       assertEquals(4.0, lagrangeInequalityMultipliers[0], 1e-7);
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(4.0, objectiveCost, 1e-7);
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34 subject to x <= 7 y <= 1
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {-10.0, -6.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(-10.0, -6.0);
       quadraticCostScalar = 34.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -235,15 +235,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
       assertEquals(4.0, lagrangeInequalityMultipliers[1], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(4.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 1.0, x <= y - 1 (x - y <= -1.0), but with y as inactive
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -267,15 +267,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(-1.0, lagrangeEqualityMultipliers[0], 1e-7);
       assertEquals(1.0, lagrangeInequalityMultipliers[0], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(1.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0, x <= 2, x <= 10, y <= 3
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -302,7 +302,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, lagrangeInequalityMultipliers[1], 1e-7);
       assertEquals(0.0, lagrangeInequalityMultipliers[2], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -320,8 +320,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       SimpleActiveSetQPSolverInterface solver = createSolverToTest();
 
       // Minimize x^T * x
-      double[][] costQuadraticMatrix = new double[][] {{2.0}};
-      double[] costLinearVector = new double[] {0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -354,8 +354,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x >= 1
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -382,8 +382,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x <= -1
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -410,8 +410,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to 1 + 1e-12 <= x <= 1 - 1e-12 (Should give valid solution given a little epsilon to allow for roundoff)
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -438,8 +438,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to -1 + 1e-12 <= x <= -1 - 1e-12 (Should give valid solution given a little epsilon to allow for roundoff)
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -466,8 +466,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to 1 + 1e-7 <= x <= 1 - 1e-7 (Should not give valid solution since this is too much to blame on roundoff)
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0}};
-      costLinearVector = new double[] {0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -495,8 +495,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -546,7 +546,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
       }
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -554,8 +554,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, 3 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -592,7 +592,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertTrue(Double.isNaN(solution[1]));
       assertTrue(Double.isNaN(solution[2]));
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertTrue(Double.isNaN(objectiveCost));
@@ -611,8 +611,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -667,7 +667,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
       }
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -675,8 +675,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8  (Remove -5 <= x <= 5, 6 <= y <= 10, 11 <= z)
       solver.clear();
 
-      costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -717,7 +717,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(-8.0, lagrangeEqualityMultipliers[0], 1e-7);
       assertEquals(12.0, lagrangeInequalityMultipliers[0], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(56.0, objectiveCost, 1e-7);
@@ -725,8 +725,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, (Remove y - z <= -8)
       solver.clear();
 
-      costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -762,7 +762,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, solution1[2], 1e-7);
       assertEquals(-2.0, lagrangeEqualityMultipliers[0], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -770,8 +770,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 (Remove subject to x + y = 2.0)
       solver.clear();
 
-      costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -802,7 +802,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, solution1[1], 1e-7);
       assertEquals(0.0, solution1[2], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
@@ -840,7 +840,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, solution1[2], 1e-7);
       assertEquals(-2.0, lagrangeEqualityMultipliers[0], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -879,7 +879,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(-8.0, lagrangeEqualityMultipliers[0], 1e-7);
       assertEquals(12.0, lagrangeInequalityMultipliers[0], 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(56.0, objectiveCost, 1e-7);
@@ -928,7 +928,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
       }
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -946,8 +946,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, y >= 0.5, y >= 3.0, y >= x-3  (-y <= -0.5, -y <= -3.0, x - y <= 3
       solver.clear();
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -973,7 +973,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(8.0, lagrangeInequalityMultipliers[1], 1e-7);
       assertEquals(0.0, lagrangeInequalityMultipliers[2], 1e-7);
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(10.0, objectiveCost, 1e-7);
@@ -1002,8 +1002,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Try with other solve method:
       solver.clear();
       DenseMatrix64F quadraticCostMatrix64F = new DenseMatrix64F(costQuadraticMatrix);
-      DenseMatrix64F linearCostVector64F = new DenseMatrix64F(costLinearVector.length, 1);
-      linearCostVector64F.setData(costLinearVector);
+      DenseMatrix64F linearCostVector64F = new DenseMatrix64F(costLinearVector.getNumRows(), 1);
+      linearCostVector64F.set(costLinearVector);
 
       solver.setQuadraticCostFunction(quadraticCostMatrix64F, linearCostVector64F, quadraticCostScalar);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
@@ -1062,8 +1062,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       SimpleActiveSetQPSolverInterface solver = createSolverToTest();
 
       // Minimize x^2 + y^2 subject to 3 <= x <= 5, 2 <= y <= 4
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1088,8 +1088,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2)
       // Equality solution will violate both constraints, but optimal only has the first constraint active.
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1125,8 +1125,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1152,8 +1152,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
       solver.clear();
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      costLinearVector = new double[] {0.0, 0.0};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1185,8 +1185,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1220,8 +1220,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.setMaxNumberOfIterations(maxNumberOfIterations);
 
       // Minimize x^2 + y^2 subject to x + y = 5, x + y <= 2
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1724,8 +1724,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
@@ -1784,7 +1784,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
       }
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.setData(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -1805,8 +1805,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    {
       SimpleActiveSetQPSolverInterface solver = createSolverToTest();
 
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}};
-      double[] costLinearVector = new double[] {0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
 
       try
@@ -1818,7 +1818,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
+      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       try
       {
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -1840,7 +1840,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      costLinearVector = new double[] {0.0, 0.0};
+      costLinearVector = MatrixTools.createVector(0.0, 0.0);
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
       // Variable Bounds

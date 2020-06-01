@@ -23,11 +23,6 @@ public interface ActiveSetQPSolver
       setUpperBounds(variableUpperBounds);
    }
 
-   default void setQuadraticCostFunction(double[][] quadraticCostFunctionQMatrix, double[] quadraticCostFunctionQVector, double quadraticCostScalar)
-   {
-      setQuadraticCostFunction(new DenseMatrix64F(quadraticCostFunctionQMatrix), MatrixTools.createVector(quadraticCostFunctionQVector), quadraticCostScalar);
-   }
-
    void setQuadraticCostFunction(DenseMatrix64F costQuadraticMatrix, DenseMatrix64F costLinearVector, double quadraticCostScalar);
 
    double getObjectiveCost(DenseMatrix64F x);
