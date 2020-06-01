@@ -179,35 +179,6 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
-   {
-      int numberOfLowerBoundConstraints = originalVariableLowerBounds.getNumRows();
-      int numberOfUpperBoundConstraints = originalVariableUpperBounds.getNumRows();
-
-      double[] lagrangeLowerBoundsConstraintMultipliersToPack = new double[numberOfLowerBoundConstraints];
-      double[] lagrangeUpperBoundsConstraintMultipliersToPack = new double[numberOfUpperBoundConstraints];
-
-      return solve(solutionToPack,
-                   lagrangeEqualityConstraintMultipliersToPack,
-                   lagrangeInequalityConstraintMultipliersToPack,
-                   lagrangeLowerBoundsConstraintMultipliersToPack,
-                   lagrangeUpperBoundsConstraintMultipliersToPack);
-   }
-
-   @Override
-   public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack,
-                    double[] lagrangeLowerBoundsConstraintMultipliersToPack, double[] lagrangeUpperBoundsConstraintMultipliersToPack)
-   {
-      setMatricesFromOriginal();
-
-      return super.solve(solutionToPack,
-                         lagrangeEqualityConstraintMultipliersToPack,
-                         lagrangeInequalityConstraintMultipliersToPack,
-                         lagrangeLowerBoundsConstraintMultipliersToPack,
-                         lagrangeUpperBoundsConstraintMultipliersToPack);
-   }
-
-   @Override
    public int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
                     DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundConstraintMultipliersToPack,
                     DenseMatrix64F lagrangeUpperBoundConstraintMultipliersToPack)

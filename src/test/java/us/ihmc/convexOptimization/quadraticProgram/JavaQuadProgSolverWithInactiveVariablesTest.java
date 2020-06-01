@@ -104,16 +104,16 @@ public class JavaQuadProgSolverWithInactiveVariablesTest extends AbstractSimpleA
       DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      double[] solution = new double[2];
-      double[] lagrangeEqualityMultipliers = new double[0];
-      double[] lagrangeInequalityMultipliers = new double[3];
+      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
       solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
 
-      assertEquals(2, solution.length);
-      assertEquals(solution[0], 1.0, epsilon);
-      assertEquals(solution[1], 1.0, epsilon);
-      assertEquals(lagrangeInequalityMultipliers[0], 2.0, epsilon);
-      assertEquals(lagrangeInequalityMultipliers[1], 0.0, epsilon);
-      assertEquals(lagrangeInequalityMultipliers[2], 0.0, epsilon);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(solution.get(0), 1.0, epsilon);
+      assertEquals(solution.get(1), 1.0, epsilon);
+      assertEquals(lagrangeInequalityMultipliers.get(0), 2.0, epsilon);
+      assertEquals(lagrangeInequalityMultipliers.get(1), 0.0, epsilon);
+      assertEquals(lagrangeInequalityMultipliers.get(2), 0.0, epsilon);
    }
 }

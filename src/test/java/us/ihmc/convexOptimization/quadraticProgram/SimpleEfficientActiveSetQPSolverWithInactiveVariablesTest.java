@@ -74,18 +74,18 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
       DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      double[] solution = new double[2];
-      double[] lagrangeEqualityMultipliers = new double[0];
-      double[] lagrangeInequalityMultipliers = new double[3];
+      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
       solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
 
-      assertEquals(2, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
-      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers[0]) || Double.isNaN(lagrangeInequalityMultipliers[0]));
-      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers[1]) || Double.isNaN(lagrangeInequalityMultipliers[1]));
-      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers[2]) || Double.isNaN(lagrangeInequalityMultipliers[2]));
+      assertEquals(2, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
+      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers.get(0)) || Double.isNaN(lagrangeInequalityMultipliers.get(0)));
+      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers.get(1)) || Double.isNaN(lagrangeInequalityMultipliers.get(1)));
+      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers.get(2)) || Double.isNaN(lagrangeInequalityMultipliers.get(2)));
 
       assertEquals(numberOfIterations, 1);
    }
