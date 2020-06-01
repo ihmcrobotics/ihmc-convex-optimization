@@ -34,17 +34,17 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      double[] solution = new double[1];
-      double[] lagrangeEqualityMultipliers = new double[0];
-      double[] lagrangeInequalityMultipliers = new double[1];
+      DenseMatrix64F solution = new DenseMatrix64F(1, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
 
       int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(1, solution.length);
-      assertEquals(0.0, solution[0], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
+      assertEquals(1, solution.getNumRows());
+      assertEquals(0.0, solution.get(0), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34 subject to x <= 7 y <= 1, with y inactive
       solver.clear();
@@ -60,20 +60,20 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = MatrixTools.createVector(7.0, 1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new double[2];
-      lagrangeEqualityMultipliers = new double[0];
-      lagrangeInequalityMultipliers = new double[2];
+      solution = new DenseMatrix64F(2, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(2, 1);
       numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(2, solution.length);
-      assertEquals(5.0, solution[0], 1e-7);
-      assertEquals(0.0, solution[1], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[1], 1e-7);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(5.0, solution.get(0), 1e-7);
+      assertEquals(0.0, solution.get(1), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(1), 1e-7);
 
       DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(9.0, objectiveCost, 1e-7);
 
@@ -91,20 +91,20 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = MatrixTools.createVector(7.0, 1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new double[2];
-      lagrangeEqualityMultipliers = new double[0];
-      lagrangeInequalityMultipliers = new double[2];
+      solution = new DenseMatrix64F(2, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(2, 1);
       numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations + 1, numberOfIterations);
 
-      assertEquals(2, solution.length);
-      assertEquals(0.0, solution[0], 1e-7);
-      assertEquals(1.0, solution[1], 1e-7);
-      assertEquals(4.0, lagrangeInequalityMultipliers[0], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[1], 1e-7);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(0.0, solution.get(0), 1e-7);
+      assertEquals(1.0, solution.get(1), 1e-7);
+      assertEquals(4.0, lagrangeInequalityMultipliers.get(0), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(1), 1e-7);
 
       solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(29.0, objectiveCost, 1e-7);
 
@@ -126,14 +126,14 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(1.0, 0.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[2];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
+      solution = new DenseMatrix64F(2, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
       numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
 
-      assertEquals(2, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
+      assertEquals(2, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
 
       // Minimize x^2 + y^2 subject to x + y = 1.0, x <= y - 1 (x - y <= -1.0), y inactive
       solver.clear();
@@ -153,17 +153,17 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(0.0, 1.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[2];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
+      solution = new DenseMatrix64F(2, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
       numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(2, solution.length);
-      assertEquals(0.0, solution[0], 1e-7);
-      assertEquals(1.0, solution[1], 1e-7);
-      assertEquals(-2.0, lagrangeEqualityMultipliers[0], 1e-7);
-      assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(0.0, solution.get(0), 1e-7);
+      assertEquals(1.0, solution.get(1), 1e-7);
+      assertEquals(-2.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+      assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0, x <= 2, x <= 10, y <= 3, x active
       solver.clear();
@@ -183,15 +183,15 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(1.0, 0.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[2];
-      lagrangeEqualityMultipliers = new double[2];
-      lagrangeInequalityMultipliers = new double[3];
+      solution = new DenseMatrix64F(2, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(2, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
       numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
       assertTrue(numberOfIterations <= 1);
 
-      assertEquals(2, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
+      assertEquals(2, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
    }
 
    @Test
@@ -216,11 +216,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       DenseMatrix64F variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      double[] solution = new double[1];
-      double[] lagrangeEqualityMultipliers = new double[0];
-      double[] lagrangeInequalityMultipliers = new double[0];
-      double[] lagrangeLowerBoundMultipliers = new double[1];
-      double[] lagrangeUpperBoundMultipliers = new double[1];
+      DenseMatrix64F solution = new DenseMatrix64F(1, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
+      DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
 
       int numberOfIterations = solver.solve(solution,
                                             lagrangeEqualityMultipliers,
@@ -234,10 +234,10 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(1, solution.length);
-      assertEquals(0.0, solution[0], 1e-7);
-      assertEquals(0.0, lagrangeLowerBoundMultipliers[0], 1e-7);
-      assertEquals(0.0, lagrangeUpperBoundMultipliers[0], 1e-7);
+      assertEquals(1, solution.getNumRows());
+      assertEquals(0.0, solution.get(0), 1e-7);
+      assertEquals(0.0, lagrangeLowerBoundMultipliers.get(0), 1e-7);
+      assertEquals(0.0, lagrangeUpperBoundMultipliers.get(0), 1e-7);
 
       // minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 1 <= y <= 10, -2 <= z, y and z active
       solver.clear();
@@ -260,11 +260,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       DenseMatrix64F activeVariables = MatrixTools.createVector(0.0, 1.0, 1.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -278,26 +278,26 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertEquals(0.0, solution[0], 1e-7);
-      assertEquals(2.0, solution[1], 1e-7);
-      assertEquals(10.0, solution[2], 1e-7);
+      assertEquals(3, solution.getNumRows());
+      assertEquals(0.0, solution.get(0), 1e-7);
+      assertEquals(2.0, solution.get(1), 1e-7);
+      assertEquals(10.0, solution.get(2), 1e-7);
       if (!ignoreLagrangeMultipliers)
       {
-         assertEquals(-24.0, lagrangeEqualityMultipliers[0], 1e-7);
-         assertEquals(20.0, lagrangeInequalityMultipliers[0], 1e-7);
+         assertEquals(-24.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+         assertEquals(20.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(2), 1e-7);
 
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
       DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(104.0, objectiveCost, 1e-7);
 
@@ -322,11 +322,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(1.0, 0.0, 1.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -340,26 +340,26 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertEquals(2.0, solution[0], 1e-7);
-      assertEquals(0.0, solution[1], 1e-7);
-      assertEquals(8.0, solution[2], 1e-7);
+      assertEquals(3, solution.getNumRows());
+      assertEquals(2.0, solution.get(0), 1e-7);
+      assertEquals(0.0, solution.get(1), 1e-7);
+      assertEquals(8.0, solution.get(2), 1e-7);
       if (!ignoreLagrangeMultipliers)
       {
-         assertEquals(-4.0, lagrangeEqualityMultipliers[0], 1e-7);
-         assertEquals(16.0, lagrangeInequalityMultipliers[0], 1e-7);
+         assertEquals(-4.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+         assertEquals(16.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(2), 1e-7);
 
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
       solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(68.0, objectiveCost, 1e-7);
 
@@ -384,11 +384,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(1.0, 1.0, 0.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -402,10 +402,10 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
-      assertTrue(Double.isNaN(solution[2]));
+      assertEquals(3, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
+      assertTrue(Double.isNaN(solution.get(2)));
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, -2 <= z, x active
       solver.clear();
@@ -428,11 +428,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(1.0, 0.0, 0.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -446,26 +446,26 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertEquals(2.0, solution[0], 1e-7);
-      assertEquals(0.0, solution[1], 1e-7);
-      assertEquals(0.0, solution[2], 1e-7);
+      assertEquals(3, solution.getNumRows());
+      assertEquals(2.0, solution.get(0), 1e-7);
+      assertEquals(0.0, solution.get(1), 1e-7);
+      assertEquals(0.0, solution.get(2), 1e-7);
       if (!ignoreLagrangeMultipliers)
       {
-         assertEquals(-4.0, lagrangeEqualityMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeInequalityMultipliers[0], 1e-7);
+         assertEquals(-4.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(2), 1e-7);
 
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
       solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(4.0, objectiveCost, 1e-7);
 
@@ -490,11 +490,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(0.0, 1.0, 0.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -508,10 +508,10 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations4, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
-      assertTrue(Double.isNaN(solution[2]));
+      assertEquals(3, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
+      assertTrue(Double.isNaN(solution.get(2)));
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, -2 <= z, z active
       solver.clear();
@@ -534,11 +534,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       activeVariables = MatrixTools.createVector(0.0, 0.0, 1.0);
       solver.setActiveVariables(activeVariables);
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -552,26 +552,26 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNumberOfIterations2, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertEquals(0.0, solution[0], 1e-7);
-      assertEquals(0.0, solution[1], 1e-7);
-      assertEquals(8.0, solution[2], 1e-7);
+      assertEquals(3, solution.getNumRows());
+      assertEquals(0.0, solution.get(0), 1e-7);
+      assertEquals(0.0, solution.get(1), 1e-7);
+      assertEquals(8.0, solution.get(2), 1e-7);
       if (!ignoreLagrangeMultipliers)
       {
-         assertEquals(0.0, lagrangeEqualityMultipliers[0], 1e-7);
-         assertEquals(16.0, lagrangeInequalityMultipliers[0], 1e-7);
+         assertEquals(0.0, lagrangeEqualityMultipliers.get(0), 1e-7);
+         assertEquals(16.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeLowerBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeLowerBoundMultipliers.get(2), 1e-7);
 
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[0], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[1], 1e-7);
-         assertEquals(0.0, lagrangeUpperBoundMultipliers[2], 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(0), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(1), 1e-7);
+         assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
       solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(64.0, objectiveCost, 1e-7);
 
@@ -593,11 +593,11 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
 
       solver.setVariableBounds(MatrixTools.createVector(3.0, 6.0, 11.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
-      solution = new double[3];
-      lagrangeEqualityMultipliers = new double[1];
-      lagrangeInequalityMultipliers = new double[1];
-      lagrangeLowerBoundMultipliers = new double[3];
-      lagrangeUpperBoundMultipliers = new double[3];
+      solution = new DenseMatrix64F(3, 1);
+      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
+      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
 
       numberOfIterations = solver.solve(solution,
                                         lagrangeEqualityMultipliers,
@@ -611,13 +611,13 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
                                         lagrangeUpperBoundMultipliers);
       assertEquals(expectedNubmerOfIterations3, numberOfIterations);
 
-      assertEquals(3, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
-      assertTrue(Double.isNaN(solution[2]));
+      assertEquals(3, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
+      assertTrue(Double.isNaN(solution.get(2)));
 
       solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
-      solutionMatrix.setData(solution);
+      solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertTrue(Double.isNaN(objectiveCost));
    }

@@ -262,7 +262,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
                    lagrangeUpperBoundsConstraintMultipliersToPack);
    }
 
-   @Override
+   // TODO Delete me
    public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack,
                     double[] lagrangeLowerBoundMultipliersToPack, double[] lagrangeUpperBoundMultipliersToPack)
    {

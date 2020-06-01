@@ -9,10 +9,6 @@ public interface SimpleActiveSetQPSolverInterface extends ActiveSetQPSolver
    public abstract void resetActiveConstraints();
 
    public abstract int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack,
-                             double[] lagrangeInequalityConstraintMultipliersToPack, double[] lagrangeLowerBoundMultipliersToPack,
-                             double[] lagrangeUpperBoundMultipliersToPack);
-
-   public abstract int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack,
                              double[] lagrangeInequalityConstraintMultipliersToPack);
 
    public abstract int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
