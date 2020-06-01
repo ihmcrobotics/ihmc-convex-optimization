@@ -240,10 +240,9 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public void resetActiveConstraints()
+   public void resetActiveSet()
    {
       // TODO
-
    }
 
    private final DenseMatrix64F lagrangeEqualityConstraintMultipliers = new DenseMatrix64F(0, 0);

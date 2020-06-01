@@ -117,8 +117,6 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F quadProgLagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
       DenseMatrix64F quadProgLagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
       DenseMatrix64F simpleSolution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F simpleLagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F simpleLagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
 
       for (int repeat = 0; repeat < 5000; repeat++)
       {
@@ -394,7 +392,7 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
       solver.setMaxNumberOfIterations(100);
       solver.setUseWarmStart(true);
       solver.clear();
-      solver.resetActiveConstraints();
+      solver.resetActiveSet();
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar.get(0, 0));
       solver.setLinearInequalityConstraints(linearInequalityConstraintCMatrix, linearInequalityConstraintDVector);
 

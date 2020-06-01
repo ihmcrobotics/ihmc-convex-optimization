@@ -90,7 +90,6 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
 
    private final LinearSolver<DenseMatrix64F> solver = LinearSolverFactory.linear(0);
 
-   private boolean quadraticCostMatrixIsDiagonal = false;
    private boolean useWarmStart = false;
 
    private int previousNumberOfVariables = 0;
@@ -192,7 +191,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void resetActiveConstraints()
+   public void resetActiveSet()
    {
       CBar.reshape(0, 0);
       CHat.reshape(0, 0);
@@ -213,7 +212,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    public int solve(DenseMatrix64F solutionToPack)
    {
       if (!useWarmStart || problemSizeChanged())
-         resetActiveConstraints();
+         resetActiveSet();
 
       int numberOfIterations = 0;
 

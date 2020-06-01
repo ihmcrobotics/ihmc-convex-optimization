@@ -210,7 +210,7 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
    }
 
    @Override
-   public void resetActiveConstraints()
+   public void resetActiveSet()
    {
       CBar.reshape(0, 0);
       CHat.reshape(0, 0);
@@ -231,7 +231,7 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
    public int solve(DenseMatrix64F solutionToPack)
    {
       if (!useWarmStart || problemSizeChanged())
-         resetActiveConstraints();
+         resetActiveSet();
       else
          addActiveSetConstraintsAsEqualityConstraints();
 
