@@ -40,9 +40,11 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
 
    private final DenseMatrix64F linearInequalityConstraintsCheck = new DenseMatrix64F(0, 0);
 
-   private final DenseMatrix64F CBar = new DenseMatrix64F(0, 0); // Active inequality constraints
+   /** Active inequality constraints */
+   private final DenseMatrix64F CBar = new DenseMatrix64F(0, 0);
    private final DenseMatrix64F DBar = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHat = new DenseMatrix64F(0, 0); // Active variable bounds constraints
+   /** Active variable bounds constraints */
+   private final DenseMatrix64F CHat = new DenseMatrix64F(0, 0);
    private final DenseMatrix64F DHat = new DenseMatrix64F(0, 0);
 
    private final DenseMatrix64F QInverse = new DenseMatrix64F(0, 0);

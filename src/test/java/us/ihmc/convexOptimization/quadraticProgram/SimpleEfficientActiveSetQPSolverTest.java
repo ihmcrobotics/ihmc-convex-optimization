@@ -33,10 +33,10 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    }
 
    @Override
-   public double[] getLowerBounds()
+   public DenseMatrix64F getLowerBounds()
    {
       // Need to modify the bounds for some tests to get a valid problem for this type of solver.
-      return new double[] {-5.0, 6.0, 0.0};
+      return MatrixTools.createVector(-5.0, 6.0, 0.0);
    }
 
    @Override

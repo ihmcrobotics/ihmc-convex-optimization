@@ -325,8 +325,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      double[] variableLowerBounds = new double[] {Double.NEGATIVE_INFINITY};
-      double[] variableUpperBounds = new double[] {Double.POSITIVE_INFINITY};
+      DenseMatrix64F variableLowerBounds = MatrixTools.createVector(Double.NEGATIVE_INFINITY);
+      DenseMatrix64F variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       double[] solution = new double[1];
@@ -359,8 +359,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      variableLowerBounds = new double[] {1.0};
-      variableUpperBounds = new double[] {Double.POSITIVE_INFINITY};
+      variableLowerBounds = MatrixTools.createVector(1.0);
+      variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       solution = new double[1];
@@ -387,8 +387,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      variableLowerBounds = new double[] {Double.NEGATIVE_INFINITY};
-      variableUpperBounds = new double[] {-1.0};
+      variableLowerBounds = MatrixTools.createVector(Double.NEGATIVE_INFINITY);
+      variableUpperBounds = MatrixTools.createVector(-1.0);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       solution = new double[1];
@@ -415,8 +415,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      variableLowerBounds = new double[] {1.0 + 1e-12};
-      variableUpperBounds = new double[] {1.0 - 1e-12};
+      variableLowerBounds = MatrixTools.createVector(1.0 + 1e-12);
+      variableUpperBounds = MatrixTools.createVector(1.0 - 1e-12);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       solution = new double[1];
@@ -443,8 +443,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      variableLowerBounds = new double[] {-1.0 + 1e-12};
-      variableUpperBounds = new double[] {-1.0 - 1e-12};
+      variableLowerBounds = MatrixTools.createVector(-1.0 + 1e-12);
+      variableUpperBounds = MatrixTools.createVector(-1.0 - 1e-12);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       solution = new double[1];
@@ -471,8 +471,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      variableLowerBounds = new double[] {1.0 + 1e-7};
-      variableUpperBounds = new double[] {1.0 - 1e-7};
+      variableLowerBounds = MatrixTools.createVector(1.0 + 1e-7);
+      variableUpperBounds = MatrixTools.createVector(1.0 - 1e-7);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       solution = new double[1];
@@ -567,7 +567,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {3.0, 6.0, 11.0}, getUpperBounds());
+      solver.setVariableBounds(MatrixTools.createVector(3.0, 6.0, 11.0), getUpperBounds());
 
       solution = new double[3];
       lagrangeEqualityMultipliers = new double[1];
@@ -1790,14 +1790,14 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(248.0, objectiveCost, 1e-7);
    }
 
-   public double[] getUpperBounds()
+   public DenseMatrix64F getUpperBounds()
    {
-      return new double[] {5.0, 10.0, Double.POSITIVE_INFINITY};
+      return MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY);
    }
 
-   public double[] getLowerBounds()
+   public DenseMatrix64F getLowerBounds()
    {
-      return new double[] {-5.0, 6.0, 11.0};
+      return MatrixTools.createVector(-5.0, 6.0, 11.0);
    }
 
    @Test
@@ -1844,8 +1844,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
       // Variable Bounds
-      double[] variableLowerBounds = new double[] {0.0};
-      double[] variableUpperBounds = new double[] {0.0, 0.0};
+      DenseMatrix64F variableLowerBounds = MatrixTools.createVector(0.0);
+      DenseMatrix64F variableUpperBounds = MatrixTools.createVector(0.0, 0.0);
 
       try
       {
@@ -1856,8 +1856,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      variableLowerBounds = new double[] {0.0, 0.0};
-      variableUpperBounds = new double[] {0.0};
+      variableLowerBounds = MatrixTools.createVector(0.0, 0.0);
+      variableUpperBounds = MatrixTools.createVector(0.0);
 
       try
       {
@@ -1868,8 +1868,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      variableLowerBounds = new double[] {0.0, 0.0};
-      variableUpperBounds = new double[] {0.0, 0.0};
+      variableLowerBounds = MatrixTools.createVector(0.0, 0.0);
+      variableUpperBounds = MatrixTools.createVector(0.0, 0.0);
 
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 

@@ -7,6 +7,8 @@ import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.CommonOps;
 import org.junit.jupiter.api.Test;
 
+import us.ihmc.matrixlib.MatrixTools;
+
 public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest extends AbstractSimpleActiveSetQPSolverTest
 {
    private static final boolean VERBOSE = false;
@@ -212,8 +214,8 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      double[] variableLowerBounds = new double[] {Double.NEGATIVE_INFINITY};
-      double[] variableUpperBounds = new double[] {Double.POSITIVE_INFINITY};
+      DenseMatrix64F variableLowerBounds = MatrixTools.createVector(Double.NEGATIVE_INFINITY);
+      DenseMatrix64F variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       double[] solution = new double[1];
@@ -255,7 +257,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       double[] linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {-5.0, 1.0, -2.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(-5.0, 1.0, -2.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       double[] activeVariables = new double[] {0.0, 1.0, 1.0};
       solver.setActiveVariables(activeVariables);
@@ -317,7 +319,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {-5.0, 6.0, -2.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(-5.0, 6.0, -2.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       activeVariables = new double[] {1.0, 0.0, 1.0};
       solver.setActiveVariables(activeVariables);
@@ -379,7 +381,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {-5.0, 6.0, -2.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(-5.0, 6.0, -2.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       activeVariables = new double[] {1.0, 1.0, 0.0};
       solver.setActiveVariables(activeVariables);
@@ -423,7 +425,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {-5.0, 6.0, -2.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(-5.0, 6.0, -2.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       activeVariables = new double[] {1.0, 0.0, 0.0};
       solver.setActiveVariables(activeVariables);
@@ -485,7 +487,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {-5.0, 6.0, -2.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(-5.0, 6.0, -2.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       activeVariables = new double[] {0.0, 1.0, 0.0};
       solver.setActiveVariables(activeVariables);
@@ -529,7 +531,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {-5.0, 6.0, -2.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(-5.0, 6.0, -2.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       activeVariables = new double[] {0.0, 0.0, 1.0};
       solver.setActiveVariables(activeVariables);
@@ -591,7 +593,7 @@ public abstract class AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest e
       linearInqualityConstraintsDVector = new double[] {-8.0};
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solver.setVariableBounds(new double[] {3.0, 6.0, 11.0}, new double[] {5.0, 10.0, Double.POSITIVE_INFINITY});
+      solver.setVariableBounds(MatrixTools.createVector(3.0, 6.0, 11.0), MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY));
 
       solution = new double[3];
       lagrangeEqualityMultipliers = new double[1];
