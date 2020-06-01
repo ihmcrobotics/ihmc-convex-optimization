@@ -7,7 +7,6 @@ import org.ejml.ops.CommonOps;
 
 import gnu.trove.list.array.TIntArrayList;
 import us.ihmc.matrixlib.DiagonalMatrixTools;
-import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
 
 /**
@@ -159,12 +158,6 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setLinearEqualityConstraints(double[][] linearEqualityConstraintsAMatrix, double[] linearEqualityConstraintsBVector)
-   {
-      setLinearEqualityConstraints(new DenseMatrix64F(linearEqualityConstraintsAMatrix), MatrixTools.createVector(linearEqualityConstraintsBVector));
-   }
-
-   @Override
    public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
    {
       if (linearEqualityConstraintsBVector.getNumCols() != 1)
@@ -176,12 +169,6 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
 
       this.linearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
       this.linearEqualityConstraintsAMatrix.set(linearEqualityConstraintsAMatrix);
-   }
-
-   @Override
-   public void setLinearInequalityConstraints(double[][] linearInequalityConstraintsCMatrix, double[] linearInqualityConstraintsDVector)
-   {
-      setLinearInequalityConstraints(new DenseMatrix64F(linearInequalityConstraintsCMatrix), MatrixTools.createVector(linearInqualityConstraintsDVector));
    }
 
    @Override

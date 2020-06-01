@@ -107,8 +107,8 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
       DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
 
-      double[][] linearInequalityConstraintsCMatrix = new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}};
-      double[] linearInqualityConstraintsDVector = new double[] {-2.0, -2.0, -2.0};
+      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
 
       JavaQuadProgSolver quadProg = new JavaQuadProgSolver();
       SimpleEfficientActiveSetQPSolver simpleSolver = new SimpleEfficientActiveSetQPSolver();
@@ -331,8 +331,8 @@ public class JavaQuadProgSolverTest extends AbstractSimpleActiveSetQPSolverTest
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      double[][] linearInequalityConstraintsCMatrix = new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}};
-      double[] linearInqualityConstraintsDVector = new double[] {-2.0, -2.0, -2.0};
+      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
       double[] solution = new double[2];

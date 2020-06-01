@@ -3,7 +3,6 @@ package us.ihmc.convexOptimization.quadraticProgram;
 import org.ejml.data.DenseMatrix64F;
 
 import us.ihmc.convexOptimization.exceptions.NoConvergenceException;
-import us.ihmc.matrixlib.MatrixTools;
 
 public interface ActiveSetQPSolver
 {
@@ -27,17 +26,7 @@ public interface ActiveSetQPSolver
 
    double getObjectiveCost(DenseMatrix64F x);
 
-   default void setLinearEqualityConstraints(double[][] linearEqualityConstraintsAMatrix, double[] linearEqualityConstraintsBVector)
-   {
-      setLinearEqualityConstraints(new DenseMatrix64F(linearEqualityConstraintsAMatrix), MatrixTools.createVector(linearEqualityConstraintsBVector));
-   }
-
    void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector);
-
-   default void setLinearInequalityConstraints(double[][] linearInequalityConstraintsCMatrix, double[] linearInqualityConstraintsDVector)
-   {
-      setLinearInequalityConstraints(new DenseMatrix64F(linearInequalityConstraintsCMatrix), MatrixTools.createVector(linearInqualityConstraintsDVector));
-   }
 
    void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector);
 
