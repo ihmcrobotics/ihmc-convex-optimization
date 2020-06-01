@@ -4,7 +4,7 @@ import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.CommonOps;
 
 import gnu.trove.list.array.TIntArrayList;
-import us.ihmc.commons.PrintTools;
+import us.ihmc.log.LogTools;
 import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
 
@@ -796,41 +796,41 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
    {
       if (!lowerBoundIndicesToAddToActiveSet.isEmpty())
       {
-         PrintTools.info("Lower bound indices added : ");
+         LogTools.info("Lower bound indices added : ");
          for (int i = 0; i < lowerBoundIndicesToAddToActiveSet.size(); i++)
-            PrintTools.info("" + lowerBoundIndicesToAddToActiveSet.get(i));
+            LogTools.info("" + lowerBoundIndicesToAddToActiveSet.get(i));
       }
       if (!lowerBoundIndicesToRemoveFromActiveSet.isEmpty())
       {
-         PrintTools.info("Lower bound indices removed : ");
+         LogTools.info("Lower bound indices removed : ");
          for (int i = 0; i < lowerBoundIndicesToRemoveFromActiveSet.size(); i++)
-            PrintTools.info("" + lowerBoundIndicesToRemoveFromActiveSet.get(i));
+            LogTools.info("" + lowerBoundIndicesToRemoveFromActiveSet.get(i));
       }
 
       if (!upperBoundIndicesToAddToActiveSet.isEmpty())
       {
-         PrintTools.info("Upper bound indices added : ");
+         LogTools.info("Upper bound indices added : ");
          for (int i = 0; i < upperBoundIndicesToAddToActiveSet.size(); i++)
-            PrintTools.info("" + upperBoundIndicesToAddToActiveSet.get(i));
+            LogTools.info("" + upperBoundIndicesToAddToActiveSet.get(i));
       }
       if (!upperBoundIndicesToRemoveFromActiveSet.isEmpty())
       {
-         PrintTools.info("Upper bound indices removed : ");
+         LogTools.info("Upper bound indices removed : ");
          for (int i = 0; i < upperBoundIndicesToRemoveFromActiveSet.size(); i++)
-            PrintTools.info("" + upperBoundIndicesToRemoveFromActiveSet.get(i));
+            LogTools.info("" + upperBoundIndicesToRemoveFromActiveSet.get(i));
       }
 
       if (!inequalityIndicesToAddToActiveSet.isEmpty())
       {
-         PrintTools.info("Inequality constraint indices added : ");
+         LogTools.info("Inequality constraint indices added : ");
          for (int i = 0; i < inequalityIndicesToAddToActiveSet.size(); i++)
-            PrintTools.info("" + inequalityIndicesToAddToActiveSet.get(i));
+            LogTools.info("" + inequalityIndicesToAddToActiveSet.get(i));
       }
       if (!inequalityIndicesToRemoveFromActiveSet.isEmpty())
       {
-         PrintTools.info("Inequality constraint indices removed : ");
+         LogTools.info("Inequality constraint indices removed : ");
          for (int i = 0; i < inequalityIndicesToRemoveFromActiveSet.size(); i++)
-            PrintTools.info("" + inequalityIndicesToRemoveFromActiveSet.get(i));
+            LogTools.info("" + inequalityIndicesToRemoveFromActiveSet.get(i));
       }
    }
 
