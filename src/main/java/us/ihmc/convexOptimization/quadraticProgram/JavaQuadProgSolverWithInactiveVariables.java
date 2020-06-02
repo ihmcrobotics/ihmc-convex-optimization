@@ -43,7 +43,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
          throw new RuntimeException("variable index is outside the number of variables: " + variableIndex);
 
       if (variableIndex >= activeVariables.getNumRows())
-         activeVariables.reshape(variableIndex + 1, 1, true);
+         return; // Any variable that is outside the activeVariables vector will be considered, nothing to do then.
 
       activeVariables.set(variableIndex, 0, 1.0);
    }
