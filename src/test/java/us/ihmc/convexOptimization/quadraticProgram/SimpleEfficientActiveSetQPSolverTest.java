@@ -33,14 +33,14 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    }
 
    @Override
-   public double[] getLowerBounds()
+   public DenseMatrix64F getLowerBounds()
    {
       // Need to modify the bounds for some tests to get a valid problem for this type of solver.
-      return new double[] {-5.0, 6.0, 0.0};
+      return MatrixTools.createVector(-5.0, 6.0, 0.0);
    }
 
    @Override
-   public SimpleActiveSetQPSolverInterface createSolverToTest()
+   public ActiveSetQPSolver createSolverToTest()
    {
       SimpleEfficientActiveSetQPSolver simpleEfficientActiveSetQPSolver = new SimpleEfficientActiveSetQPSolver();
       simpleEfficientActiveSetQPSolver.setUseWarmStart(false);
@@ -51,34 +51,36 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    @Test
    public void testChallengingCasesWithPolygonConstraintsCheckFailsWithSimpleSolverWithWarmStart()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setMaxNumberOfIterations(10);
       solver.setUseWarmStart(true);
 
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      double[][] linearInequalityConstraintsCMatrix = new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}};
-      double[] linearInqualityConstraintsDVector = new double[] {-2.0, -2.0, -2.0};
+      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      double[] solution = new double[2];
-      double[] lagrangeEqualityMultipliers = new double[0];
-      double[] lagrangeInequalityMultipliers = new double[3];
-      solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
-      int numberOfIterations = solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      solver.solve(solution);
+      int numberOfIterations = solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
 
-      assertEquals(2, solution.length);
-      assertTrue(Double.isNaN(solution[0]));
-      assertTrue(Double.isNaN(solution[1]));
-      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers[0]) || Double.isNaN(lagrangeInequalityMultipliers[0]));
-      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers[1]) || Double.isNaN(lagrangeInequalityMultipliers[1]));
-      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers[2]) || Double.isNaN(lagrangeInequalityMultipliers[2]));
+      assertEquals(2, solution.getNumRows());
+      assertTrue(Double.isNaN(solution.get(0)));
+      assertTrue(Double.isNaN(solution.get(1)));
+      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers.get(0)) || Double.isNaN(lagrangeInequalityMultipliers.get(0)));
+      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers.get(1)) || Double.isNaN(lagrangeInequalityMultipliers.get(1)));
+      assertTrue(Double.isInfinite(lagrangeInequalityMultipliers.get(2)) || Double.isNaN(lagrangeInequalityMultipliers.get(2)));
 
       assertEquals(numberOfIterations, 1);
    }
@@ -90,7 +92,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    public void testFindValidSolutionForDataset20160319WithWarmStart()
    {
       ActualDatasetFrom20160319 dataset = new ActualDatasetFrom20160319();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();
@@ -108,7 +110,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    public void testFindValidSolutionForKiwiDataset20170712WithWarmStart()
    {
       ActualDatasetFromKiwi20170712 dataset = new ActualDatasetFromKiwi20170712();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();
@@ -131,7 +133,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
    public void testFindValidSolutionForKiwiDataset20171013WithWarmStart()
    {
       ActualDatasetFromKiwi20171013 dataset = new ActualDatasetFromKiwi20171013();
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();
@@ -152,7 +154,7 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
       ActualDatasetFromKiwi20171015B datasetB = new ActualDatasetFromKiwi20171015B();
       DenseMatrix64F solution = new DenseMatrix64F(datasetA.getProblemSize(), 1);
 
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
 
       solver.clear();

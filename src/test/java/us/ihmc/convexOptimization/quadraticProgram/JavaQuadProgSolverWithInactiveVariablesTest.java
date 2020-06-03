@@ -2,10 +2,12 @@ package us.ihmc.convexOptimization.quadraticProgram;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.ejml.data.DenseMatrix64F;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import us.ihmc.convexOptimization.exceptions.NoConvergenceException;
+import us.ihmc.matrixlib.MatrixTools;
 
 public class JavaQuadProgSolverWithInactiveVariablesTest extends AbstractSimpleActiveSetQPSolverWithInactiveVariablesTest
 {
@@ -87,31 +89,33 @@ public class JavaQuadProgSolverWithInactiveVariablesTest extends AbstractSimpleA
    @Test
    public void testChallengingCasesWithPolygonConstraintsCheckFailsWithSimpleSolver()
    {
-      SimpleActiveSetQPSolverInterface solver = createSolverToTest();
+      ActiveSetQPSolver solver = createSolverToTest();
       solver.setMaxNumberOfIterations(10);
 
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      double[][] costQuadraticMatrix = new double[][] {{2.0, 0.0}, {0.0, 2.0}};
-      double[] costLinearVector = new double[] {0.0, 0.0};
+      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      double[][] linearInequalityConstraintsCMatrix = new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}};
-      double[] linearInqualityConstraintsDVector = new double[] {-2.0, -2.0, -2.0};
+      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      double[] solution = new double[2];
-      double[] lagrangeEqualityMultipliers = new double[0];
-      double[] lagrangeInequalityMultipliers = new double[3];
-      solver.solve(solution, lagrangeEqualityMultipliers, lagrangeInequalityMultipliers);
+      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
+      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      solver.solve(solution);
+      solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
+      solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
 
-      assertEquals(2, solution.length);
-      assertEquals(solution[0], 1.0, epsilon);
-      assertEquals(solution[1], 1.0, epsilon);
-      assertEquals(lagrangeInequalityMultipliers[0], 2.0, epsilon);
-      assertEquals(lagrangeInequalityMultipliers[1], 0.0, epsilon);
-      assertEquals(lagrangeInequalityMultipliers[2], 0.0, epsilon);
+      assertEquals(2, solution.getNumRows());
+      assertEquals(solution.get(0), 1.0, epsilon);
+      assertEquals(solution.get(1), 1.0, epsilon);
+      assertEquals(lagrangeInequalityMultipliers.get(0), 2.0, epsilon);
+      assertEquals(lagrangeInequalityMultipliers.get(1), 0.0, epsilon);
+      assertEquals(lagrangeInequalityMultipliers.get(2), 0.0, epsilon);
    }
 }
