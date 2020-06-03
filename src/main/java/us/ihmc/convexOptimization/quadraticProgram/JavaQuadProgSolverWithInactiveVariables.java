@@ -39,19 +39,25 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    @Override
    public void setVariableActive(int variableIndex)
    {
-      if (variableIndex >= activeVariables.getNumRows())
-         throw new RuntimeException("variable index is outside the number of variables.");
+      if (variableIndex < 0 || variableIndex >= originalQuadraticCostQMatrix.getNumRows())
+         throw new RuntimeException("variable index is outside the number of variables: " + variableIndex);
 
-      activeVariables.set(variableIndex, 1, 1.0);
+      if (variableIndex >= activeVariables.getNumRows())
+         return; // Any variable that is outside the activeVariables vector will be considered, nothing to do then.
+
+      activeVariables.set(variableIndex, 0, 1.0);
    }
 
    @Override
    public void setVariableInactive(int variableIndex)
    {
-      if (variableIndex >= activeVariables.getNumRows())
-         throw new RuntimeException("variable index is outside the number of variables.");
+      if (variableIndex < 0 || variableIndex >= originalQuadraticCostQMatrix.getNumRows())
+         throw new RuntimeException("variable index is outside the number of variables: " + variableIndex);
 
-      activeVariables.set(variableIndex, 1, 0.0);
+      if (variableIndex >= activeVariables.getNumRows())
+         activeVariables.reshape(variableIndex + 1, 1, true);
+
+      activeVariables.set(variableIndex, 0, 0.0);
    }
 
    @Override
