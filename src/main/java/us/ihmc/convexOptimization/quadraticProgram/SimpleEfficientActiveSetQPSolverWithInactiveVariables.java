@@ -206,19 +206,25 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    @Override
    public void setVariableActive(int variableIndex)
    {
-      if (variableIndex >= activeVariables.getNumRows())
-         throw new RuntimeException("variable index is outside the number of variables.");
+      if (variableIndex < 0 || variableIndex >= originalQuadraticCostQMatrix.getNumRows())
+         throw new RuntimeException("variable index is outside the number of variables: " + variableIndex);
 
-      activeVariables.set(variableIndex, 1, 1.0);
+      if (variableIndex >= activeVariables.getNumRows())
+         return; // Any variable that is outside the activeVariables vector will be considered, nothing to do then.
+
+      activeVariables.set(variableIndex, 0, 1.0);
    }
 
    @Override
    public void setVariableInactive(int variableIndex)
    {
-      if (variableIndex >= activeVariables.getNumRows())
-         throw new RuntimeException("variable index is outside the number of variables.");
+      if (variableIndex < 0 || variableIndex >= originalQuadraticCostQMatrix.getNumRows())
+         throw new RuntimeException("variable index is outside the number of variables: " + variableIndex);
 
-      activeVariables.set(variableIndex, 1, 0.0);
+      if (variableIndex >= activeVariables.getNumRows())
+         activeVariables.reshape(variableIndex + 1, 1, true);
+
+      activeVariables.set(variableIndex, 0, 0.0);
    }
 
    @Override
@@ -250,60 +256,13 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public int solve(double[] solutionToPack)
-   {
-      int numberOfEqualityConstraints = originalLinearEqualityConstraintsAMatrix.getNumRows();
-      int numberOfInequalityConstraints = originalLinearInequalityConstraintsCMatrixO.getNumRows();
-
-      double[] lagrangeEqualityConstraintMultipliersToPack = new double[numberOfEqualityConstraints];
-      double[] lagrangeInequalityConstraintMultipliersToPack = new double[numberOfInequalityConstraints];
-
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToPack, lagrangeInequalityConstraintMultipliersToPack);
-   }
-
-   @Override
-   public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
-   {
-      int numberOfLowerBoundConstraints = originalVariableLowerBounds.getNumRows();
-      int numberOfUpperBoundConstraints = originalVariableUpperBounds.getNumRows();
-
-      double[] lagrangeLowerBoundsConstraintMultipliersToPack = new double[numberOfLowerBoundConstraints];
-      double[] lagrangeUpperBoundsConstraintMultipliersToPack = new double[numberOfUpperBoundConstraints];
-
-      return solve(solutionToPack,
-                   lagrangeEqualityConstraintMultipliersToPack,
-                   lagrangeInequalityConstraintMultipliersToPack,
-                   lagrangeLowerBoundsConstraintMultipliersToPack,
-                   lagrangeUpperBoundsConstraintMultipliersToPack);
-   }
-
-   @Override
-   public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack,
-                    double[] lagrangeLowerBoundsConstraintMultipliersToPack, double[] lagrangeUpperBoundsConstraintMultipliersToPack)
-   {
-      setMatricesFromOriginal();
-
-      return super.solve(solutionToPack,
-                         lagrangeEqualityConstraintMultipliersToPack,
-                         lagrangeInequalityConstraintMultipliersToPack,
-                         lagrangeLowerBoundsConstraintMultipliersToPack,
-                         lagrangeUpperBoundsConstraintMultipliersToPack);
-   }
-
-   @Override
-   public int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeUpperBoundConstraintMultipliersToPack)
+   public int solve(DenseMatrix64F solutionToPack)
    {
       removeInactiveVariables();
 
       solutionToPack.reshape(originalQuadraticCostQMatrix.numRows, 1);
 
-      int numberOfIterations = super.solve(activeVariableSolution,
-                                           lagrangeEqualityConstraintMultipliersToPack,
-                                           lagrangeInequalityConstraintMultipliersToPack,
-                                           lagrangeLowerBoundConstraintMultipliersToPack,
-                                           lagrangeUpperBoundConstraintMultipliersToPack);
+      int numberOfIterations = super.solve(activeVariableSolution);
 
       copyActiveVariableSolutionToAllVariables(solutionToPack, activeVariableSolution);
 

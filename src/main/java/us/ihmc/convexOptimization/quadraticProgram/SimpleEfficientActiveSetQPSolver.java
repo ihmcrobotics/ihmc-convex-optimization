@@ -4,7 +4,7 @@ import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.CommonOps;
 
 import gnu.trove.list.array.TIntArrayList;
-import us.ihmc.commons.PrintTools;
+import us.ihmc.log.LogTools;
 import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
 
@@ -40,9 +40,11 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
 
    private final DenseMatrix64F linearInequalityConstraintsCheck = new DenseMatrix64F(0, 0);
 
-   private final DenseMatrix64F CBar = new DenseMatrix64F(0, 0); // Active inequality constraints
+   /** Active inequality constraints */
+   private final DenseMatrix64F CBar = new DenseMatrix64F(0, 0);
    private final DenseMatrix64F DBar = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHat = new DenseMatrix64F(0, 0); // Active variable bounds constraints
+   /** Active variable bounds constraints */
+   private final DenseMatrix64F CHat = new DenseMatrix64F(0, 0);
    private final DenseMatrix64F DHat = new DenseMatrix64F(0, 0);
 
    private final DenseMatrix64F QInverse = new DenseMatrix64F(0, 0);
@@ -202,111 +204,13 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
    }
 
    @Override
-   public int solve(double[] solutionToPack)
-   {
-      int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
-      int numberOfInequalityConstraints = linearInequalityConstraintsCMatrixO.getNumRows();
-
-      double[] lagrangeEqualityConstraintMultipliersToPack = new double[numberOfEqualityConstraints];
-      double[] lagrangeInequalityConstraintMultipliersToPack = new double[numberOfInequalityConstraints];
-
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToPack, lagrangeInequalityConstraintMultipliersToPack);
-   }
-
-   @Override
-   public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack)
-   {
-      int numberOfLowerBoundConstraints = variableLowerBounds.getNumRows();
-      int numberOfUpperBoundConstraints = variableUpperBounds.getNumRows();
-
-      double[] lagrangeLowerBoundsConstraintMultipliersToPack = new double[numberOfLowerBoundConstraints];
-      double[] lagrangeUpperBoundsConstraintMultipliersToPack = new double[numberOfUpperBoundConstraints];
-
-      return solve(solutionToPack,
-                   lagrangeEqualityConstraintMultipliersToPack,
-                   lagrangeInequalityConstraintMultipliersToPack,
-                   lagrangeLowerBoundsConstraintMultipliersToPack,
-                   lagrangeUpperBoundsConstraintMultipliersToPack);
-   }
-
-   @Override
-   public int solve(double[] solutionToPack, double[] lagrangeEqualityConstraintMultipliersToPack, double[] lagrangeInequalityConstraintMultipliersToPack,
-                    double[] lagrangeLowerBoundsConstraintMultipliersToPack, double[] lagrangeUpperBoundsConstraintMultipliersToPack)
-   {
-      int numberOfVariables = quadraticCostQMatrix.getNumCols();
-      int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
-      int numberOfInequalityConstraints = linearInequalityConstraintsCMatrixO.getNumRows();
-      int numberOfLowerBoundConstraints = variableLowerBounds.getNumRows();
-      int numberOfUpperBoundConstraints = variableUpperBounds.getNumRows();
-
-      if (solutionToPack.length != numberOfVariables)
-         throw new RuntimeException("solutionToPack.length != numberOfVariables");
-      if (lagrangeEqualityConstraintMultipliersToPack.length != numberOfEqualityConstraints)
-         throw new RuntimeException("lagrangeEqualityConstraintMultipliersToPack.length != numberOfEqualityConstraints");
-      if (lagrangeInequalityConstraintMultipliersToPack.length != numberOfInequalityConstraints)
-         throw new RuntimeException("lagrangeInequalityConstraintMultipliersToPack.length != numberOfInequalityConstraints");
-
-      if (lagrangeLowerBoundsConstraintMultipliersToPack.length != numberOfLowerBoundConstraints)
-         throw new RuntimeException("lagrangeLowerBoundsConstraintMultipliersToPack.length != numberOfLowerBoundConstraints. numberOfLowerBoundConstraints = "
-               + numberOfLowerBoundConstraints);
-      if (lagrangeUpperBoundsConstraintMultipliersToPack.length != numberOfUpperBoundConstraints)
-         throw new RuntimeException("lagrangeUpperBoundsConstraintMultipliersToPack.length != numberOfUpperBoundConstraints");
-
-      DenseMatrix64F solution = new DenseMatrix64F(numberOfVariables, 1);
-      DenseMatrix64F lagrangeEqualityConstraintMultipliers = new DenseMatrix64F(numberOfEqualityConstraints, 1);
-      DenseMatrix64F lagrangeInequalityConstraintMultipliers = new DenseMatrix64F(numberOfInequalityConstraints, 1);
-      DenseMatrix64F lagrangeLowerBoundConstraintMultipliers = new DenseMatrix64F(numberOfLowerBoundConstraints, 1);
-      DenseMatrix64F lagrangeUpperBoundConstraintMultipliers = new DenseMatrix64F(numberOfUpperBoundConstraints, 1);
-
-      int numberOfIterations = solve(solution,
-                                     lagrangeEqualityConstraintMultipliers,
-                                     lagrangeInequalityConstraintMultipliers,
-                                     lagrangeLowerBoundConstraintMultipliers,
-                                     lagrangeUpperBoundConstraintMultipliers);
-
-      double[] solutionData = solution.getData();
-
-      for (int i = 0; i < numberOfVariables; i++)
-      {
-         solutionToPack[i] = solutionData[i];
-      }
-
-      double[] lagrangeEqualityConstraintMultipliersData = lagrangeEqualityConstraintMultipliers.getData();
-      double[] lagrangeInequalityConstraintMultipliersData = lagrangeInequalityConstraintMultipliers.getData();
-      double[] lagrangeLowerBoundMultipliersData = lagrangeLowerBoundConstraintMultipliers.getData();
-      double[] lagrangeUpperBoundMultipliersData = lagrangeUpperBoundConstraintMultipliers.getData();
-
-      for (int i = 0; i < numberOfEqualityConstraints; i++)
-      {
-         lagrangeEqualityConstraintMultipliersToPack[i] = lagrangeEqualityConstraintMultipliersData[i];
-      }
-
-      for (int i = 0; i < numberOfInequalityConstraints; i++)
-      {
-         lagrangeInequalityConstraintMultipliersToPack[i] = lagrangeInequalityConstraintMultipliersData[i];
-      }
-
-      for (int i = 0; i < numberOfLowerBoundConstraints; i++)
-      {
-         lagrangeLowerBoundsConstraintMultipliersToPack[i] = lagrangeLowerBoundMultipliersData[i];
-      }
-
-      for (int i = 0; i < numberOfUpperBoundConstraints; i++)
-      {
-         lagrangeUpperBoundsConstraintMultipliersToPack[i] = lagrangeUpperBoundMultipliersData[i];
-      }
-
-      return numberOfIterations;
-   }
-
-   @Override
    public void setUseWarmStart(boolean useWarmStart)
    {
       this.useWarmStart = useWarmStart;
    }
 
    @Override
-   public void resetActiveConstraints()
+   public void resetActiveSet()
    {
       CBar.reshape(0, 0);
       CHat.reshape(0, 0);
@@ -318,35 +222,16 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
       activeLowerBoundIndices.reset();
    }
 
-   private final DenseMatrix64F lagrangeEqualityConstraintMultipliersToThrowAway = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeInequalityConstraintMultipliersToThrowAway = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeLowerBoundMultipliersToThrowAway = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeUpperBoundMultipliersToThrowAway = new DenseMatrix64F(0, 0);
+   private final DenseMatrix64F lagrangeEqualityConstraintMultipliers = new DenseMatrix64F(0, 0);
+   private final DenseMatrix64F lagrangeInequalityConstraintMultipliers = new DenseMatrix64F(0, 0);
+   private final DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 0);
+   private final DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 0);
 
    @Override
    public int solve(DenseMatrix64F solutionToPack)
    {
-      return solve(solutionToPack, lagrangeEqualityConstraintMultipliersToThrowAway, lagrangeInequalityConstraintMultipliersToThrowAway);
-   }
-
-   @Override
-   public int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack)
-   {
-      return solve(solutionToPack,
-                   lagrangeEqualityConstraintMultipliersToPack,
-                   lagrangeInequalityConstraintMultipliersToPack,
-                   lagrangeLowerBoundMultipliersToThrowAway,
-                   lagrangeUpperBoundMultipliersToThrowAway);
-   }
-
-   @Override
-   public int solve(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundConstraintMultipliersToPack,
-                    DenseMatrix64F lagrangeUpperBoundConstraintMultipliersToPack)
-   {
       if (!useWarmStart || problemSizeChanged())
-         resetActiveConstraints();
+         resetActiveSet();
       else
          addActiveSetConstraintsAsEqualityConstraints();
 
@@ -359,22 +244,22 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
       int numberOfUpperBoundConstraints = variableUpperBounds.getNumRows();
 
       solutionToPack.reshape(numberOfVariables, 1);
-      lagrangeEqualityConstraintMultipliersToPack.reshape(numberOfEqualityConstraints, 1);
-      lagrangeEqualityConstraintMultipliersToPack.zero();
-      lagrangeInequalityConstraintMultipliersToPack.reshape(numberOfInequalityConstraints, 1);
-      lagrangeInequalityConstraintMultipliersToPack.zero();
-      lagrangeLowerBoundConstraintMultipliersToPack.reshape(numberOfLowerBoundConstraints, 1);
-      lagrangeLowerBoundConstraintMultipliersToPack.zero();
-      lagrangeUpperBoundConstraintMultipliersToPack.reshape(numberOfUpperBoundConstraints, 1);
-      lagrangeUpperBoundConstraintMultipliersToPack.zero();
+      lagrangeEqualityConstraintMultipliers.reshape(numberOfEqualityConstraints, 1);
+      lagrangeEqualityConstraintMultipliers.zero();
+      lagrangeInequalityConstraintMultipliers.reshape(numberOfInequalityConstraints, 1);
+      lagrangeInequalityConstraintMultipliers.zero();
+      lagrangeLowerBoundMultipliers.reshape(numberOfLowerBoundConstraints, 1);
+      lagrangeLowerBoundMultipliers.zero();
+      lagrangeUpperBoundMultipliers.reshape(numberOfUpperBoundConstraints, 1);
+      lagrangeUpperBoundMultipliers.zero();
 
       computeQInverseAndAQInverse();
 
       solveEqualityConstrainedSubproblemEfficiently(solutionToPack,
-                                                    lagrangeEqualityConstraintMultipliersToPack,
-                                                    lagrangeInequalityConstraintMultipliersToPack,
-                                                    lagrangeLowerBoundConstraintMultipliersToPack,
-                                                    lagrangeUpperBoundConstraintMultipliersToPack);
+                                                    lagrangeEqualityConstraintMultipliers,
+                                                    lagrangeInequalityConstraintMultipliers,
+                                                    lagrangeLowerBoundMultipliers,
+                                                    lagrangeUpperBoundMultipliers);
 
       //      System.out.println(numberOfInequalityConstraints + ", " + numberOfLowerBoundConstraints + ", " + numberOfUpperBoundConstraints);
       if (numberOfInequalityConstraints == 0 && numberOfLowerBoundConstraints == 0 && numberOfUpperBoundConstraints == 0)
@@ -383,10 +268,10 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
       for (int i = 0; i < maxNumberOfIterations; i++)
       {
          boolean activeSetWasModified = modifyActiveSetAndTryAgain(solutionToPack,
-                                                                   lagrangeEqualityConstraintMultipliersToPack,
-                                                                   lagrangeInequalityConstraintMultipliersToPack,
-                                                                   lagrangeLowerBoundConstraintMultipliersToPack,
-                                                                   lagrangeUpperBoundConstraintMultipliersToPack);
+                                                                   lagrangeEqualityConstraintMultipliers,
+                                                                   lagrangeInequalityConstraintMultipliers,
+                                                                   lagrangeLowerBoundMultipliers,
+                                                                   lagrangeUpperBoundMultipliers);
          numberOfIterations++;
 
          if (!activeSetWasModified)
@@ -796,41 +681,41 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
    {
       if (!lowerBoundIndicesToAddToActiveSet.isEmpty())
       {
-         PrintTools.info("Lower bound indices added : ");
+         LogTools.info("Lower bound indices added : ");
          for (int i = 0; i < lowerBoundIndicesToAddToActiveSet.size(); i++)
-            PrintTools.info("" + lowerBoundIndicesToAddToActiveSet.get(i));
+            LogTools.info("" + lowerBoundIndicesToAddToActiveSet.get(i));
       }
       if (!lowerBoundIndicesToRemoveFromActiveSet.isEmpty())
       {
-         PrintTools.info("Lower bound indices removed : ");
+         LogTools.info("Lower bound indices removed : ");
          for (int i = 0; i < lowerBoundIndicesToRemoveFromActiveSet.size(); i++)
-            PrintTools.info("" + lowerBoundIndicesToRemoveFromActiveSet.get(i));
+            LogTools.info("" + lowerBoundIndicesToRemoveFromActiveSet.get(i));
       }
 
       if (!upperBoundIndicesToAddToActiveSet.isEmpty())
       {
-         PrintTools.info("Upper bound indices added : ");
+         LogTools.info("Upper bound indices added : ");
          for (int i = 0; i < upperBoundIndicesToAddToActiveSet.size(); i++)
-            PrintTools.info("" + upperBoundIndicesToAddToActiveSet.get(i));
+            LogTools.info("" + upperBoundIndicesToAddToActiveSet.get(i));
       }
       if (!upperBoundIndicesToRemoveFromActiveSet.isEmpty())
       {
-         PrintTools.info("Upper bound indices removed : ");
+         LogTools.info("Upper bound indices removed : ");
          for (int i = 0; i < upperBoundIndicesToRemoveFromActiveSet.size(); i++)
-            PrintTools.info("" + upperBoundIndicesToRemoveFromActiveSet.get(i));
+            LogTools.info("" + upperBoundIndicesToRemoveFromActiveSet.get(i));
       }
 
       if (!inequalityIndicesToAddToActiveSet.isEmpty())
       {
-         PrintTools.info("Inequality constraint indices added : ");
+         LogTools.info("Inequality constraint indices added : ");
          for (int i = 0; i < inequalityIndicesToAddToActiveSet.size(); i++)
-            PrintTools.info("" + inequalityIndicesToAddToActiveSet.get(i));
+            LogTools.info("" + inequalityIndicesToAddToActiveSet.get(i));
       }
       if (!inequalityIndicesToRemoveFromActiveSet.isEmpty())
       {
-         PrintTools.info("Inequality constraint indices removed : ");
+         LogTools.info("Inequality constraint indices removed : ");
          for (int i = 0; i < inequalityIndicesToRemoveFromActiveSet.size(); i++)
-            PrintTools.info("" + inequalityIndicesToRemoveFromActiveSet.get(i));
+            LogTools.info("" + inequalityIndicesToRemoveFromActiveSet.get(i));
       }
    }
 
@@ -978,5 +863,29 @@ public class SimpleEfficientActiveSetQPSolver extends AbstractSimpleActiveSetQPS
                            upperBoundConstraintIndex,
                            0);
       }
+   }
+
+   @Override
+   public void getLagrangeEqualityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   {
+      multipliersMatrixToPack.set(lagrangeEqualityConstraintMultipliers);
+   }
+
+   @Override
+   public void getLagrangeInequalityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   {
+      multipliersMatrixToPack.set(lagrangeInequalityConstraintMultipliers);
+   }
+
+   @Override
+   public void getLagrangeLowerBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   {
+      multipliersMatrixToPack.set(lagrangeLowerBoundMultipliers);
+   }
+
+   @Override
+   public void getLagrangeUpperBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   {
+      multipliersMatrixToPack.set(lagrangeUpperBoundMultipliers);
    }
 }
