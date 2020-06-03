@@ -1,9 +1,9 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.factory.LinearSolverFactory;
-import org.ejml.interfaces.linsol.LinearSolver;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
 
 import us.ihmc.matrixlib.MatrixTools;
 
@@ -12,17 +12,17 @@ import us.ihmc.matrixlib.MatrixTools;
 // by Scott Kuindersma, Frank Permenter, and Russ Tedrake.
 public class SimpleActiveSetQPStandaloneSolver
 {
-   DenseMatrix64F wInverse = new DenseMatrix64F(0);
-   DenseMatrix64F minusWInverseG = new DenseMatrix64F(0);
-   DenseMatrix64F gVector = new DenseMatrix64F(0);
-   DenseMatrix64F alphaAndGamma = new DenseMatrix64F(0);
-   DenseMatrix64F rMatrix = new DenseMatrix64F(0);
+   DMatrixRMaj wInverse = new DMatrixRMaj(0);
+   DMatrixRMaj minusWInverseG = new DMatrixRMaj(0);
+   DMatrixRMaj gVector = new DMatrixRMaj(0);
+   DMatrixRMaj alphaAndGamma = new DMatrixRMaj(0);
+   DMatrixRMaj rMatrix = new DMatrixRMaj(0);
 
-   DenseMatrix64F wInverseRTranspose = new DenseMatrix64F(0);
-   DenseMatrix64F leftSide = new DenseMatrix64F(0);
-   DenseMatrix64F rightSide = new DenseMatrix64F(0);
-   DenseMatrix64F eVector = new DenseMatrix64F(0);
-   LinearSolver<DenseMatrix64F> linearSolver = LinearSolverFactory.linear(0);
+   DMatrixRMaj wInverseRTranspose = new DMatrixRMaj(0);
+   DMatrixRMaj leftSide = new DMatrixRMaj(0);
+   DMatrixRMaj rightSide = new DMatrixRMaj(0);
+   DMatrixRMaj eVector = new DMatrixRMaj(0);
+   LinearSolverDense<DMatrixRMaj> linearSolver = LinearSolverFactory_DDRM.linear(0);
 
    int maxIterations;
 
@@ -36,9 +36,9 @@ public class SimpleActiveSetQPStandaloneSolver
       this.maxIterations = maxIterations;
    }
 
-   public int solve(DenseMatrix64F quadraticCostGMatrix, DenseMatrix64F quadraticCostFVector, DenseMatrix64F linearEqualityConstraintA,
-                    DenseMatrix64F linearEqualityConstraintB, DenseMatrix64F linearInequalityConstraintA, DenseMatrix64F linearInequalityConstraintB,
-                    boolean[] linearInequalityActiveSet, DenseMatrix64F solutionVector)
+   public int solve(DMatrixRMaj quadraticCostGMatrix, DMatrixRMaj quadraticCostFVector, DMatrixRMaj linearEqualityConstraintA,
+                    DMatrixRMaj linearEqualityConstraintB, DMatrixRMaj linearInequalityConstraintA, DMatrixRMaj linearInequalityConstraintB,
+                    boolean[] linearInequalityActiveSet, DMatrixRMaj solutionVector)
    {
       int numberOfVariablesToSolve = quadraticCostGMatrix.numCols;
       int iterations = 0;
@@ -68,16 +68,16 @@ public class SimpleActiveSetQPStandaloneSolver
       if (wInverse instanceof BlockDiagSquareMatrix)
          ((BlockDiagSquareMatrix) wInverse).mult(-1, gVector, minusWInverseG);
       else
-         CommonOps.mult(-1, wInverse, gVector, minusWInverseG);
+         CommonOps_DDRM.mult(-1, wInverse, gVector, minusWInverseG);
 
       int linearEqualityConstraintsSize = 0;
       if (linearEqualityConstraintA != null)
       {
          linearEqualityConstraintsSize = linearEqualityConstraintA.numRows;
          rMatrix.reshape(linearEqualityConstraintsSize, numberOfVariablesToSolve);
-         CommonOps.insert(linearEqualityConstraintA, rMatrix, 0, 0);
+         CommonOps_DDRM.insert(linearEqualityConstraintA, rMatrix, 0, 0);
          eVector.reshape(linearEqualityConstraintsSize, 1);
-         CommonOps.insert(linearEqualityConstraintB, eVector, 0, 0);
+         CommonOps_DDRM.insert(linearEqualityConstraintB, eVector, 0, 0);
       }
 
       solutionVector.reshape(numberOfVariablesToSolve, 1);
@@ -110,28 +110,28 @@ public class SimpleActiveSetQPStandaloneSolver
             }
             else
             {
-               CommonOps.multTransB(wInverse, rMatrix, wInverseRTranspose);
+               CommonOps_DDRM.multTransB(wInverse, rMatrix, wInverseRTranspose);
             }
 
             // LHS
             leftSide.reshape(activeConstraintSize, activeConstraintSize);
-            CommonOps.mult(-1, rMatrix, wInverseRTranspose, leftSide);
+            CommonOps_DDRM.mult(-1, rMatrix, wInverseRTranspose, leftSide);
 
             // RHS
             rightSide.reshape(activeConstraintSize, 1);
             rightSide.set(eVector);
-            CommonOps.multAddTransA(wInverseRTranspose, gVector, rightSide);
+            CommonOps_DDRM.multAddTransA(wInverseRTranspose, gVector, rightSide);
             linearSolver.setA(leftSide);
             linearSolver.solve(rightSide, alphaAndGamma);
 
             // solve z from alphaAndGamma
             solutionVector.set(minusWInverseG);
-            CommonOps.multAdd(-1, wInverseRTranspose, alphaAndGamma, solutionVector);
+            CommonOps_DDRM.multAdd(-1, wInverseRTranspose, alphaAndGamma, solutionVector);
          }
 
          else
          {
-            CommonOps.mult(-1, wInverse, gVector, solutionVector);
+            CommonOps_DDRM.mult(-1, wInverse, gVector, solutionVector);
          }
 
          iterations++;
@@ -195,8 +195,8 @@ public class SimpleActiveSetQPStandaloneSolver
       return count;
    }
 
-   protected static void setPartialMatrixForInequalityConstraints(DenseMatrix64F fromMatrix, boolean[] isActiveRowInMatrix, int startRow, int startColumn,
-                                                                  DenseMatrix64F toMatrix)
+   protected static void setPartialMatrixForInequalityConstraints(DMatrixRMaj fromMatrix, boolean[] isActiveRowInMatrix, int startRow, int startColumn,
+                                                                  DMatrixRMaj toMatrix)
    {
       int activeRow = 0;
 
@@ -204,7 +204,7 @@ public class SimpleActiveSetQPStandaloneSolver
       {
          if (isActiveRowInMatrix[i])
          {
-            CommonOps.extract(fromMatrix, i, i + 1, 0, fromMatrix.numCols, toMatrix, startRow + activeRow, startColumn);
+            CommonOps_DDRM.extract(fromMatrix, i, i + 1, 0, fromMatrix.numCols, toMatrix, startRow + activeRow, startColumn);
 
             //          for (int j = 0; j < fromMatrix.numCols; j++)
             //          {
@@ -216,7 +216,7 @@ public class SimpleActiveSetQPStandaloneSolver
 
    }
 
-   protected void setPartialVectorForInequalityConstraints(DenseMatrix64F fromVector, boolean[] isActiveRowInVector, int startRow, DenseMatrix64F toVector)
+   protected void setPartialVectorForInequalityConstraints(DMatrixRMaj fromVector, boolean[] isActiveRowInVector, int startRow, DMatrixRMaj toVector)
    {
       int activeRow = 0;
 

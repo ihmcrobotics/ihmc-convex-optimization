@@ -3,8 +3,8 @@ package us.ihmc.convexOptimization.quadraticProgram;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 import org.junit.jupiter.api.Test;
 
 import us.ihmc.commons.MathTools;
@@ -21,12 +21,12 @@ public class ConstrainedQPSolverTest
       int numberOfEqualityConstraints = 1;
       int numberOfVariables = 2;
 
-      DenseMatrix64F Q = new DenseMatrix64F(numberOfVariables, numberOfVariables, true, 1, 0, 0, 1);
-      DenseMatrix64F f = new DenseMatrix64F(numberOfVariables, 1, true, 1, 0);
-      DenseMatrix64F Aeq = new DenseMatrix64F(numberOfEqualityConstraints, numberOfVariables, true, 1, 1);
-      DenseMatrix64F beq = new DenseMatrix64F(numberOfEqualityConstraints, 1, true, 0);
-      DenseMatrix64F Ain = new DenseMatrix64F(numberOfInequalityConstraints, numberOfVariables, true, 2, 1);
-      DenseMatrix64F bin = new DenseMatrix64F(numberOfInequalityConstraints, 1, true, 0);
+      DMatrixRMaj Q = new DMatrixRMaj(numberOfVariables, numberOfVariables, true, 1, 0, 0, 1);
+      DMatrixRMaj f = new DMatrixRMaj(numberOfVariables, 1, true, 1, 0);
+      DMatrixRMaj Aeq = new DMatrixRMaj(numberOfEqualityConstraints, numberOfVariables, true, 1, 1);
+      DMatrixRMaj beq = new DMatrixRMaj(numberOfEqualityConstraints, 1, true, 0);
+      DMatrixRMaj Ain = new DMatrixRMaj(numberOfInequalityConstraints, numberOfVariables, true, 2, 1);
+      DMatrixRMaj bin = new DMatrixRMaj(numberOfInequalityConstraints, 1, true, 0);
 
       ConstrainedQPSolver[] optimizers = createSolvers();
       JavaQuadProgSolver solver = new JavaQuadProgSolver();
@@ -35,11 +35,11 @@ public class ConstrainedQPSolverTest
       {
          for (int i = 0; i < optimizers.length; i++)
          {
-            DenseMatrix64F x = new DenseMatrix64F(numberOfVariables, 1, true, -1, 1);
+            DMatrixRMaj x = new DMatrixRMaj(numberOfVariables, 1, true, -1, 1);
             optimizers[i].solve(Q, f, Aeq, beq, Ain, bin, x, false);
             assertArrayEquals(x.getData(), new double[] {-0.5, 0.5}, 1e-10);
          }
-         DenseMatrix64F x = new DenseMatrix64F(numberOfVariables, 1, true, -1, 1);
+         DMatrixRMaj x = new DMatrixRMaj(numberOfVariables, 1, true, -1, 1);
 
          solver.clear();
          solver.setQuadraticCostFunction(Q, f, 0.0);
@@ -62,30 +62,30 @@ public class ConstrainedQPSolverTest
       numberOfEqualityConstraints = 2;
       numberOfVariables = 3;
 
-      Q = new DenseMatrix64F(numberOfVariables, numberOfVariables, true, 1, 0, 1, 0, 1, 2, 1, 3, 7);
-      f = new DenseMatrix64F(numberOfVariables, 1, true, 1, 0, 9);
-      Aeq = new DenseMatrix64F(numberOfEqualityConstraints, numberOfVariables, true, 1, 1, 1, 2, 3, 4);
-      beq = new DenseMatrix64F(numberOfEqualityConstraints, 1, true, 0, 7);
-      Ain = new DenseMatrix64F(numberOfInequalityConstraints, numberOfVariables, true, 2, 1, 3);
-      bin = new DenseMatrix64F(numberOfInequalityConstraints, 1, true, 0);
+      Q = new DMatrixRMaj(numberOfVariables, numberOfVariables, true, 1, 0, 1, 0, 1, 2, 1, 3, 7);
+      f = new DMatrixRMaj(numberOfVariables, 1, true, 1, 0, 9);
+      Aeq = new DMatrixRMaj(numberOfEqualityConstraints, numberOfVariables, true, 1, 1, 1, 2, 3, 4);
+      beq = new DMatrixRMaj(numberOfEqualityConstraints, 1, true, 0, 7);
+      Ain = new DMatrixRMaj(numberOfInequalityConstraints, numberOfVariables, true, 2, 1, 3);
+      bin = new DMatrixRMaj(numberOfInequalityConstraints, 1, true, 0);
 
       for (int repeat = 0; repeat < 10000; repeat++)
       {
          for (int i = 0; i < optimizers.length; i++)
          {
-            DenseMatrix64F x = new DenseMatrix64F(numberOfVariables, 1, true, -1, 1, 3);
+            DMatrixRMaj x = new DMatrixRMaj(numberOfVariables, 1, true, -1, 1, 3);
             optimizers[i].solve(Q, f, Aeq, beq, Ain, bin, x, false);
             assertArrayEquals(x.getData(), new double[] {-7.75, 8.5, -0.75}, 1e-10, "repeat = " + repeat + ", optimizer = " + i);
 
-            DenseMatrix64F bEqualityVerify = new DenseMatrix64F(numberOfEqualityConstraints, 1);
-            CommonOps.mult(Aeq, x, bEqualityVerify);
+            DMatrixRMaj bEqualityVerify = new DMatrixRMaj(numberOfEqualityConstraints, 1);
+            CommonOps_DDRM.mult(Aeq, x, bEqualityVerify);
 
             // Verify Ax=b Equality constraints hold:
             MatrixTestTools.assertMatrixEquals(bEqualityVerify, beq, 1e-7);
 
             // Verify Ax<b Inequality constraints hold:
-            DenseMatrix64F bInequalityVerify = new DenseMatrix64F(numberOfInequalityConstraints, 1);
-            CommonOps.mult(Ain, x, bInequalityVerify);
+            DMatrixRMaj bInequalityVerify = new DMatrixRMaj(numberOfInequalityConstraints, 1);
+            CommonOps_DDRM.mult(Ain, x, bInequalityVerify);
 
             for (int j = 0; j < bInequalityVerify.getNumRows(); j++)
             {
@@ -95,7 +95,7 @@ public class ConstrainedQPSolverTest
 
          if (optimizers.length > 0)
          {
-            DenseMatrix64F x = new DenseMatrix64F(numberOfVariables, 1, true, -1, 1, 3);
+            DMatrixRMaj x = new DMatrixRMaj(numberOfVariables, 1, true, -1, 1, 3);
 
             solver.clear();
             solver.setQuadraticCostFunction(Q, f, 0.0);
@@ -105,15 +105,15 @@ public class ConstrainedQPSolverTest
             //solver.solve(Q, f, 0.0, Aeq, beq, Ain, bin, x, false);
             assertArrayEquals(x.getData(), new double[] {-7.75, 8.5, -0.75}, 1e-10, "repeat = " + repeat + ", Java solver");
 
-            DenseMatrix64F bEqualityVerify = new DenseMatrix64F(numberOfEqualityConstraints, 1);
-            CommonOps.mult(Aeq, x, bEqualityVerify);
+            DMatrixRMaj bEqualityVerify = new DMatrixRMaj(numberOfEqualityConstraints, 1);
+            CommonOps_DDRM.mult(Aeq, x, bEqualityVerify);
 
             // Verify Ax=b Equality constraints hold:
             MatrixTestTools.assertMatrixEquals(bEqualityVerify, beq, 1e-7);
 
             // Verify Ax<b Inequality constraints hold:
-            DenseMatrix64F bInequalityVerify = new DenseMatrix64F(numberOfInequalityConstraints, 1);
-            CommonOps.mult(Ain, x, bInequalityVerify);
+            DMatrixRMaj bInequalityVerify = new DMatrixRMaj(numberOfInequalityConstraints, 1);
+            CommonOps_DDRM.mult(Ain, x, bInequalityVerify);
 
             for (int j = 0; j < bInequalityVerify.getNumRows(); j++)
             {
@@ -128,10 +128,10 @@ public class ConstrainedQPSolverTest
    {
       // our simple active set solver can not solve this:
       // test problem: x <= -1 and x <= -2
-      DenseMatrix64F Q = new DenseMatrix64F(1, 1);
-      DenseMatrix64F Ain = new DenseMatrix64F(2, 1);
-      DenseMatrix64F bin = new DenseMatrix64F(2, 1);
-      DenseMatrix64F x = new DenseMatrix64F(1, 1);
+      DMatrixRMaj Q = new DMatrixRMaj(1, 1);
+      DMatrixRMaj Ain = new DMatrixRMaj(2, 1);
+      DMatrixRMaj bin = new DMatrixRMaj(2, 1);
+      DMatrixRMaj x = new DMatrixRMaj(1, 1);
 
       Q.set(0, 0, 1.0);
       Ain.set(0, 0, 1.0);
@@ -139,9 +139,9 @@ public class ConstrainedQPSolverTest
       bin.set(0, -1.0);
       bin.set(0, -2.0);
 
-      DenseMatrix64F f = new DenseMatrix64F(1, 1);
-      DenseMatrix64F Aeq = new DenseMatrix64F(0, 1);
-      DenseMatrix64F beq = new DenseMatrix64F(0, 1);
+      DMatrixRMaj f = new DMatrixRMaj(1, 1);
+      DMatrixRMaj Aeq = new DMatrixRMaj(0, 1);
+      DMatrixRMaj beq = new DMatrixRMaj(0, 1);
 
       ConstrainedQPSolver[] solvers = createSolvers();
       for (ConstrainedQPSolver solver : solvers)

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -70,18 +70,18 @@ public class ExperimentalSOCPSolverUsingJOptimizerTest
       specialSOCPSolverUsingJOptimizer.setLinearEqualityConstraints(linearEqualityAMatrix, linearEqualityBVector);
 
       // Inequalities
-      DenseMatrix64F surfaceNormal = new DenseMatrix64F(new double[][] {{0.0}, {0.0}, {1.0}});
-      DenseMatrix64F identityMatrix = CommonOps.identity(3);
-      DenseMatrix64F coneInequalityMatrixB = new DenseMatrix64F(3, 3);
+      DMatrixRMaj surfaceNormal = new DMatrixRMaj(new double[][] {{0.0}, {0.0}, {1.0}});
+      DMatrixRMaj identityMatrix = CommonOps_DDRM.identity(3);
+      DMatrixRMaj coneInequalityMatrixB = new DMatrixRMaj(3, 3);
 
-      DenseMatrix64F normalNormalTranspose = new DenseMatrix64F(3, 3);
-      CommonOps.multTransB(surfaceNormal, surfaceNormal, normalNormalTranspose);
+      DMatrixRMaj normalNormalTranspose = new DMatrixRMaj(3, 3);
+      CommonOps_DDRM.multTransB(surfaceNormal, surfaceNormal, normalNormalTranspose);
 
-      CommonOps.subtract(identityMatrix, normalNormalTranspose, coneInequalityMatrixB);
+      CommonOps_DDRM.subtract(identityMatrix, normalNormalTranspose, coneInequalityMatrixB);
 
       double mu = 1.0;
-      DenseMatrix64F coneInequalityVectorU = new DenseMatrix64F(surfaceNormal);
-      CommonOps.scale(mu, coneInequalityVectorU);
+      DMatrixRMaj coneInequalityVectorU = new DMatrixRMaj(surfaceNormal);
+      CommonOps_DDRM.scale(mu, coneInequalityVectorU);
 
       System.out.println("coneInequalityMatrixB = " + coneInequalityMatrixB);
       System.out.println("coneInequalityVectorU = " + coneInequalityVectorU);

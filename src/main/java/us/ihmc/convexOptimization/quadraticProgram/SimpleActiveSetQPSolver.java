@@ -1,6 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 
 public class SimpleActiveSetQPSolver extends AbstractActiveSetQPSolver
 {
@@ -9,7 +9,7 @@ public class SimpleActiveSetQPSolver extends AbstractActiveSetQPSolver
    // by Scott Kuindersma, Frank Permenter, and Russ Tedrakenv.
 
    SimpleActiveSetQPStandaloneSolver solver = new SimpleActiveSetQPStandaloneSolver();
-   DenseMatrix64F solutionVector = new DenseMatrix64F(0);
+   DMatrixRMaj solutionVector = new DMatrixRMaj(0);
 
    @Override
    public double[] solve()

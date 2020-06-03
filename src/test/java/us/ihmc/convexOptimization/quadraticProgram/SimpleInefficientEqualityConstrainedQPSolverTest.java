@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Random;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
-import org.ejml.ops.RandomMatrices;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.junit.jupiter.api.Test;
 
 import us.ihmc.commons.RandomNumbers;
@@ -46,7 +46,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
 
       assertEquals(1, solution.length);
       assertEquals(5.0, solution[0], 1e-7);
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.length, 1);
       solutionMatrix.setData(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
@@ -65,7 +65,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       assertEquals(2, solution.length);
       assertEquals(5.0, solution[0], 1e-7);
       assertEquals(3.0, solution[1], 1e-7);
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.length, 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
@@ -89,7 +89,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       assertEquals(0.5, solution[0], 1e-7);
       assertEquals(0.5, solution[1], 1e-7);
       assertEquals(-1.0, lagrangeMultipliers[0], 1e-7); // Lagrange multiplier is -1.0;
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.length, 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.5, objectiveCost, 1e-7);
@@ -114,7 +114,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       assertEquals(1.0, solution[1], 1e-7);
       assertEquals(-2.0, lagrangeMultipliers[0], 1e-7); // Lagrange multiplier
       assertEquals(0.0, lagrangeMultipliers[1], 1e-7); // Lagrange multiplier
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.length, 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.length, 1);
       solutionMatrix.setData(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -134,12 +134,12 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
          solver.clear();
          int numberOfVariables = 100;
 
-         DenseMatrix64F costQuadraticMatrix = nextDenseMatrix64F(random, numberOfVariables, numberOfVariables);
-         DenseMatrix64F identity = CommonOps.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
-         CommonOps.scale(numberOfVariables, identity);
-         CommonOps.addEquals(costQuadraticMatrix, identity);
+         DMatrixRMaj costQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
+         DMatrixRMaj identity = CommonOps_DDRM.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
+         CommonOps_DDRM.scale(numberOfVariables, identity);
+         CommonOps_DDRM.addEquals(costQuadraticMatrix, identity);
 
-         DenseMatrix64F costLinearVector = nextDenseMatrix64F(random, numberOfVariables, 1);
+         DMatrixRMaj costLinearVector = nextDMatrixRMaj(random, numberOfVariables, 1);
          double quadraticCostScalar = RandomNumbers.nextDouble(random, 30.0);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -150,7 +150,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
 
          assertEquals(numberOfVariables, solution.length);
 
-         DenseMatrix64F solutionMatrix = new DenseMatrix64F(numberOfVariables, 1);
+         DMatrixRMaj solutionMatrix = new DMatrixRMaj(numberOfVariables, 1);
          solutionMatrix.setData(solution);
          double objectiveCost = solver.getObjectiveCost(solutionMatrix);
 
@@ -160,7 +160,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
             solutionWithSmallPerturbation[i] = solution[i] + RandomNumbers.nextDouble(random, 1e-7);
          }
 
-         solutionMatrix = new DenseMatrix64F(numberOfVariables, 1);
+         solutionMatrix = new DMatrixRMaj(numberOfVariables, 1);
          solutionMatrix.setData(solutionWithSmallPerturbation);
          double objectiveCostWithSmallPerturbation = solver.getObjectiveCost(solutionMatrix);
 
@@ -186,18 +186,18 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
          int numberOfVariables = 80;
          int numberOfEqualityConstraints = 16;
 
-         DenseMatrix64F costQuadraticMatrix = nextDenseMatrix64F(random, numberOfVariables, numberOfVariables);
-         DenseMatrix64F identity = CommonOps.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
-         CommonOps.scale(numberOfVariables, identity);
-         CommonOps.addEquals(costQuadraticMatrix, identity);
+         DMatrixRMaj costQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
+         DMatrixRMaj identity = CommonOps_DDRM.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
+         CommonOps_DDRM.scale(numberOfVariables, identity);
+         CommonOps_DDRM.addEquals(costQuadraticMatrix, identity);
 
-         DenseMatrix64F costLinearVector = nextDenseMatrix64F(random, numberOfVariables, 1);
+         DMatrixRMaj costLinearVector = nextDMatrixRMaj(random, numberOfVariables, 1);
          double quadraticCostScalar = RandomNumbers.nextDouble(random, 30.0);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-         DenseMatrix64F linearEqualityConstraintsAMatrix = nextDenseMatrix64F(random, numberOfEqualityConstraints, numberOfVariables);
-         DenseMatrix64F linearEqualityConstraintsBVector = nextDenseMatrix64F(random, numberOfEqualityConstraints, 1);
+         DMatrixRMaj linearEqualityConstraintsAMatrix = nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables);
+         DMatrixRMaj linearEqualityConstraintsBVector = nextDMatrixRMaj(random, numberOfEqualityConstraints, 1);
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
          double[] solution = new double[numberOfVariables];
@@ -207,7 +207,7 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
          assertEquals(numberOfVariables, solution.length);
          assertEquals(numberOfEqualityConstraints, lagrangeMultipliers.length);
 
-         DenseMatrix64F solutionMatrix = new DenseMatrix64F(numberOfVariables, 1);
+         DMatrixRMaj solutionMatrix = new DMatrixRMaj(numberOfVariables, 1);
          solutionMatrix.setData(solution);
          double objectiveCost = solver.getObjectiveCost(solutionMatrix);
 
@@ -221,11 +221,11 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
             solutionWithSmallPerturbation[i] = solution[i] + RandomNumbers.nextDouble(random, 1e-4);
          }
 
-         solutionMatrix = new DenseMatrix64F(numberOfVariables, 1);
+         solutionMatrix = new DMatrixRMaj(numberOfVariables, 1);
          solutionMatrix.setData(solutionWithSmallPerturbation);
 
          verifyEqualityConstraintsDoNotHold(numberOfEqualityConstraints, linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector, solutionMatrix);
-         DenseMatrix64F solutionMatrixProjectedOntoEqualityConstraints = projectOntoEqualityConstraints(solutionMatrix,
+         DMatrixRMaj solutionMatrixProjectedOntoEqualityConstraints = projectOntoEqualityConstraints(solutionMatrix,
                                                                                                         linearEqualityConstraintsAMatrix,
                                                                                                         linearEqualityConstraintsBVector);
          verifyEqualityConstraintsHold(numberOfEqualityConstraints,
@@ -250,8 +250,8 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
 
    }
 
-   private void verifyEqualityConstraintsHold(int numberOfEqualityConstraints, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                              DenseMatrix64F linearEqualityConstraintsBVector, DenseMatrix64F solutionMatrix)
+   private void verifyEqualityConstraintsHold(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                              DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       double maxAbsoluteError = getMaxEqualityConstraintError(numberOfEqualityConstraints,
                                                               linearEqualityConstraintsAMatrix,
@@ -260,8 +260,8 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       assertEquals(0.0, maxAbsoluteError, 1e-5);
    }
 
-   private void verifyEqualityConstraintsDoNotHold(int numberOfEqualityConstraints, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                                   DenseMatrix64F linearEqualityConstraintsBVector, DenseMatrix64F solutionMatrix)
+   private void verifyEqualityConstraintsDoNotHold(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                                   DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       double maxAbsoluteError = getMaxEqualityConstraintError(numberOfEqualityConstraints,
                                                               linearEqualityConstraintsAMatrix,
@@ -270,18 +270,18 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       assertTrue(maxAbsoluteError > 1e-5);
    }
 
-   private double getMaxEqualityConstraintError(int numberOfEqualityConstraints, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                                DenseMatrix64F linearEqualityConstraintsBVector, DenseMatrix64F solutionMatrix)
+   private double getMaxEqualityConstraintError(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                                DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
-      DenseMatrix64F checkMatrix = new DenseMatrix64F(numberOfEqualityConstraints, 1);
-      CommonOps.mult(linearEqualityConstraintsAMatrix, solutionMatrix, checkMatrix);
-      CommonOps.subtractEquals(checkMatrix, linearEqualityConstraintsBVector);
+      DMatrixRMaj checkMatrix = new DMatrixRMaj(numberOfEqualityConstraints, 1);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, solutionMatrix, checkMatrix);
+      CommonOps_DDRM.subtractEquals(checkMatrix, linearEqualityConstraintsBVector);
 
       return getMaxAbsoluteDataEntry(checkMatrix);
    }
 
-   private DenseMatrix64F projectOntoEqualityConstraints(DenseMatrix64F solutionMatrix, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                                         DenseMatrix64F linearEqualityConstraintsBVector)
+   private DMatrixRMaj projectOntoEqualityConstraints(DMatrixRMaj solutionMatrix, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                                         DMatrixRMaj linearEqualityConstraintsBVector)
    {
       int numberOfVariables = solutionMatrix.getNumRows();
       if (linearEqualityConstraintsAMatrix.getNumCols() != numberOfVariables)
@@ -291,30 +291,30 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       if (linearEqualityConstraintsBVector.getNumRows() != numberOfConstraints)
          throw new RuntimeException();
 
-      DenseMatrix64F AZMinusB = new DenseMatrix64F(numberOfConstraints, 1);
-      CommonOps.mult(linearEqualityConstraintsAMatrix, solutionMatrix, AZMinusB);
-      CommonOps.subtractEquals(AZMinusB, linearEqualityConstraintsBVector);
+      DMatrixRMaj AZMinusB = new DMatrixRMaj(numberOfConstraints, 1);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, solutionMatrix, AZMinusB);
+      CommonOps_DDRM.subtractEquals(AZMinusB, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F AATransposeInverse = new DenseMatrix64F(numberOfConstraints, numberOfConstraints);
-      DenseMatrix64F linearEqualityConstraintsAMatrixTranspose = new DenseMatrix64F(linearEqualityConstraintsAMatrix);
-      CommonOps.transpose(linearEqualityConstraintsAMatrixTranspose);
+      DMatrixRMaj AATransposeInverse = new DMatrixRMaj(numberOfConstraints, numberOfConstraints);
+      DMatrixRMaj linearEqualityConstraintsAMatrixTranspose = new DMatrixRMaj(linearEqualityConstraintsAMatrix);
+      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrixTranspose);
 
-      CommonOps.mult(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose, AATransposeInverse);
-      CommonOps.invert(AATransposeInverse);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose, AATransposeInverse);
+      CommonOps_DDRM.invert(AATransposeInverse);
 
-      DenseMatrix64F ATransposeAATransposeInverse = new DenseMatrix64F(numberOfVariables, numberOfConstraints);
-      CommonOps.mult(linearEqualityConstraintsAMatrixTranspose, AATransposeInverse, ATransposeAATransposeInverse);
+      DMatrixRMaj ATransposeAATransposeInverse = new DMatrixRMaj(numberOfVariables, numberOfConstraints);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrixTranspose, AATransposeInverse, ATransposeAATransposeInverse);
 
-      DenseMatrix64F vectorToSubtract = new DenseMatrix64F(numberOfVariables, 1);
-      CommonOps.mult(ATransposeAATransposeInverse, AZMinusB, vectorToSubtract);
+      DMatrixRMaj vectorToSubtract = new DMatrixRMaj(numberOfVariables, 1);
+      CommonOps_DDRM.mult(ATransposeAATransposeInverse, AZMinusB, vectorToSubtract);
 
-      DenseMatrix64F projectedSolutionMatrix = new DenseMatrix64F(solutionMatrix);
-      CommonOps.subtractEquals(projectedSolutionMatrix, vectorToSubtract);
+      DMatrixRMaj projectedSolutionMatrix = new DMatrixRMaj(solutionMatrix);
+      CommonOps_DDRM.subtractEquals(projectedSolutionMatrix, vectorToSubtract);
 
       return projectedSolutionMatrix;
    }
 
-   private double getMaxAbsoluteDataEntry(DenseMatrix64F matrix)
+   private double getMaxAbsoluteDataEntry(DMatrixRMaj matrix)
    {
       int numberOfRows = matrix.getNumRows();
       int numberOfColumns = matrix.getNumCols();
@@ -336,18 +336,18 @@ public class SimpleInefficientEqualityConstrainedQPSolverTest
       return max;
    }
 
-   public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns)
+   public static DMatrixRMaj nextDMatrixRMaj(Random random, int numberOfRows, int numberOfColumns)
    {
-      return nextDenseMatrix64F(random, numberOfRows, numberOfColumns, 1.0);
+      return nextDMatrixRMaj(random, numberOfRows, numberOfColumns, 1.0);
    }
 
-   public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns, double maxAbsoluteValue)
+   public static DMatrixRMaj nextDMatrixRMaj(Random random, int numberOfRows, int numberOfColumns, double maxAbsoluteValue)
    {
-      return RandomMatrices.createRandom(numberOfRows, numberOfColumns, -maxAbsoluteValue, maxAbsoluteValue, random);
+      return RandomMatrices_DDRM.rectangle(numberOfRows, numberOfColumns, -maxAbsoluteValue, maxAbsoluteValue, random);
    }
 
-   public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns, double boundaryOne, double boundaryTwo)
+   public static DMatrixRMaj nextDMatrixRMaj(Random random, int numberOfRows, int numberOfColumns, double boundaryOne, double boundaryTwo)
    {
-      return RandomMatrices.createRandom(numberOfRows, numberOfColumns, boundaryOne, boundaryTwo, random);
+      return RandomMatrices_DDRM.rectangle(numberOfRows, numberOfColumns, boundaryOne, boundaryTwo, random);
    }
 }

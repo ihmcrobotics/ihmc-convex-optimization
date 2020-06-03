@@ -1,6 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 
 /**
  * General interface for a QP solver using under the hood an active set approach, see:
@@ -99,7 +99,7 @@ public interface ActiveSetQPSolver
     * @param xMin the lower bound for the problem's variables. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLowerBounds(DenseMatrix64F xMin);
+   void setLowerBounds(DMatrixRMaj xMin);
 
    /**
     * Sets the N-by-1 vector used to enforce an upper bound on the problem's variables:
@@ -113,7 +113,7 @@ public interface ActiveSetQPSolver
     * @param xMax the upper bound for the problem's variables. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setUpperBounds(DenseMatrix64F xMax);
+   void setUpperBounds(DMatrixRMaj xMax);
 
    /**
     * Sets the N-by-1 vectors used to enforce a lower and upper bounds on the problem's variables:
@@ -129,7 +129,7 @@ public interface ActiveSetQPSolver
     * @param xMax the upper bound for the problem's variables. Not modified.
     * @see ActiveSetQPSolver
     */
-   default void setVariableBounds(DenseMatrix64F xMin, DenseMatrix64F xMax)
+   default void setVariableBounds(DMatrixRMaj xMin, DMatrixRMaj xMax)
    {
       setLowerBounds(xMin);
       setUpperBounds(xMax);
@@ -149,7 +149,7 @@ public interface ActiveSetQPSolver
     * @param f is the N-by-1 gradient vector.
     * @see ActiveSetQPSolver
     */
-   default void setQuadraticCostFunction(DenseMatrix64F H, DenseMatrix64F f)
+   default void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f)
    {
       setQuadraticCostFunction(H, f, 0.0);
    }
@@ -169,7 +169,7 @@ public interface ActiveSetQPSolver
     * @param c is a scalar constant, that is typically equal to zero.
     * @see ActiveSetQPSolver
     */
-   void setQuadraticCostFunction(DenseMatrix64F H, DenseMatrix64F f, double c);
+   void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f, double c);
 
    /**
     * Configures the linear equality constraints:
@@ -188,7 +188,7 @@ public interface ActiveSetQPSolver
     * @param beq is a M<sub>eq</sub>-by-1 vector. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLinearEqualityConstraints(DenseMatrix64F Aeq, DenseMatrix64F beq);
+   void setLinearEqualityConstraints(DMatrixRMaj Aeq, DMatrixRMaj beq);
 
    /**
     * Configures the linear inequality constraints:
@@ -207,7 +207,7 @@ public interface ActiveSetQPSolver
     * @param bin is a M<sub>in</sub>-by-1 vector. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLinearInequalityConstraints(DenseMatrix64F Ain, DenseMatrix64F bin);
+   void setLinearInequalityConstraints(DMatrixRMaj Ain, DMatrixRMaj bin);
 
    /**
     * With the problem previously formulated, solves the objective function for {@code x}:
@@ -248,14 +248,14 @@ public interface ActiveSetQPSolver
     *                been reached before finding a solution to the problem. Modified.
     * @return the number of iterations it took to find the solution. An iteration is defined as a
     *         change in the active-set.
-    * @see #setQuadraticCostFunction(DenseMatrix64F, DenseMatrix64F)
-    * @see #setLinearInequalityConstraints(DenseMatrix64F, DenseMatrix64F)
-    * @see #setLinearEqualityConstraints(DenseMatrix64F, DenseMatrix64F)
-    * @see #setLowerBounds(DenseMatrix64F)
-    * @see #setUpperBounds(DenseMatrix64F)
+    * @see #setQuadraticCostFunction(DMatrixRMaj, DMatrixRMaj)
+    * @see #setLinearInequalityConstraints(DMatrixRMaj, DMatrixRMaj)
+    * @see #setLinearEqualityConstraints(DMatrixRMaj, DMatrixRMaj)
+    * @see #setLowerBounds(DMatrixRMaj)
+    * @see #setUpperBounds(DMatrixRMaj)
     * @see ActiveSetQPSolver
     */
-   int solve(DenseMatrix64F xToPack);
+   int solve(DMatrixRMaj xToPack);
 
    /**
     * Calculates the cost from the objective function given value for {@code x}:
@@ -267,7 +267,7 @@ public interface ActiveSetQPSolver
     * @param x is a N-by-1 vector. Not modified.
     * @return the cost value.
     */
-   double getObjectiveCost(DenseMatrix64F x);
+   double getObjectiveCost(DMatrixRMaj x);
 
    /**
     * <b>This is for advanced users or testing only.</b>
@@ -279,7 +279,7 @@ public interface ActiveSetQPSolver
     *                                resulting from the last solve are stored, where M<sub>eq</sub> is
     *                                the number of equality constraints. Modified.
     */
-   void getLagrangeEqualityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack);
+   void getLagrangeEqualityConstraintMultipliers(DMatrixRMaj multipliersMatrixToPack);
 
    /**
     * <b>This is for advanced users or testing only.</b>
@@ -291,7 +291,7 @@ public interface ActiveSetQPSolver
     *                                resulting from the last solve are stored, where M*<sub>in</sub> is
     *                                the number of active inequality constraints. Modified.
     */
-   void getLagrangeInequalityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack);
+   void getLagrangeInequalityConstraintMultipliers(DMatrixRMaj multipliersMatrixToPack);
 
    /**
     * <b>This is for advanced users or testing only.</b>
@@ -303,7 +303,7 @@ public interface ActiveSetQPSolver
     *                                from the last solve are stored, where N* is the number of active
     *                                lower bound constraints. Modified.
     */
-   void getLagrangeLowerBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack);
+   void getLagrangeLowerBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack);
 
    /**
     * <b>This is for advanced users or testing only.</b>
@@ -315,5 +315,5 @@ public interface ActiveSetQPSolver
     *                                from the last solve are stored, where N* is the number of active
     *                                upper bound constraints. Modified.
     */
-   void getLagrangeUpperBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack);
+   void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack);
 }

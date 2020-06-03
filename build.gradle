@@ -14,20 +14,21 @@ ihmc {
 }
 
 mainDependencies {
-   api("org.ejml:dense64:0.30")
+   api("org.ejml:ejml-core:0.39")
+   api("org.ejml:ejml-ddense:0.39")
    api("net.sf.trove4j:trove4j:3.0.3")
 
    api("org.ojalgo:ojalgo:40.0.0")
    api("com.github.vincentfk:joptimizer:3.3.0")
 
-   api("us.ihmc:euclid:0.14.2")
+   api("us.ihmc:euclid:0.14.2-ejml-0.39-beta-1")
    api("us.ihmc:ihmc-commons:0.29.0")
-   api("us.ihmc:euclid-frame:0.14.2")
-   api("us.ihmc:ihmc-matrix-library:0.16.0")
+   api("us.ihmc:euclid-frame:0.14.2-ejml-0.39-beta-1")
+   api("us.ihmc:ihmc-matrix-library:0.16.0-ejml-0.39-beta-2")
    api("us.ihmc:ihmc-native-library-loader:1.2.1")
-   api("us.ihmc:ihmc-optimizer-wrappers:0.0.30")
+   api("us.ihmc:ihmc-optimizer-wrappers:0.0.30-ejml-0.39-beta-1")
 }
 
 testDependencies {
-   api("us.ihmc:ihmc-matrix-library-test:0.16.0")
+   api("us.ihmc:ihmc-matrix-library-test:0.16.0-ejml-0.39-beta-2")
 }

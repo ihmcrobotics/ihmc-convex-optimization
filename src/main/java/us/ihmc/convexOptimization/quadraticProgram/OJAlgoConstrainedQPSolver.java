@@ -1,6 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 import org.ojalgo.matrix.store.PrimitiveDenseStore;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.convex.ConvexSolver;
@@ -18,7 +18,7 @@ public class OJAlgoConstrainedQPSolver extends ConstrainedQPSolver
    }
 
    @Override
-   public int solve(DenseMatrix64F Q, DenseMatrix64F f, DenseMatrix64F Aeq, DenseMatrix64F beq, DenseMatrix64F Ain, DenseMatrix64F bin, DenseMatrix64F x,
+   public int solve(DMatrixRMaj Q, DMatrixRMaj f, DMatrixRMaj Aeq, DMatrixRMaj beq, DMatrixRMaj Ain, DMatrixRMaj bin, DMatrixRMaj x,
                     boolean initialize)
          throws NoConvergenceException
    {
@@ -31,8 +31,8 @@ public class OJAlgoConstrainedQPSolver extends ConstrainedQPSolver
    }
 
    @Override
-   public int solve(DenseMatrix64F Q, DenseMatrix64F f, DenseMatrix64F Aeq, DenseMatrix64F beq, DenseMatrix64F Ain, DenseMatrix64F bin, DenseMatrix64F lb,
-                    DenseMatrix64F ub, DenseMatrix64F x, boolean initialize)
+   public int solve(DMatrixRMaj Q, DMatrixRMaj f, DMatrixRMaj Aeq, DMatrixRMaj beq, DMatrixRMaj Ain, DMatrixRMaj bin, DMatrixRMaj lb,
+                    DMatrixRMaj ub, DMatrixRMaj x, boolean initialize)
          throws NoConvergenceException
    {
       return 0;

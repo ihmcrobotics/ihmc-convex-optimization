@@ -1,18 +1,18 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import us.ihmc.matrixlib.MatrixTools;
 
 public class SimpleInefficientEqualityConstrainedQPSolver
 {
-   private final DenseMatrix64F quadraticCostQMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F quadraticCostQVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj quadraticCostQMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj quadraticCostQVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F linearEqualityConstraintsAMatrixTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F linearEqualityConstraintsBVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj linearEqualityConstraintsAMatrixTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj linearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
 
    private double quadraticCostScalar;
 
@@ -43,18 +43,18 @@ public class SimpleInefficientEqualityConstrainedQPSolver
    {
       assertCorrectSize(quadraticCostFunctionWMatrix);
       assertCorrectSize(quadraticCostFunctionGVector);
-      setQuadraticCostFunction(new DenseMatrix64F(quadraticCostFunctionWMatrix), MatrixTools.createVector(quadraticCostFunctionGVector), quadraticCostScalar);
+      setQuadraticCostFunction(new DMatrixRMaj(quadraticCostFunctionWMatrix), MatrixTools.createVector(quadraticCostFunctionGVector), quadraticCostScalar);
    }
 
-   public void setQuadraticCostFunction(DenseMatrix64F quadraticCostQMatrix, DenseMatrix64F quadraticCostQVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrixRMaj quadraticCostQMatrix, DMatrixRMaj quadraticCostQVector, double quadraticCostScalar)
    {
       setAndAssertCorrectNumberOfVariablesToSolve(quadraticCostQMatrix.numCols);
       setAndAssertCorrectNumberOfVariablesToSolve(quadraticCostQMatrix.numRows);
       setAndAssertCorrectNumberOfVariablesToSolve(quadraticCostQVector.numRows);
-      DenseMatrix64F symCostQuadraticMatrix = new DenseMatrix64F(quadraticCostQMatrix);
-      CommonOps.transpose(symCostQuadraticMatrix);
-      CommonOps.add(quadraticCostQMatrix, symCostQuadraticMatrix, symCostQuadraticMatrix);
-      CommonOps.scale(0.5, symCostQuadraticMatrix);
+      DMatrixRMaj symCostQuadraticMatrix = new DMatrixRMaj(quadraticCostQMatrix);
+      CommonOps_DDRM.transpose(symCostQuadraticMatrix);
+      CommonOps_DDRM.add(quadraticCostQMatrix, symCostQuadraticMatrix, symCostQuadraticMatrix);
+      CommonOps_DDRM.scale(0.5, symCostQuadraticMatrix);
       this.quadraticCostQMatrix.set(symCostQuadraticMatrix);
       this.quadraticCostQVector.set(quadraticCostQVector);
       this.quadraticCostScalar = quadraticCostScalar;
@@ -65,15 +65,15 @@ public class SimpleInefficientEqualityConstrainedQPSolver
       assertCorrectColumnSize(linearEqualityConstraintsAMatrix);
       if (linearEqualityConstraintsAMatrix.length != linearEqualityConstraintsBVector.length)
          throw new RuntimeException();
-      setLinearEqualityConstraints(new DenseMatrix64F(linearEqualityConstraintsAMatrix), MatrixTools.createVector(linearEqualityConstraintsBVector));
+      setLinearEqualityConstraints(new DMatrixRMaj(linearEqualityConstraintsAMatrix), MatrixTools.createVector(linearEqualityConstraintsBVector));
    }
 
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       setAndAssertCorrectNumberOfVariablesToSolve(linearEqualityConstraintsAMatrix.numCols);
       this.linearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
       this.linearEqualityConstraintsAMatrix.set(linearEqualityConstraintsAMatrix);
-      linearEqualityConstraintsAMatrixTranspose.set(CommonOps.transpose(linearEqualityConstraintsAMatrix, null));
+      linearEqualityConstraintsAMatrixTranspose.set(CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, null));
    }
 
    //   protected int getLinearEqualityConstraintsSize()
@@ -140,8 +140,8 @@ public class SimpleInefficientEqualityConstrainedQPSolver
       if (lagrangeMultipliersToPack.length != numberOfEqualityConstraints)
          throw new RuntimeException("lagrangeMultipliersToPack.length != numberOfEqualityConstraints");
 
-      DenseMatrix64F solution = new DenseMatrix64F(numberOfVariables, 1);
-      DenseMatrix64F lagrangeMultipliers = new DenseMatrix64F(numberOfEqualityConstraints, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(numberOfVariables, 1);
+      DMatrixRMaj lagrangeMultipliers = new DMatrixRMaj(numberOfEqualityConstraints, 1);
 
       solve(solution, lagrangeMultipliers);
 
@@ -160,7 +160,7 @@ public class SimpleInefficientEqualityConstrainedQPSolver
       }
    }
 
-   public void solve(DenseMatrix64F xSolutionToPack, DenseMatrix64F lagrangeMultipliersToPack)
+   public void solve(DMatrixRMaj xSolutionToPack, DMatrixRMaj lagrangeMultipliersToPack)
    {
       int numberOfVariables = quadraticCostQMatrix.getNumCols();
       if (numberOfVariables != quadraticCostQMatrix.getNumRows())
@@ -178,29 +178,29 @@ public class SimpleInefficientEqualityConstrainedQPSolver
       if (quadraticCostQVector.getNumCols() != 1)
          throw new RuntimeException("quadraticCostQVector.getNumCols() != 1");
 
-      DenseMatrix64F negativeQuadraticCostQVector = new DenseMatrix64F(quadraticCostQVector);
-      CommonOps.scale(-1.0, negativeQuadraticCostQVector);
+      DMatrixRMaj negativeQuadraticCostQVector = new DMatrixRMaj(quadraticCostQVector);
+      CommonOps_DDRM.scale(-1.0, negativeQuadraticCostQVector);
 
       if (numberOfEqualityConstraints == 0)
       {
          xSolutionToPack.reshape(numberOfVariables, 1);
-         CommonOps.solve(quadraticCostQMatrix, negativeQuadraticCostQVector, xSolutionToPack);
+         CommonOps_DDRM.solve(quadraticCostQMatrix, negativeQuadraticCostQVector, xSolutionToPack);
          return;
       }
 
-      CommonOps.transpose(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose);
-      DenseMatrix64F bigMatrix = new DenseMatrix64F(numberOfVariables + numberOfEqualityConstraints, numberOfVariables + numberOfEqualityConstraints);
-      DenseMatrix64F bigVector = new DenseMatrix64F(numberOfVariables + numberOfEqualityConstraints, 1);
+      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose);
+      DMatrixRMaj bigMatrix = new DMatrixRMaj(numberOfVariables + numberOfEqualityConstraints, numberOfVariables + numberOfEqualityConstraints);
+      DMatrixRMaj bigVector = new DMatrixRMaj(numberOfVariables + numberOfEqualityConstraints, 1);
 
-      CommonOps.insert(quadraticCostQMatrix, bigMatrix, 0, 0);
-      CommonOps.insert(linearEqualityConstraintsAMatrix, bigMatrix, numberOfVariables, 0);
-      CommonOps.insert(linearEqualityConstraintsAMatrixTranspose, bigMatrix, 0, numberOfVariables);
+      CommonOps_DDRM.insert(quadraticCostQMatrix, bigMatrix, 0, 0);
+      CommonOps_DDRM.insert(linearEqualityConstraintsAMatrix, bigMatrix, numberOfVariables, 0);
+      CommonOps_DDRM.insert(linearEqualityConstraintsAMatrixTranspose, bigMatrix, 0, numberOfVariables);
 
-      CommonOps.insert(negativeQuadraticCostQVector, bigVector, 0, 0);
-      CommonOps.insert(linearEqualityConstraintsBVector, bigVector, numberOfVariables, 0);
+      CommonOps_DDRM.insert(negativeQuadraticCostQVector, bigVector, 0, 0);
+      CommonOps_DDRM.insert(linearEqualityConstraintsBVector, bigVector, numberOfVariables, 0);
 
-      DenseMatrix64F xAndLagrangeMultiplierSolution = new DenseMatrix64F(numberOfVariables + numberOfEqualityConstraints, 1);
-      CommonOps.solve(bigMatrix, bigVector, xAndLagrangeMultiplierSolution);
+      DMatrixRMaj xAndLagrangeMultiplierSolution = new DMatrixRMaj(numberOfVariables + numberOfEqualityConstraints, 1);
+      CommonOps_DDRM.solve(bigMatrix, bigVector, xAndLagrangeMultiplierSolution);
 
       for (int i = 0; i < numberOfVariables; i++)
       {
@@ -213,7 +213,7 @@ public class SimpleInefficientEqualityConstrainedQPSolver
       }
    }
 
-   //   protected static void setPartialMatrix(double[][] fromMatrix, int startRow, int startColumn, DenseMatrix64F toMatrix)
+   //   protected static void setPartialMatrix(double[][] fromMatrix, int startRow, int startColumn, DMatrixRMaj toMatrix)
    //   {
    //      for (int i = 0; i < fromMatrix.length; i++)
    //      {
@@ -224,7 +224,7 @@ public class SimpleInefficientEqualityConstrainedQPSolver
    //      }
    //   }
    //
-   //   protected static void setPartialVector(double[] fromVector, int startRow, DenseMatrix64F toVector)
+   //   protected static void setPartialVector(double[] fromVector, int startRow, DMatrixRMaj toVector)
    //   {
    //      for (int i = 0; i < fromVector.length; i++)
    //      {
@@ -232,13 +232,13 @@ public class SimpleInefficientEqualityConstrainedQPSolver
    //      }
    //   }
 
-   private final DenseMatrix64F computedObjectiveFunctionValue = new DenseMatrix64F(1, 1);
+   private final DMatrixRMaj computedObjectiveFunctionValue = new DMatrixRMaj(1, 1);
 
-   public double getObjectiveCost(DenseMatrix64F x)
+   public double getObjectiveCost(DMatrixRMaj x)
    {
       MatrixTools.multQuad(x, quadraticCostQMatrix, computedObjectiveFunctionValue);
-      CommonOps.scale(0.5, computedObjectiveFunctionValue);
-      CommonOps.multAddTransA(quadraticCostQVector, x, computedObjectiveFunctionValue);
+      CommonOps_DDRM.scale(0.5, computedObjectiveFunctionValue);
+      CommonOps_DDRM.multAddTransA(quadraticCostQVector, x, computedObjectiveFunctionValue);
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
@@ -263,18 +263,18 @@ public class SimpleInefficientEqualityConstrainedQPSolver
    //      assert (numberOfVariablesToSolve > 0);
    //      if (linearEqualityConstraintA == null)
    //      {
-   //         linearEqualityConstraintA = new DenseMatrix64F(0, numberOfVariablesToSolve);
-   //         linearEqualityConstraintATranspose = new DenseMatrix64F(numberOfVariablesToSolve, 0);
-   //         linearEqualityConstraintB = new DenseMatrix64F(0, 1);
+   //         linearEqualityConstraintA = new DMatrixRMaj(0, numberOfVariablesToSolve);
+   //         linearEqualityConstraintATranspose = new DMatrixRMaj(numberOfVariablesToSolve, 0);
+   //         linearEqualityConstraintB = new DMatrixRMaj(0, 1);
    //      }
    //
    //      if (quadraticCostGMatrix == null)
    //      {
-   //         quadraticCostGMatrix = new DenseMatrix64F(numberOfVariablesToSolve, numberOfVariablesToSolve);
+   //         quadraticCostGMatrix = new DMatrixRMaj(numberOfVariablesToSolve, numberOfVariablesToSolve);
    //      }
    //      if (quadraticCostFVector == null)
    //      {
-   //         quadraticCostFVector = new DenseMatrix64F(numberOfVariablesToSolve, 1);
+   //         quadraticCostFVector = new DMatrixRMaj(numberOfVariablesToSolve, 1);
    //      }
    //   }
 

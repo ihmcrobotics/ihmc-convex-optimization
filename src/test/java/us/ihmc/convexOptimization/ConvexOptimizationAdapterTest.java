@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
@@ -32,12 +32,12 @@ public abstract class ConvexOptimizationAdapterTest
    public void qpsFileTest() throws IOException
    {
 
-      DenseMatrix64F beq = new DenseMatrix64F(0, 0);
-      DenseMatrix64F Aeq = new DenseMatrix64F(0, 0);
-      DenseMatrix64F b = new DenseMatrix64F(0, 0);
-      DenseMatrix64F A = new DenseMatrix64F(0, 0);
-      DenseMatrix64F H = new DenseMatrix64F(0, 0);
-      DenseMatrix64F f = new DenseMatrix64F(0, 0);
+      DMatrixRMaj beq = new DMatrixRMaj(0, 0);
+      DMatrixRMaj Aeq = new DMatrixRMaj(0, 0);
+      DMatrixRMaj b = new DMatrixRMaj(0, 0);
+      DMatrixRMaj A = new DMatrixRMaj(0, 0);
+      DMatrixRMaj H = new DMatrixRMaj(0, 0);
+      DMatrixRMaj f = new DMatrixRMaj(0, 0);
 
       File projectDirectory = new File(new File("").getAbsolutePath());
       File yamlQpProblemDirectory = new File(projectDirectory, "/Matlab/YamlQpProblems");
