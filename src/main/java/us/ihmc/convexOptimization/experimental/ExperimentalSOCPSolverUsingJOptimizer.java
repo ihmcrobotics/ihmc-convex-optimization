@@ -2,8 +2,8 @@ package us.ihmc.convexOptimization.experimental;
 
 import java.util.ArrayList;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import com.joptimizer.functions.ConvexMultivariateRealFunction;
 import com.joptimizer.functions.LinearMultivariateRealFunction;
@@ -25,7 +25,7 @@ public class ExperimentalSOCPSolverUsingJOptimizer implements ExperimentalSOCPSo
    }
 
    @Override
-   public void setOptimizationFunctionVectorF(DenseMatrix64F optimizationFunctionVectorF)
+   public void setOptimizationFunctionVectorF(DMatrixRMaj optimizationFunctionVectorF)
    {
       setOptimizationFunctionVectorF(optimizationFunctionVectorF.getData());
    }
@@ -38,7 +38,7 @@ public class ExperimentalSOCPSolverUsingJOptimizer implements ExperimentalSOCPSo
    }
 
    @Override
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityAMatrix, DenseMatrix64F linearEqualityBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityAMatrix, DMatrixRMaj linearEqualityBVector)
    {
       setLinearEqualityConstraints(convertMatrixToTwoDimensionalDoubleArray(linearEqualityAMatrix), linearEqualityBVector.getData());
    }
@@ -60,8 +60,8 @@ public class ExperimentalSOCPSolverUsingJOptimizer implements ExperimentalSOCPSo
          throw new RuntimeException("coneInequalityVectorU must be have correct length!");
       }
 
-      DenseMatrix64F coneInequalityDenseMatrixB = new DenseMatrix64F(coneInequalityMatrixB);
-      DenseMatrix64F coneInequalityVectorUAsDenseMatrix = new DenseMatrix64F(numberOfRows, 1);
+      DMatrixRMaj coneInequalityDenseMatrixB = new DMatrixRMaj(coneInequalityMatrixB);
+      DMatrixRMaj coneInequalityVectorUAsDenseMatrix = new DMatrixRMaj(numberOfRows, 1);
 
       coneInequalityVectorUAsDenseMatrix.setData(coneInequalityVectorU);
 
@@ -69,7 +69,7 @@ public class ExperimentalSOCPSolverUsingJOptimizer implements ExperimentalSOCPSo
    }
 
    @Override
-   public void setSpecialSecondOrderConeInequality(DenseMatrix64F coneInequalityMatrixB, DenseMatrix64F coneInequalityVectorU,
+   public void setSpecialSecondOrderConeInequality(DMatrixRMaj coneInequalityMatrixB, DMatrixRMaj coneInequalityVectorU,
                                                    ArrayList<ConvexMultivariateRealFunction> otherInequalities)
    {
       int numberOfRows = coneInequalityMatrixB.getNumRows();
@@ -94,15 +94,15 @@ public class ExperimentalSOCPSolverUsingJOptimizer implements ExperimentalSOCPSo
 
       // Add the quadratic inequality x^T ( B^TB - uu^T) x <= 0
 
-      DenseMatrix64F coneInequalityMatrixBTransposeB = new DenseMatrix64F(numberOfRows, numberOfColumns);
-      CommonOps.multTransA(coneInequalityMatrixB, coneInequalityMatrixB, coneInequalityMatrixBTransposeB);
+      DMatrixRMaj coneInequalityMatrixBTransposeB = new DMatrixRMaj(numberOfRows, numberOfColumns);
+      CommonOps_DDRM.multTransA(coneInequalityMatrixB, coneInequalityMatrixB, coneInequalityMatrixBTransposeB);
 
-      DenseMatrix64F coneInequalityMatrixUUTranspose = new DenseMatrix64F(numberOfRows, numberOfColumns);
-      CommonOps.multTransB(coneInequalityVectorU, coneInequalityVectorU, coneInequalityMatrixUUTranspose);
+      DMatrixRMaj coneInequalityMatrixUUTranspose = new DMatrixRMaj(numberOfRows, numberOfColumns);
+      CommonOps_DDRM.multTransB(coneInequalityVectorU, coneInequalityVectorU, coneInequalityMatrixUUTranspose);
 
-      DenseMatrix64F quadraticInequalityMatrixP = new DenseMatrix64F(numberOfRows, numberOfColumns);
-      CommonOps.subtract(coneInequalityMatrixBTransposeB, coneInequalityMatrixUUTranspose, quadraticInequalityMatrixP);
-      CommonOps.scale(2.0, quadraticInequalityMatrixP);
+      DMatrixRMaj quadraticInequalityMatrixP = new DMatrixRMaj(numberOfRows, numberOfColumns);
+      CommonOps_DDRM.subtract(coneInequalityMatrixBTransposeB, coneInequalityMatrixUUTranspose, quadraticInequalityMatrixP);
+      CommonOps_DDRM.scale(2.0, quadraticInequalityMatrixP);
 
       double[][] quadraticInequalityMatrixPAsDoubleArray = convertMatrixToTwoDimensionalDoubleArray(quadraticInequalityMatrixP);
 
@@ -163,7 +163,7 @@ public class ExperimentalSOCPSolverUsingJOptimizer implements ExperimentalSOCPSo
       return response.getSolution();
    }
 
-   private double[][] convertMatrixToTwoDimensionalDoubleArray(DenseMatrix64F matrix)
+   private double[][] convertMatrixToTwoDimensionalDoubleArray(DMatrixRMaj matrix)
    {
       int numberOfRows = matrix.getNumRows();
       int numberOfColumns = matrix.getNumCols();

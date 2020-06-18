@@ -2,7 +2,7 @@ package us.ihmc.convexOptimization.quadraticProgram;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -95,18 +95,18 @@ public class JavaQuadProgSolverWithInactiveVariablesTest extends AbstractSimpleA
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);

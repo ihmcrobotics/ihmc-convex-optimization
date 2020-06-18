@@ -1,9 +1,9 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.factory.LinearSolverFactory;
-import org.ejml.interfaces.linsol.LinearSolver;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
 
 import gnu.trove.list.array.TIntArrayList;
 import us.ihmc.matrixlib.DiagonalMatrixTools;
@@ -19,63 +19,63 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
 
    private int maxNumberOfIterations = 10;
 
-   private final DenseMatrix64F quadraticCostQMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F quadraticCostQVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj quadraticCostQMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj quadraticCostQVector = new DMatrixRMaj(0, 0);
    private double quadraticCostScalar;
 
-   private final DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F linearEqualityConstraintsBVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj linearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F linearInequalityConstraintsCMatrixO = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F linearInequalityConstraintsDVectorO = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj linearInequalityConstraintsCMatrixO = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj linearInequalityConstraintsDVectorO = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F variableLowerBounds = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F variableUpperBounds = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj variableLowerBounds = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj variableUpperBounds = new DMatrixRMaj(0, 0);
 
    private final TIntArrayList activeInequalityIndices = new TIntArrayList();
    private final TIntArrayList activeUpperBoundIndices = new TIntArrayList();
    private final TIntArrayList activeLowerBoundIndices = new TIntArrayList();
 
    // Some temporary matrices:
-   private final DenseMatrix64F negativeQuadraticCostQVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj negativeQuadraticCostQVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F linearInequalityConstraintsCheck = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj linearInequalityConstraintsCheck = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F CBar = new DenseMatrix64F(0, 0); // Active inequality constraints
-   private final DenseMatrix64F DBar = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHat = new DenseMatrix64F(0, 0); // Active variable bounds constraints
-   private final DenseMatrix64F DHat = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj CBar = new DMatrixRMaj(0, 0); // Active inequality constraints
+   private final DMatrixRMaj DBar = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CHat = new DMatrixRMaj(0, 0); // Active variable bounds constraints
+   private final DMatrixRMaj DHat = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F ATranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CBarTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHatTranspose = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj ATranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CBarTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CHatTranspose = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F QInverse = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F AQInverse = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F QInverseATranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CBarQInverse = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHatQInverse = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F AQInverseATranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F AQInverseCBarTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F AQInverseCHatTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CBarQInverseATranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHatQInverseATranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F QInverseCBarTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F QInverseCHatTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CBarQInverseCBarTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHatQInverseCHatTranspose = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj QInverse = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj AQInverse = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj QInverseATranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CBarQInverse = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CHatQInverse = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj AQInverseATranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj AQInverseCBarTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj AQInverseCHatTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CBarQInverseATranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CHatQInverseATranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj QInverseCBarTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj QInverseCHatTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CBarQInverseCBarTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CHatQInverseCHatTranspose = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F CBarQInverseCHatTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F CHatQInverseCBarTranspose = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj CBarQInverseCHatTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj CHatQInverseCBarTranspose = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F ATransposeAndCTranspose = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F ATransposeMuAndCTransposeLambda = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj ATransposeAndCTranspose = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj ATransposeMuAndCTransposeLambda = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F bigMatrixForLagrangeMultiplierSolution = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F bigVectorForLagrangeMultiplierSolution = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj bigMatrixForLagrangeMultiplierSolution = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj bigVectorForLagrangeMultiplierSolution = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F tempVector = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F augmentedLagrangeMultipliers = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj tempVector = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj augmentedLagrangeMultipliers = new DMatrixRMaj(0, 0);
 
    private final TIntArrayList inequalityIndicesToAddToActiveSet = new TIntArrayList();
    private final TIntArrayList inequalityIndicesToRemoveFromActiveSet = new TIntArrayList();
@@ -86,9 +86,9 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    private final TIntArrayList lowerBoundIndicesToAddToActiveSet = new TIntArrayList();
    private final TIntArrayList lowerBoundIndicesToRemoveFromActiveSet = new TIntArrayList();
 
-   private final DenseMatrix64F computedObjectiveFunctionValue = new DenseMatrix64F(1, 1);
+   private final DMatrixRMaj computedObjectiveFunctionValue = new DMatrixRMaj(1, 1);
 
-   private final LinearSolver<DenseMatrix64F> solver = LinearSolverFactory.linear(0);
+   private final LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.linear(0);
 
    private boolean useWarmStart = false;
 
@@ -121,7 +121,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setVariableBounds(DenseMatrix64F variableLowerBounds, DenseMatrix64F variableUpperBounds)
+   public void setVariableBounds(DMatrixRMaj variableLowerBounds, DMatrixRMaj variableUpperBounds)
    {
       if (variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -133,7 +133,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setQuadraticCostFunction(DenseMatrix64F costQuadraticMatrix, DenseMatrix64F costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -148,16 +148,16 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public double getObjectiveCost(DenseMatrix64F x)
+   public double getObjectiveCost(DMatrixRMaj x)
    {
       NativeCommonOps.multQuad(x, quadraticCostQMatrix, computedObjectiveFunctionValue);
-      CommonOps.scale(0.5, computedObjectiveFunctionValue);
-      CommonOps.multAddTransA(quadraticCostQVector, x, computedObjectiveFunctionValue);
+      CommonOps_DDRM.scale(0.5, computedObjectiveFunctionValue);
+      CommonOps_DDRM.multAddTransA(quadraticCostQVector, x, computedObjectiveFunctionValue);
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
    @Override
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       if (linearEqualityConstraintsBVector.getNumCols() != 1)
          throw new RuntimeException("linearEqualityConstraintsBVector.getNumCols() != 1");
@@ -171,7 +171,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
    {
       if (linearInequalityConstraintDVector.getNumCols() != 1)
          throw new RuntimeException("linearInequalityConstraintDVector.getNumCols() != 1");
@@ -203,13 +203,13 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       activeLowerBoundIndices.reset();
    }
 
-   private final DenseMatrix64F lagrangeEqualityConstraintMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeInequalityConstraintMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj lagrangeEqualityConstraintMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeInequalityConstraintMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 0);
 
    @Override
-   public int solve(DenseMatrix64F solutionToPack)
+   public int solve(DMatrixRMaj solutionToPack)
    {
       if (!useWarmStart || problemSizeChanged())
          resetActiveSet();
@@ -300,7 +300,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
 
       ATranspose.reshape(linearEqualityConstraintsAMatrix.getNumCols(), linearEqualityConstraintsAMatrix.getNumRows());
-      CommonOps.transpose(linearEqualityConstraintsAMatrix, ATranspose);
+      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, ATranspose);
       QInverse.reshape(numberOfVariables, numberOfVariables);
 
       AQInverse.reshape(numberOfEqualityConstraints, numberOfVariables);
@@ -313,7 +313,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       {
          DiagonalMatrixTools.postMult(linearEqualityConstraintsAMatrix, QInverse, AQInverse);
          DiagonalMatrixTools.preMult(QInverse, ATranspose, QInverseATranspose);
-         CommonOps.mult(AQInverse, ATranspose, AQInverseATranspose);
+         CommonOps_DDRM.mult(AQInverse, ATranspose, AQInverseATranspose);
       }
    }
 
@@ -322,13 +322,13 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       if (CBar.getNumRows() > 0)
       {
          CBarTranspose.reshape(CBar.getNumCols(), CBar.getNumRows());
-         CommonOps.transpose(CBar, CBarTranspose);
+         CommonOps_DDRM.transpose(CBar, CBarTranspose);
 
          AQInverseCBarTranspose.reshape(AQInverse.getNumRows(), CBarTranspose.getNumCols());
-         CommonOps.mult(AQInverse, CBarTranspose, AQInverseCBarTranspose);
+         CommonOps_DDRM.mult(AQInverse, CBarTranspose, AQInverseCBarTranspose);
 
          CBarQInverseATranspose.reshape(CBar.getNumRows(), QInverseATranspose.getNumCols());
-         CommonOps.mult(CBar, QInverseATranspose, CBarQInverseATranspose);
+         CommonOps_DDRM.mult(CBar, QInverseATranspose, CBarQInverseATranspose);
 
          CBarQInverse.reshape(CBar.getNumRows(), QInverse.getNumCols());
          DiagonalMatrixTools.postMult(CBar, QInverse, CBarQInverse);
@@ -337,7 +337,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
          DiagonalMatrixTools.preMult(QInverse, CBarTranspose, QInverseCBarTranspose);
 
          CBarQInverseCBarTranspose.reshape(CBar.getNumRows(), QInverseCBarTranspose.getNumCols());
-         CommonOps.mult(CBar, QInverseCBarTranspose, CBarQInverseCBarTranspose);
+         CommonOps_DDRM.mult(CBar, QInverseCBarTranspose, CBarQInverseCBarTranspose);
       }
       else
       {
@@ -355,13 +355,13 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       if (CHat.getNumRows() > 0)
       {
          CHatTranspose.reshape(CHat.getNumCols(), CHat.getNumRows());
-         CommonOps.transpose(CHat, CHatTranspose);
+         CommonOps_DDRM.transpose(CHat, CHatTranspose);
 
          AQInverseCHatTranspose.reshape(AQInverse.getNumRows(), CHatTranspose.getNumCols());
-         CommonOps.mult(AQInverse, CHatTranspose, AQInverseCHatTranspose);
+         CommonOps_DDRM.mult(AQInverse, CHatTranspose, AQInverseCHatTranspose);
 
          CHatQInverseATranspose.reshape(CHat.getNumRows(), QInverseATranspose.getNumCols());
-         CommonOps.mult(CHat, QInverseATranspose, CHatQInverseATranspose);
+         CommonOps_DDRM.mult(CHat, QInverseATranspose, CHatQInverseATranspose);
 
          CHatQInverse.reshape(CHat.getNumRows(), QInverse.getNumCols());
          DiagonalMatrixTools.postMult(CHat, QInverse, CHatQInverse);
@@ -370,15 +370,15 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
          DiagonalMatrixTools.preMult(QInverse, CHatTranspose, QInverseCHatTranspose);
 
          CHatQInverseCHatTranspose.reshape(CHat.getNumRows(), QInverseCHatTranspose.getNumCols());
-         CommonOps.mult(CHat, QInverseCHatTranspose, CHatQInverseCHatTranspose);
+         CommonOps_DDRM.mult(CHat, QInverseCHatTranspose, CHatQInverseCHatTranspose);
 
          CBarQInverseCHatTranspose.reshape(CBar.getNumRows(), CHat.getNumRows());
          CHatQInverseCBarTranspose.reshape(CHat.getNumRows(), CBar.getNumRows());
 
          if (CBar.getNumRows() > 0)
          {
-            CommonOps.mult(CBar, QInverseCHatTranspose, CBarQInverseCHatTranspose);
-            CommonOps.mult(CHat, QInverseCBarTranspose, CHatQInverseCBarTranspose);
+            CommonOps_DDRM.mult(CBar, QInverseCHatTranspose, CBarQInverseCHatTranspose);
+            CommonOps_DDRM.mult(CHat, QInverseCBarTranspose, CHatQInverseCBarTranspose);
          }
       }
       else
@@ -394,10 +394,10 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       }
    }
 
-   private boolean modifyActiveSetAndTryAgain(DenseMatrix64F solutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                                              DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack,
-                                              DenseMatrix64F lagrangeLowerBoundConstraintMultipliersToPack,
-                                              DenseMatrix64F lagrangeUpperBoundConstraintMultipliersToPack)
+   private boolean modifyActiveSetAndTryAgain(DMatrixRMaj solutionToPack, DMatrixRMaj lagrangeEqualityConstraintMultipliersToPack,
+                                              DMatrixRMaj lagrangeInequalityConstraintMultipliersToPack,
+                                              DMatrixRMaj lagrangeLowerBoundConstraintMultipliersToPack,
+                                              DMatrixRMaj lagrangeUpperBoundConstraintMultipliersToPack)
    {
       if (containsNaN(solutionToPack))
          return false;
@@ -416,8 +416,8 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       {
 
          linearInequalityConstraintsCheck.reshape(numberOfInequalityConstraints, 1);
-         CommonOps.mult(linearInequalityConstraintsCMatrixO, solutionToPack, linearInequalityConstraintsCheck);
-         CommonOps.subtractEquals(linearInequalityConstraintsCheck, linearInequalityConstraintsDVectorO);
+         CommonOps_DDRM.mult(linearInequalityConstraintsCMatrixO, solutionToPack, linearInequalityConstraintsCheck);
+         CommonOps_DDRM.subtractEquals(linearInequalityConstraintsCheck, linearInequalityConstraintsDVectorO);
 
          for (int i = 0; i < numberOfInequalityConstraints; i++)
          {
@@ -540,8 +540,8 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       for (int i = 0; i < sizeOfActiveSet; i++)
       {
          int inequalityConstraintIndex = activeInequalityIndices.get(i);
-         CommonOps.extract(linearInequalityConstraintsCMatrixO, inequalityConstraintIndex, inequalityConstraintIndex + 1, 0, numberOfVariables, CBar, i, 0);
-         CommonOps.extract(linearInequalityConstraintsDVectorO, inequalityConstraintIndex, inequalityConstraintIndex + 1, 0, 1, DBar, i, 0);
+         CommonOps_DDRM.extract(linearInequalityConstraintsCMatrixO, inequalityConstraintIndex, inequalityConstraintIndex + 1, 0, numberOfVariables, CBar, i, 0);
+         CommonOps_DDRM.extract(linearInequalityConstraintsDVectorO, inequalityConstraintIndex, inequalityConstraintIndex + 1, 0, 1, DBar, i, 0);
       }
 
       // Add active bounds constraints as equality constraints:
@@ -585,7 +585,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       return true;
    }
 
-   private boolean containsNaN(DenseMatrix64F solution)
+   private boolean containsNaN(DMatrixRMaj solution)
    {
       for (int i = 0; i < solution.getNumRows(); i++)
       {
@@ -596,10 +596,10 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       return false;
    }
 
-   private void solveEqualityConstrainedSubproblemEfficiently(DenseMatrix64F xSolutionToPack, DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                                                              DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack,
-                                                              DenseMatrix64F lagrangeLowerBoundConstraintMultipliersToPack,
-                                                              DenseMatrix64F lagrangeUpperBoundConstraintMultipliersToPack)
+   private void solveEqualityConstrainedSubproblemEfficiently(DMatrixRMaj xSolutionToPack, DMatrixRMaj lagrangeEqualityConstraintMultipliersToPack,
+                                                              DMatrixRMaj lagrangeInequalityConstraintMultipliersToPack,
+                                                              DMatrixRMaj lagrangeLowerBoundConstraintMultipliersToPack,
+                                                              DMatrixRMaj lagrangeUpperBoundConstraintMultipliersToPack)
    {
       int numberOfVariables = quadraticCostQMatrix.getNumRows();
       int numberOfOriginalEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
@@ -612,7 +612,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
             + numberOfActiveUpperBoundConstraints;
 
       negativeQuadraticCostQVector.set(quadraticCostQVector);
-      CommonOps.scale(-1.0, negativeQuadraticCostQVector);
+      CommonOps_DDRM.scale(-1.0, negativeQuadraticCostQVector);
 
       if (numberOfAugmentedEqualityConstraints == 0)
       {
@@ -626,32 +626,32 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       bigMatrixForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, numberOfAugmentedEqualityConstraints);
       bigVectorForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, 1);
 
-      CommonOps.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
-      CommonOps.insert(AQInverseCBarTranspose, bigMatrixForLagrangeMultiplierSolution, 0, numberOfOriginalEqualityConstraints);
-      CommonOps.insert(AQInverseCHatTranspose,
+      CommonOps_DDRM.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
+      CommonOps_DDRM.insert(AQInverseCBarTranspose, bigMatrixForLagrangeMultiplierSolution, 0, numberOfOriginalEqualityConstraints);
+      CommonOps_DDRM.insert(AQInverseCHatTranspose,
                        bigMatrixForLagrangeMultiplierSolution,
                        0,
                        numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
 
-      CommonOps.insert(CBarQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
-      CommonOps.insert(CBarQInverseCBarTranspose,
+      CommonOps_DDRM.insert(CBarQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
+      CommonOps_DDRM.insert(CBarQInverseCBarTranspose,
                        bigMatrixForLagrangeMultiplierSolution,
                        numberOfOriginalEqualityConstraints,
                        numberOfOriginalEqualityConstraints);
-      CommonOps.insert(CBarQInverseCHatTranspose,
+      CommonOps_DDRM.insert(CBarQInverseCHatTranspose,
                        bigMatrixForLagrangeMultiplierSolution,
                        numberOfOriginalEqualityConstraints,
                        numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
 
-      CommonOps.insert(CHatQInverseATranspose,
+      CommonOps_DDRM.insert(CHatQInverseATranspose,
                        bigMatrixForLagrangeMultiplierSolution,
                        numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
                        0);
-      CommonOps.insert(CHatQInverseCBarTranspose,
+      CommonOps_DDRM.insert(CHatQInverseCBarTranspose,
                        bigMatrixForLagrangeMultiplierSolution,
                        numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
                        numberOfOriginalEqualityConstraints);
-      CommonOps.insert(CHatQInverseCHatTranspose,
+      CommonOps_DDRM.insert(CHatQInverseCHatTranspose,
                        bigMatrixForLagrangeMultiplierSolution,
                        numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
                        numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
@@ -659,31 +659,31 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       if (numberOfOriginalEqualityConstraints > 0)
       {
          tempVector.reshape(numberOfOriginalEqualityConstraints, 1);
-         CommonOps.mult(AQInverse, quadraticCostQVector, tempVector);
-         CommonOps.addEquals(tempVector, linearEqualityConstraintsBVector);
-         CommonOps.scale(-1.0, tempVector);
+         CommonOps_DDRM.mult(AQInverse, quadraticCostQVector, tempVector);
+         CommonOps_DDRM.addEquals(tempVector, linearEqualityConstraintsBVector);
+         CommonOps_DDRM.scale(-1.0, tempVector);
 
-         CommonOps.insert(tempVector, bigVectorForLagrangeMultiplierSolution, 0, 0);
+         CommonOps_DDRM.insert(tempVector, bigVectorForLagrangeMultiplierSolution, 0, 0);
       }
 
       if (numberOfActiveInequalityConstraints > 0)
       {
          tempVector.reshape(numberOfActiveInequalityConstraints, 1);
-         CommonOps.mult(CBarQInverse, quadraticCostQVector, tempVector);
-         CommonOps.addEquals(tempVector, DBar);
-         CommonOps.scale(-1.0, tempVector);
+         CommonOps_DDRM.mult(CBarQInverse, quadraticCostQVector, tempVector);
+         CommonOps_DDRM.addEquals(tempVector, DBar);
+         CommonOps_DDRM.scale(-1.0, tempVector);
 
-         CommonOps.insert(tempVector, bigVectorForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
+         CommonOps_DDRM.insert(tempVector, bigVectorForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
       }
 
       if (numberOfActiveLowerBoundConstraints + numberOfActiveUpperBoundConstraints > 0)
       {
          tempVector.reshape(numberOfActiveLowerBoundConstraints + numberOfActiveUpperBoundConstraints, 1);
-         CommonOps.mult(CHatQInverse, quadraticCostQVector, tempVector);
-         CommonOps.addEquals(tempVector, DHat);
-         CommonOps.scale(-1.0, tempVector);
+         CommonOps_DDRM.mult(CHatQInverse, quadraticCostQVector, tempVector);
+         CommonOps_DDRM.addEquals(tempVector, DHat);
+         CommonOps_DDRM.scale(-1.0, tempVector);
 
-         CommonOps.insert(tempVector, bigVectorForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
+         CommonOps_DDRM.insert(tempVector, bigVectorForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
       }
 
       augmentedLagrangeMultipliers.reshape(numberOfAugmentedEqualityConstraints, 1);
@@ -691,29 +691,29 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       solver.solve(bigVectorForLagrangeMultiplierSolution, augmentedLagrangeMultipliers);
 
       ATransposeAndCTranspose.reshape(numberOfVariables, numberOfAugmentedEqualityConstraints);
-      CommonOps.insert(ATranspose, ATransposeAndCTranspose, 0, 0);
-      CommonOps.insert(CBarTranspose, ATransposeAndCTranspose, 0, numberOfOriginalEqualityConstraints);
-      CommonOps.insert(CHatTranspose, ATransposeAndCTranspose, 0, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
+      CommonOps_DDRM.insert(ATranspose, ATransposeAndCTranspose, 0, 0);
+      CommonOps_DDRM.insert(CBarTranspose, ATransposeAndCTranspose, 0, numberOfOriginalEqualityConstraints);
+      CommonOps_DDRM.insert(CHatTranspose, ATransposeAndCTranspose, 0, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
 
       ATransposeMuAndCTransposeLambda.reshape(numberOfVariables, 1);
-      CommonOps.mult(ATransposeAndCTranspose, augmentedLagrangeMultipliers, ATransposeMuAndCTransposeLambda);
+      CommonOps_DDRM.mult(ATransposeAndCTranspose, augmentedLagrangeMultipliers, ATransposeMuAndCTransposeLambda);
 
       tempVector.set(quadraticCostQVector);
-      CommonOps.scale(-1.0, tempVector);
-      CommonOps.subtractEquals(tempVector, ATransposeMuAndCTransposeLambda);
+      CommonOps_DDRM.scale(-1.0, tempVector);
+      CommonOps_DDRM.subtractEquals(tempVector, ATransposeMuAndCTransposeLambda);
 
       DiagonalMatrixTools.preMult(QInverse, tempVector, xSolutionToPack);
 
       int startRow = 0;
       int numberOfRows = numberOfOriginalEqualityConstraints;
-      CommonOps.extract(augmentedLagrangeMultipliers, startRow, startRow + numberOfRows, 0, 1, lagrangeEqualityConstraintMultipliersToPack, 0, 0);
+      CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow, startRow + numberOfRows, 0, 1, lagrangeEqualityConstraintMultipliersToPack, 0, 0);
 
       startRow += numberOfRows;
       lagrangeInequalityConstraintMultipliersToPack.zero();
       for (int i = 0; i < numberOfActiveInequalityConstraints; i++)
       {
          int inequalityConstraintIndex = activeInequalityIndices.get(i);
-         CommonOps.extract(augmentedLagrangeMultipliers,
+         CommonOps_DDRM.extract(augmentedLagrangeMultipliers,
                            startRow + i,
                            startRow + i + 1,
                            0,
@@ -728,7 +728,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       for (int i = 0; i < numberOfActiveLowerBoundConstraints; i++)
       {
          int lowerBoundConstraintIndex = activeLowerBoundIndices.get(i);
-         CommonOps.extract(augmentedLagrangeMultipliers,
+         CommonOps_DDRM.extract(augmentedLagrangeMultipliers,
                            startRow + i,
                            startRow + i + 1,
                            0,
@@ -743,7 +743,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       for (int i = 0; i < numberOfActiveUpperBoundConstraints; i++)
       {
          int upperBoundConstraintIndex = activeUpperBoundIndices.get(i);
-         CommonOps.extract(augmentedLagrangeMultipliers,
+         CommonOps_DDRM.extract(augmentedLagrangeMultipliers,
                            startRow + i,
                            startRow + i + 1,
                            0,
@@ -755,25 +755,25 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void getLagrangeEqualityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeEqualityConstraintMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeEqualityConstraintMultipliers);
    }
 
    @Override
-   public void getLagrangeInequalityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeInequalityConstraintMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeInequalityConstraintMultipliers);
    }
 
    @Override
-   public void getLagrangeLowerBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeLowerBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeLowerBoundMultipliers);
    }
 
    @Override
-   public void getLagrangeUpperBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeUpperBoundMultipliers);
    }

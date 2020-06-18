@@ -1,7 +1,7 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import us.ihmc.convexOptimization.QuadProgWrapper;
 import us.ihmc.convexOptimization.exceptions.NoConvergenceException;
@@ -14,7 +14,7 @@ public class QuadProgSolver extends ConstrainedQPSolver
     */
 
    QuadProgWrapper qpWrapper;
-   DenseMatrix64F negAin = new DenseMatrix64F(0), negAeq = new DenseMatrix64F(0);
+   DMatrixRMaj negAin = new DMatrixRMaj(0), negAeq = new DMatrixRMaj(0);
 
    public QuadProgSolver()
    {
@@ -41,7 +41,7 @@ public class QuadProgSolver extends ConstrainedQPSolver
    }
 
    @Override
-   public int solve(DenseMatrix64F Q, DenseMatrix64F f, DenseMatrix64F Aeq, DenseMatrix64F beq, DenseMatrix64F Ain, DenseMatrix64F bin, DenseMatrix64F x,
+   public int solve(DMatrixRMaj Q, DMatrixRMaj f, DMatrixRMaj Aeq, DMatrixRMaj beq, DMatrixRMaj Ain, DMatrixRMaj bin, DMatrixRMaj x,
                     boolean initialize)
          throws NoConvergenceException
    {
@@ -49,17 +49,17 @@ public class QuadProgSolver extends ConstrainedQPSolver
    }
 
    @Override
-   public int solve(DenseMatrix64F Q, DenseMatrix64F f, DenseMatrix64F Aeq, DenseMatrix64F beq, DenseMatrix64F Ain, DenseMatrix64F bin, DenseMatrix64F lb,
-                    DenseMatrix64F ub, DenseMatrix64F x, boolean initialize)
+   public int solve(DMatrixRMaj Q, DMatrixRMaj f, DMatrixRMaj Aeq, DMatrixRMaj beq, DMatrixRMaj Ain, DMatrixRMaj bin, DMatrixRMaj lb,
+                    DMatrixRMaj ub, DMatrixRMaj x, boolean initialize)
          throws NoConvergenceException
    {
 
       allocateTempraryMatrixOnDemand(Q.numCols, Aeq.numRows, Ain.numRows);
 
-      CommonOps.transpose(Aeq, negAeq);
-      CommonOps.scale(-1, negAeq);
-      CommonOps.transpose(Ain, negAin);
-      CommonOps.scale(-1, negAin);
+      CommonOps_DDRM.transpose(Aeq, negAeq);
+      CommonOps_DDRM.scale(-1, negAeq);
+      CommonOps_DDRM.transpose(Ain, negAin);
+      CommonOps_DDRM.scale(-1, negAin);
       return qpWrapper.solve(Q, f, negAeq, beq, negAin, bin, x, initialize);
    }
 

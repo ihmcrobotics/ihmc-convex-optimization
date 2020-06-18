@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Random;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
-import org.ejml.ops.RandomMatrices;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -29,14 +29,14 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F solution = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
       int numberOfIterations = solver.solve(solution);
       numberOfIterations = solver.solve(solution); // Make sure ok to solve twice in a row without changing stuff.
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
@@ -47,13 +47,13 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) = x^2 - 10x + 25
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(-10.0);
       quadraticCostScalar = 25.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -61,20 +61,20 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       assertEquals(1, solution.getNumRows());
       assertEquals(5.0, solution.get(0), 1e-7);
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(-10.0, -6.0);
       quadraticCostScalar = 34.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -83,24 +83,24 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(2, solution.getNumRows());
       assertEquals(5.0, solution.get(0), 1e-7);
       assertEquals(3.0, solution.get(1), 1e-7);
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 1.0
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -109,24 +109,24 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.5, solution.get(0), 1e-7);
       assertEquals(0.5, solution.get(1), 1e-7);
       assertEquals(-1.0, lagrangeEqualityMultipliers.get(0), 1e-7); // Lagrange multiplier is -1.0;
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.5, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0, 0.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(2, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(2, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -137,7 +137,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(1.0, solution.get(1), 1e-7);
       assertEquals(-2.0, lagrangeEqualityMultipliers.get(0), 1e-7); // Lagrange multiplier
       assertEquals(0.0, lagrangeEqualityMultipliers.get(1), 1e-7); // Lagrange multiplier
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -154,18 +154,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x subject to x <= 1
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(1.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
 
       int numberOfIterations = solver.solve(solution);
       numberOfIterations = solver.solve(solution);
@@ -179,18 +179,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x >= 1 (-x <= -1)
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -202,18 +202,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) = x^2 - 10x + 25 subject to x <= 3.0
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(-10.0);
       quadraticCostScalar = 25.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -223,25 +223,25 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(3.0, solution.get(0), 1e-7);
       assertEquals(4.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(4.0, objectiveCost, 1e-7);
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34 subject to x <= 7 y <= 1
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(-10.0, -6.0);
       quadraticCostScalar = 34.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}, {0.0, 1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}, {0.0, 1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(7.0, 1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(2, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(2, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -253,29 +253,29 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, lagrangeInequalityMultipliers.get(0), 1e-7);
       assertEquals(4.0, lagrangeInequalityMultipliers.get(1), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(4.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 1.0, x <= y - 1 (x - y <= -1.0), but with y as inactive
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -287,29 +287,29 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(-1.0, lagrangeEqualityMultipliers.get(0), 1e-7);
       assertEquals(1.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(1.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0, x <= 2, x <= 10, y <= 3
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0, 0.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(2.0, 10.0, 3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(2, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(2, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -324,7 +324,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, lagrangeInequalityMultipliers.get(1), 1e-7);
       assertEquals(0.0, lagrangeInequalityMultipliers.get(2), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -342,20 +342,20 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F variableLowerBounds = MatrixTools.createVector(Double.NEGATIVE_INFINITY);
-      DenseMatrix64F variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
+      DMatrixRMaj variableLowerBounds = MatrixTools.createVector(Double.NEGATIVE_INFINITY);
+      DMatrixRMaj variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      DenseMatrix64F solution = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(1, 1);
 
       int numberOfIterations = solver.solve(solution);
       numberOfIterations = solver.solve(solution);
@@ -372,7 +372,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x >= 1
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -381,11 +381,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       variableUpperBounds = MatrixTools.createVector(Double.POSITIVE_INFINITY);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -400,7 +400,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x <= -1
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -409,11 +409,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       variableUpperBounds = MatrixTools.createVector(-1.0);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -428,7 +428,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to 1 + 1e-12 <= x <= 1 - 1e-12 (Should give valid solution given a little epsilon to allow for roundoff)
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -437,11 +437,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       variableUpperBounds = MatrixTools.createVector(1.0 - 1e-12);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -456,7 +456,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to -1 + 1e-12 <= x <= -1 - 1e-12 (Should give valid solution given a little epsilon to allow for roundoff)
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -465,11 +465,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       variableUpperBounds = MatrixTools.createVector(-1.0 - 1e-12);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -484,7 +484,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^T * x subject to 1 + 1e-7 <= x <= 1 - 1e-7 (Should not give valid solution since this is too much to blame on roundoff)
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -493,11 +493,11 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       variableUpperBounds = MatrixTools.createVector(1.0 - 1e-7);
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
-      solution = new DenseMatrix64F(1, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(1, 1);
+      solution = new DMatrixRMaj(1, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(1, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -513,26 +513,26 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, 1.0, -1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
       solver.setVariableBounds(getLowerBounds(), getUpperBounds());
 
-      solution = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
+      solution = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(3, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(3, 1);
 
       numberOfIterations = solver.solve(solution);
       numberOfIterations = solver.solve(solution);
@@ -560,7 +560,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -568,26 +568,26 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, 3 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, 1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
       solver.setVariableBounds(MatrixTools.createVector(3.0, 6.0, 11.0), getUpperBounds());
 
-      solution = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
+      solution = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(3, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(3, 1);
 
       numberOfIterations = solver.solve(solution);
       numberOfIterations = solver.solve(solution);
@@ -602,7 +602,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertTrue(Double.isNaN(solution.get(1)));
       assertTrue(Double.isNaN(solution.get(2)));
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertTrue(Double.isNaN(objectiveCost));
@@ -621,27 +621,27 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, 1.0, -1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
       solver.setVariableBounds(getLowerBounds(), getUpperBounds());
 
-      DenseMatrix64F solution1 = new DenseMatrix64F(3, 1);
-      DenseMatrix64F solution2 = new DenseMatrix64F(3, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
-      DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution1 = new DMatrixRMaj(3, 1);
+      DMatrixRMaj solution2 = new DMatrixRMaj(3, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(3, 1);
+      DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(3, 1);
 
       int numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -673,7 +673,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -681,25 +681,25 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8  (Remove -5 <= x <= 5, 6 <= y <= 10, 11 <= z)
       solver.clear();
 
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, 1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution1 = new DenseMatrix64F(3, 1);
-      solution2 = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
+      solution1 = new DMatrixRMaj(3, 1);
+      solution2 = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
 
       numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -719,7 +719,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(-8.0, lagrangeEqualityMultipliers.get(0), 1e-7);
       assertEquals(12.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(56.0, objectiveCost, 1e-7);
@@ -727,21 +727,21 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, (Remove y - z <= -8)
       solver.clear();
 
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      solution1 = new DenseMatrix64F(3, 1);
-      solution2 = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
+      solution1 = new DMatrixRMaj(3, 1);
+      solution2 = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
 
       numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -760,7 +760,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, solution1.get(2), 1e-7);
       assertEquals(-2.0, lagrangeEqualityMultipliers.get(0), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
@@ -768,17 +768,17 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 (Remove subject to x + y = 2.0)
       solver.clear();
 
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      solution1 = new DenseMatrix64F(3, 1);
-      solution2 = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
+      solution1 = new DMatrixRMaj(3, 1);
+      solution2 = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
 
       numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -796,22 +796,22 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, solution1.get(1), 1e-7);
       assertEquals(0.0, solution1.get(2), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(0.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0 (Added without clearing)
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      solution1 = new DenseMatrix64F(3, 1);
-      solution2 = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
+      solution1 = new DMatrixRMaj(3, 1);
+      solution2 = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
 
       numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -830,22 +830,22 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, solution1.get(2), 1e-7);
       assertEquals(-2.0, lagrangeEqualityMultipliers.get(0), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(2.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8  (Added without clearing)
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, 1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution1 = new DenseMatrix64F(3, 1);
-      solution2 = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
+      solution1 = new DMatrixRMaj(3, 1);
+      solution2 = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
 
       numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -865,7 +865,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(-8.0, lagrangeEqualityMultipliers.get(0), 1e-7);
       assertEquals(12.0, lagrangeInequalityMultipliers.get(0), 1e-7);
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(56.0, objectiveCost, 1e-7);
@@ -873,12 +873,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z (Added without clearing)
       solver.setVariableBounds(getLowerBounds(), getUpperBounds());
 
-      solution1 = new DenseMatrix64F(3, 1);
-      solution2 = new DenseMatrix64F(3, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
-      lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
+      solution1 = new DMatrixRMaj(3, 1);
+      solution2 = new DMatrixRMaj(3, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      lagrangeLowerBoundMultipliers = new DMatrixRMaj(3, 1);
+      lagrangeUpperBoundMultipliers = new DMatrixRMaj(3, 1);
 
       numberOfIterations = solver.solve(solution1);
       numberOfIterations = solver.solve(solution2);
@@ -910,7 +910,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
-      solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution1);
       objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
@@ -928,22 +928,22 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, y >= 0.5, y >= 3.0, y >= x-3  (-y <= -0.5, -y <= -3.0, x - y <= 3
       solver.clear();
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, -1.0}, {0.0, -1.0}, {1.0, -1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-0.5, -3.0, 3.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, -1.0}, {0.0, -1.0}, {1.0, -1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-0.5, -3.0, 3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       int numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -957,7 +957,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(8.0, lagrangeInequalityMultipliers.get(1), 1e-7);
       assertEquals(0.0, lagrangeInequalityMultipliers.get(2), 1e-7);
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(10.0, objectiveCost, 1e-7);
@@ -985,17 +985,17 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       // Try with other solve method:
       solver.clear();
-      DenseMatrix64F quadraticCostMatrix64F = new DenseMatrix64F(costQuadraticMatrix);
-      DenseMatrix64F linearCostVector64F = new DenseMatrix64F(costLinearVector.getNumRows(), 1);
+      DMatrixRMaj quadraticCostMatrix64F = new DMatrixRMaj(costQuadraticMatrix);
+      DMatrixRMaj linearCostVector64F = new DMatrixRMaj(costLinearVector.getNumRows(), 1);
       linearCostVector64F.set(costLinearVector);
 
       solver.setQuadraticCostFunction(quadraticCostMatrix64F, linearCostVector64F, quadraticCostScalar);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solutionMatrix64F = new DenseMatrix64F(quadraticCostMatrix64F.getNumRows(), 1);
-      DenseMatrix64F lagrangeEqualityMultipliers64F = new DenseMatrix64F(linearEqualityConstraintsAMatrix.getNumRows(), 1);
-      DenseMatrix64F lagrangeInequalityMultipliers64F = new DenseMatrix64F(linearInequalityConstraintsCMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix64F = new DMatrixRMaj(quadraticCostMatrix64F.getNumRows(), 1);
+      DMatrixRMaj lagrangeEqualityMultipliers64F = new DMatrixRMaj(linearEqualityConstraintsAMatrix.getNumRows(), 1);
+      DMatrixRMaj lagrangeInequalityMultipliers64F = new DMatrixRMaj(linearInequalityConstraintsCMatrix.getNumRows(), 1);
       numberOfIterations = solver.solve(solutionMatrix64F);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers64F);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers64F);
@@ -1019,8 +1019,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.setQuadraticCostFunction(quadraticCostMatrix64F, linearCostVector64F, quadraticCostScalar);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix64F = new DenseMatrix64F(linearInequalityConstraintsCMatrix);
-      DenseMatrix64F linearInqualityConstraintsDVector64F = new DenseMatrix64F(linearInqualityConstraintsDVector.getNumRows(), 1);
+      DMatrixRMaj linearInequalityConstraintsCMatrix64F = new DMatrixRMaj(linearInequalityConstraintsCMatrix);
+      DMatrixRMaj linearInqualityConstraintsDVector64F = new DMatrixRMaj(linearInqualityConstraintsDVector.getNumRows(), 1);
       linearInqualityConstraintsDVector64F.set(linearInqualityConstraintsDVector);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix64F, linearInqualityConstraintsDVector64F);
 
@@ -1048,18 +1048,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       ActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^2 + y^2 subject to 3 <= x <= 5, 2 <= y <= 4
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}, {-1.0, 0.0}, {0.0, 1.0}, {0.0, -1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(5.0, -3.0, 4.0, -2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}, {-1.0, 0.0}, {0.0, 1.0}, {0.0, -1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(5.0, -3.0, 4.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(4, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(4, 1);
       int numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -1076,18 +1076,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2)
       // Equality solution will violate both constraints, but optimal only has the first constraint active.
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(2, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(2, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -1115,18 +1115,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       int numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -1144,18 +1144,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
       solver.clear();
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-10.0, 1.0}, {-1.0, -1.0}, {1.0, -10.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-10.0, 1.0}, {-1.0, -1.0}, {1.0, -10.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      solution = new DenseMatrix64F(2, 1);
-      lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      solution = new DMatrixRMaj(2, 1);
+      lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       numberOfIterations = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -1179,18 +1179,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -1215,22 +1215,22 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.setMaxNumberOfIterations(maxNumberOfIterations);
 
       // Minimize x^2 + y^2 subject to x + y = 5, x + y <= 2
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(5.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(5.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
       solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -1257,34 +1257,34 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       int numberOfEqualityConstraints = 10;
       int numberOfInequalityConstraints = 36;
 
-      DenseMatrix64F solution = new DenseMatrix64F(numberOfVariables, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(numberOfEqualityConstraints, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(numberOfInequalityConstraints, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(numberOfVariables, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(numberOfEqualityConstraints, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(numberOfInequalityConstraints, 1);
       double[] solutionWithSmallPerturbation = new double[numberOfVariables];
 
-      DenseMatrix64F augmentedLinearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 0);
-      DenseMatrix64F augmentedLinearEqualityConstraintsBVector = new DenseMatrix64F(0, 0);
+      DMatrixRMaj augmentedLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
+      DMatrixRMaj augmentedLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
 
       for (int testNumber = 0; testNumber < numberOfTests; testNumber++)
       {
          solver.clear();
 
-         DenseMatrix64F costQuadraticMatrix = nextDenseMatrix64F(random, numberOfVariables, numberOfVariables);
-         DenseMatrix64F identity = CommonOps.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
-         CommonOps.scale(numberOfVariables, identity);
-         CommonOps.addEquals(costQuadraticMatrix, identity);
+         DMatrixRMaj costQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
+         DMatrixRMaj identity = CommonOps_DDRM.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
+         CommonOps_DDRM.scale(numberOfVariables, identity);
+         CommonOps_DDRM.addEquals(costQuadraticMatrix, identity);
 
-         DenseMatrix64F costLinearVector = nextDenseMatrix64F(random, numberOfVariables, 1);
+         DMatrixRMaj costLinearVector = nextDMatrixRMaj(random, numberOfVariables, 1);
          double quadraticCostScalar = RandomNumbers.nextDouble(random, 30.0);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-         DenseMatrix64F linearEqualityConstraintsAMatrix = nextDenseMatrix64F(random, numberOfEqualityConstraints, numberOfVariables);
-         DenseMatrix64F linearEqualityConstraintsBVector = nextDenseMatrix64F(random, numberOfEqualityConstraints, 1);
+         DMatrixRMaj linearEqualityConstraintsAMatrix = nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables);
+         DMatrixRMaj linearEqualityConstraintsBVector = nextDMatrixRMaj(random, numberOfEqualityConstraints, 1);
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-         DenseMatrix64F linearInequalityConstraintsCMatrix = nextDenseMatrix64F(random, numberOfInequalityConstraints, numberOfVariables);
-         DenseMatrix64F linearInequalityConstraintsDVector = nextDenseMatrix64F(random, numberOfInequalityConstraints, 1);
+         DMatrixRMaj linearInequalityConstraintsCMatrix = nextDMatrixRMaj(random, numberOfInequalityConstraints, numberOfVariables);
+         DMatrixRMaj linearInequalityConstraintsDVector = nextDMatrixRMaj(random, numberOfInequalityConstraints, 1);
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
          int numberOfIterations = solver.solve(solution);
@@ -1335,7 +1335,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          augmentedLinearEqualityConstraintsAMatrix.reshape(numberOfEqualityConstraints + activeSetSize, numberOfVariables);
          augmentedLinearEqualityConstraintsBVector.reshape(numberOfEqualityConstraints + activeSetSize, 1);
 
-         CommonOps.extract(linearEqualityConstraintsAMatrix,
+         CommonOps_DDRM.extract(linearEqualityConstraintsAMatrix,
                            0,
                            numberOfEqualityConstraints,
                            0,
@@ -1343,7 +1343,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
                            augmentedLinearEqualityConstraintsAMatrix,
                            0,
                            0);
-         CommonOps.extract(linearEqualityConstraintsBVector, 0, numberOfEqualityConstraints, 0, 1, augmentedLinearEqualityConstraintsBVector, 0, 0);
+         CommonOps_DDRM.extract(linearEqualityConstraintsBVector, 0, numberOfEqualityConstraints, 0, 1, augmentedLinearEqualityConstraintsBVector, 0, 0);
 
          int index = 0;
          for (int i = 0; i < numberOfInequalityConstraints; i++)
@@ -1356,7 +1356,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
             }
             if (lagrangeMultiplier > 0.0)
             {
-               CommonOps.extract(linearInequalityConstraintsCMatrix,
+               CommonOps_DDRM.extract(linearInequalityConstraintsCMatrix,
                                  i,
                                  i + 1,
                                  0,
@@ -1364,7 +1364,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
                                  augmentedLinearEqualityConstraintsAMatrix,
                                  numberOfEqualityConstraints + index,
                                  0);
-               CommonOps.extract(linearInequalityConstraintsDVector,
+               CommonOps_DDRM.extract(linearInequalityConstraintsDVector,
                                  i,
                                  i + 1,
                                  0,
@@ -1376,7 +1376,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
             }
          }
 
-         DenseMatrix64F solutionMatrixProjectedOntoEqualityConstraints = projectOntoEqualityConstraints(solution,
+         DMatrixRMaj solutionMatrixProjectedOntoEqualityConstraints = projectOntoEqualityConstraints(solution,
                                                                                                         augmentedLinearEqualityConstraintsAMatrix,
                                                                                                         augmentedLinearEqualityConstraintsBVector);
          verifyEqualityConstraintsHold(numberOfEqualityConstraints + activeSetSize,
@@ -1416,15 +1416,15 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       int numberOfEqualityConstraints = 10;
       int numberOfInequalityConstraints = 36;
 
-      DenseMatrix64F solution = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F solutionWithSmallPerturbation = new DenseMatrix64F(numberOfVariables, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj solutionWithSmallPerturbation = new DMatrixRMaj(numberOfVariables, 1);
 
-      DenseMatrix64F augmentedLinearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 1);
-      DenseMatrix64F augmentedLinearEqualityConstraintsBVector = new DenseMatrix64F(0, 1);
+      DMatrixRMaj augmentedLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 1);
+      DMatrixRMaj augmentedLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 1);
 
       int numberOfNaNSolutions = 0;
       for (int testNumber = 0; testNumber < numberOfTests; testNumber++)
@@ -1432,26 +1432,26 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          //         System.out.println("testNumber = " + testNumber);
          solver.clear();
 
-         DenseMatrix64F costQuadraticMatrix = nextDenseMatrix64F(random, numberOfVariables, numberOfVariables);
-         DenseMatrix64F identity = CommonOps.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
-         CommonOps.scale(numberOfVariables, identity);
-         CommonOps.addEquals(costQuadraticMatrix, identity);
+         DMatrixRMaj costQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
+         DMatrixRMaj identity = CommonOps_DDRM.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
+         CommonOps_DDRM.scale(numberOfVariables, identity);
+         CommonOps_DDRM.addEquals(costQuadraticMatrix, identity);
 
-         DenseMatrix64F costLinearVector = nextDenseMatrix64F(random, numberOfVariables, 1);
+         DMatrixRMaj costLinearVector = nextDMatrixRMaj(random, numberOfVariables, 1);
          double quadraticCostScalar = RandomNumbers.nextDouble(random, 30.0);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-         DenseMatrix64F linearEqualityConstraintsAMatrix = nextDenseMatrix64F(random, numberOfEqualityConstraints, numberOfVariables);
-         DenseMatrix64F linearEqualityConstraintsBVector = nextDenseMatrix64F(random, numberOfEqualityConstraints, 1);
+         DMatrixRMaj linearEqualityConstraintsAMatrix = nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables);
+         DMatrixRMaj linearEqualityConstraintsBVector = nextDMatrixRMaj(random, numberOfEqualityConstraints, 1);
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-         DenseMatrix64F linearInequalityConstraintsCMatrix = nextDenseMatrix64F(random, numberOfInequalityConstraints, numberOfVariables);
-         DenseMatrix64F linearInequalityConstraintsDVector = nextDenseMatrix64F(random, numberOfInequalityConstraints, 1);
+         DMatrixRMaj linearInequalityConstraintsCMatrix = nextDMatrixRMaj(random, numberOfInequalityConstraints, numberOfVariables);
+         DMatrixRMaj linearInequalityConstraintsDVector = nextDMatrixRMaj(random, numberOfInequalityConstraints, 1);
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
-         DenseMatrix64F variableLowerBounds = nextDenseMatrix64F(random, numberOfVariables, 1, -5.0, -0.01);
-         DenseMatrix64F variableUpperBounds = nextDenseMatrix64F(random, numberOfVariables, 1, 0.01, 5.0);
+         DMatrixRMaj variableLowerBounds = nextDMatrixRMaj(random, numberOfVariables, 1, -5.0, -0.01);
+         DMatrixRMaj variableUpperBounds = nextDMatrixRMaj(random, numberOfVariables, 1, 0.01, 5.0);
          solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
          int numberOfIterations = solver.solve(solution);
@@ -1551,7 +1551,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          augmentedLinearEqualityConstraintsAMatrix.zero();
          augmentedLinearEqualityConstraintsBVector.zero();
 
-         CommonOps.extract(linearEqualityConstraintsAMatrix,
+         CommonOps_DDRM.extract(linearEqualityConstraintsAMatrix,
                            0,
                            numberOfEqualityConstraints,
                            0,
@@ -1559,7 +1559,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
                            augmentedLinearEqualityConstraintsAMatrix,
                            0,
                            0);
-         CommonOps.extract(linearEqualityConstraintsBVector, 0, numberOfEqualityConstraints, 0, 1, augmentedLinearEqualityConstraintsBVector, 0, 0);
+         CommonOps_DDRM.extract(linearEqualityConstraintsBVector, 0, numberOfEqualityConstraints, 0, 1, augmentedLinearEqualityConstraintsBVector, 0, 0);
 
          int index = 0;
          for (int i = 0; i < numberOfInequalityConstraints; i++)
@@ -1572,7 +1572,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
             }
             if (lagrangeMultiplier > 0.0)
             {
-               CommonOps.extract(linearInequalityConstraintsCMatrix,
+               CommonOps_DDRM.extract(linearInequalityConstraintsCMatrix,
                                  i,
                                  i + 1,
                                  0,
@@ -1580,7 +1580,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
                                  augmentedLinearEqualityConstraintsAMatrix,
                                  numberOfEqualityConstraints + index,
                                  0);
-               CommonOps.extract(linearInequalityConstraintsDVector,
+               CommonOps_DDRM.extract(linearInequalityConstraintsDVector,
                                  i,
                                  i + 1,
                                  0,
@@ -1618,7 +1618,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
          assertTrue(index == activeInequalitiesSize + activeLowerBoundsSize + activeUpperBoundsSize);
 
-         DenseMatrix64F solutionMatrixProjectedOntoEqualityConstraints = projectOntoEqualityConstraints(solution,
+         DMatrixRMaj solutionMatrixProjectedOntoEqualityConstraints = projectOntoEqualityConstraints(solution,
                                                                                                         augmentedLinearEqualityConstraintsAMatrix,
                                                                                                         augmentedLinearEqualityConstraintsBVector);
          verifyEqualityConstraintsHold(numberOfEqualityConstraints + activeInequalitiesSize + activeLowerBoundsSize + activeUpperBoundsSize,
@@ -1666,7 +1666,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
-      DenseMatrix64F solution = new DenseMatrix64F(dataset.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
 
       assertFalse(MatrixTools.containsNaN(solution));
@@ -1685,7 +1685,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
-      DenseMatrix64F solution = new DenseMatrix64F(dataset.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
 
       assertFalse(MatrixTools.containsNaN(solution));
@@ -1704,7 +1704,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
-      DenseMatrix64F solution = new DenseMatrix64F(dataset.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
 
       assertFalse(MatrixTools.containsNaN(solution));
@@ -1723,26 +1723,26 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 1.0, 0.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{0.0, 1.0, -1.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
       solver.setVariableBounds(getLowerBounds(), getUpperBounds());
 
-      DenseMatrix64F solution = new DenseMatrix64F(3, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(1, 1);
-      DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(3, 1);
-      DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(3, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(1, 1);
+      DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(3, 1);
+      DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(3, 1);
 
       solver.setMaxNumberOfIterations(maxForSolution - 1);
       int numberOfIterations = solver.solve(solution);
@@ -1783,18 +1783,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          assertEquals(0.0, lagrangeUpperBoundMultipliers.get(2), 1e-7);
       }
 
-      DenseMatrix64F solutionMatrix = new DenseMatrix64F(costQuadraticMatrix.getNumRows(), 1);
+      DMatrixRMaj solutionMatrix = new DMatrixRMaj(costQuadraticMatrix.getNumRows(), 1);
       solutionMatrix.set(solution);
       double objectiveCost = solver.getObjectiveCost(solutionMatrix);
       assertEquals(248.0, objectiveCost, 1e-7);
    }
 
-   public DenseMatrix64F getUpperBounds()
+   public DMatrixRMaj getUpperBounds()
    {
       return MatrixTools.createVector(5.0, 10.0, Double.POSITIVE_INFINITY);
    }
 
-   public DenseMatrix64F getLowerBounds()
+   public DMatrixRMaj getLowerBounds()
    {
       return MatrixTools.createVector(-5.0, 6.0, 11.0);
    }
@@ -1804,8 +1804,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
    {
       ActiveSetQPSolver solver = createSolverToTest();
 
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
 
       try
@@ -1817,7 +1817,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       try
       {
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -1829,8 +1829,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       try
       {
-         DenseMatrix64F costQuadraticMatrix64F = new DenseMatrix64F(2, 2);
-         DenseMatrix64F costLinearVector64F = new DenseMatrix64F(1, 2);
+         DMatrixRMaj costQuadraticMatrix64F = new DMatrixRMaj(2, 2);
+         DMatrixRMaj costLinearVector64F = new DMatrixRMaj(1, 2);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix64F, costLinearVector64F, quadraticCostScalar);
          fail("Wrong size for costLinearVector64F.");
@@ -1843,8 +1843,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
       // Variable Bounds
-      DenseMatrix64F variableLowerBounds = MatrixTools.createVector(0.0);
-      DenseMatrix64F variableUpperBounds = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj variableLowerBounds = MatrixTools.createVector(0.0);
+      DMatrixRMaj variableUpperBounds = MatrixTools.createVector(0.0, 0.0);
 
       try
       {
@@ -1873,8 +1873,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       // Equality Constraints
-      DenseMatrix64F linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}});
-      DenseMatrix64F linearEqualityConstraintsBVector = MatrixTools.createVector(1.0, 2.0);
+      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
+      DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(1.0, 2.0);
 
       try
       {
@@ -1885,7 +1885,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
       try
       {
@@ -1898,8 +1898,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       try
       {
-         DenseMatrix64F linearEqualityConstraintsAMatrix64F = new DenseMatrix64F(2, 2);
-         DenseMatrix64F linearEqualityConstraintsBVector64F = new DenseMatrix64F(1, 2);
+         DMatrixRMaj linearEqualityConstraintsAMatrix64F = new DMatrixRMaj(2, 2);
+         DMatrixRMaj linearEqualityConstraintsBVector64F = new DMatrixRMaj(1, 2);
 
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix64F, linearEqualityConstraintsBVector64F);
          fail("Wrong size for linearEqualityConstraintsBVector.");
@@ -1908,12 +1908,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      linearEqualityConstraintsAMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
       // Inequality Constraints
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}});
-      DenseMatrix64F linearInequalityConstraintsDVector = MatrixTools.createVector(1.0, 2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
+      DMatrixRMaj linearInequalityConstraintsDVector = MatrixTools.createVector(1.0, 2.0);
 
       try
       {
@@ -1924,7 +1924,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0}});
       linearInequalityConstraintsDVector = MatrixTools.createVector(1.0);
       try
       {
@@ -1937,8 +1937,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
 
       try
       {
-         DenseMatrix64F linearInequalityConstraintsCMatrix64F = new DenseMatrix64F(2, 2);
-         DenseMatrix64F linearInequalityConstraintsDVector64F = new DenseMatrix64F(1, 2);
+         DMatrixRMaj linearInequalityConstraintsCMatrix64F = new DMatrixRMaj(2, 2);
+         DMatrixRMaj linearInequalityConstraintsDVector64F = new DMatrixRMaj(1, 2);
 
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix64F, linearInequalityConstraintsDVector64F);
          fail("Wrong size for linearInequalityConstraintsDVector64F.");
@@ -1947,12 +1947,12 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       {
       }
 
-      linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{1.0, 0.0}});
+      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
    }
 
-   private void verifyEqualityConstraintsHold(int numberOfEqualityConstraints, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                              DenseMatrix64F linearEqualityConstraintsBVector, DenseMatrix64F solutionMatrix)
+   private void verifyEqualityConstraintsHold(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                              DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       double maxAbsoluteError = getMaxEqualityConstraintError(numberOfEqualityConstraints,
                                                               linearEqualityConstraintsAMatrix,
@@ -1961,8 +1961,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertEquals(0.0, maxAbsoluteError, 1e-5);
    }
 
-   private void verifyInequalityConstraintsHold(int numberOfEqualityConstraints, DenseMatrix64F linearInequalityConstraintsCMatrix,
-                                                DenseMatrix64F linearInequalityConstraintsDVector, DenseMatrix64F solutionMatrix)
+   private void verifyInequalityConstraintsHold(int numberOfEqualityConstraints, DMatrixRMaj linearInequalityConstraintsCMatrix,
+                                                DMatrixRMaj linearInequalityConstraintsDVector, DMatrixRMaj solutionMatrix)
    {
       double maxSignedError = getMaxInequalityConstraintError(numberOfEqualityConstraints,
                                                               linearInequalityConstraintsCMatrix,
@@ -1971,8 +1971,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertTrue(maxSignedError < 1e-10);
    }
 
-   private void verifyEqualityConstraintsDoNotHold(int numberOfEqualityConstraints, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                                   DenseMatrix64F linearEqualityConstraintsBVector, DenseMatrix64F solutionMatrix)
+   private void verifyEqualityConstraintsDoNotHold(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                                   DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       double maxAbsoluteError = getMaxEqualityConstraintError(numberOfEqualityConstraints,
                                                               linearEqualityConstraintsAMatrix,
@@ -1981,8 +1981,8 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertTrue(maxAbsoluteError > 1e-5);
    }
 
-   private void verifyInequalityConstraintsDoNotHold(int numberOfInequalityConstraints, DenseMatrix64F linearInequalityConstraintsCMatrix,
-                                                     DenseMatrix64F linearInequalityConstraintsDVector, DenseMatrix64F solutionMatrix)
+   private void verifyInequalityConstraintsDoNotHold(int numberOfInequalityConstraints, DMatrixRMaj linearInequalityConstraintsCMatrix,
+                                                     DMatrixRMaj linearInequalityConstraintsDVector, DMatrixRMaj solutionMatrix)
    {
       double maxError = getMaxInequalityConstraintError(numberOfInequalityConstraints,
                                                         linearInequalityConstraintsCMatrix,
@@ -1991,7 +1991,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       assertTrue(maxError > 1e-5);
    }
 
-   private void verifyVariableBoundsHold(int testNumber, DenseMatrix64F variableLowerBounds, DenseMatrix64F variableUpperBounds, DenseMatrix64F solution)
+   private void verifyVariableBoundsHold(int testNumber, DMatrixRMaj variableLowerBounds, DMatrixRMaj variableUpperBounds, DMatrixRMaj solution)
    {
       for (int i = 0; i < variableLowerBounds.getNumRows(); i++)
       {
@@ -2005,28 +2005,28 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       }
    }
 
-   private double getMaxEqualityConstraintError(int numberOfEqualityConstraints, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                                DenseMatrix64F linearEqualityConstraintsBVector, DenseMatrix64F solutionMatrix)
+   private double getMaxEqualityConstraintError(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                                DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
-      DenseMatrix64F checkMatrix = new DenseMatrix64F(numberOfEqualityConstraints, 1);
-      CommonOps.mult(linearEqualityConstraintsAMatrix, solutionMatrix, checkMatrix);
-      CommonOps.subtractEquals(checkMatrix, linearEqualityConstraintsBVector);
+      DMatrixRMaj checkMatrix = new DMatrixRMaj(numberOfEqualityConstraints, 1);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, solutionMatrix, checkMatrix);
+      CommonOps_DDRM.subtractEquals(checkMatrix, linearEqualityConstraintsBVector);
 
       return getMaxAbsoluteDataEntry(checkMatrix);
    }
 
-   private double getMaxInequalityConstraintError(int numberOfInequalityConstraints, DenseMatrix64F linearInequalityConstraintsCMatrix,
-                                                  DenseMatrix64F linearInequalityConstraintsDVector, DenseMatrix64F solutionMatrix)
+   private double getMaxInequalityConstraintError(int numberOfInequalityConstraints, DMatrixRMaj linearInequalityConstraintsCMatrix,
+                                                  DMatrixRMaj linearInequalityConstraintsDVector, DMatrixRMaj solutionMatrix)
    {
-      DenseMatrix64F checkMatrix = new DenseMatrix64F(numberOfInequalityConstraints, 1);
-      CommonOps.mult(linearInequalityConstraintsCMatrix, solutionMatrix, checkMatrix);
-      CommonOps.subtractEquals(checkMatrix, linearInequalityConstraintsDVector);
+      DMatrixRMaj checkMatrix = new DMatrixRMaj(numberOfInequalityConstraints, 1);
+      CommonOps_DDRM.mult(linearInequalityConstraintsCMatrix, solutionMatrix, checkMatrix);
+      CommonOps_DDRM.subtractEquals(checkMatrix, linearInequalityConstraintsDVector);
 
       return getMaxSignedDataEntry(checkMatrix);
    }
 
-   private DenseMatrix64F projectOntoEqualityConstraints(DenseMatrix64F solutionMatrix, DenseMatrix64F linearEqualityConstraintsAMatrix,
-                                                         DenseMatrix64F linearEqualityConstraintsBVector)
+   private DMatrixRMaj projectOntoEqualityConstraints(DMatrixRMaj solutionMatrix, DMatrixRMaj linearEqualityConstraintsAMatrix,
+                                                         DMatrixRMaj linearEqualityConstraintsBVector)
    {
       int numberOfVariables = solutionMatrix.getNumRows();
       if (linearEqualityConstraintsAMatrix.getNumCols() != numberOfVariables)
@@ -2036,30 +2036,30 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       if (linearEqualityConstraintsBVector.getNumRows() != numberOfConstraints)
          throw new RuntimeException();
 
-      DenseMatrix64F AZMinusB = new DenseMatrix64F(numberOfConstraints, 1);
-      CommonOps.mult(linearEqualityConstraintsAMatrix, solutionMatrix, AZMinusB);
-      CommonOps.subtractEquals(AZMinusB, linearEqualityConstraintsBVector);
+      DMatrixRMaj AZMinusB = new DMatrixRMaj(numberOfConstraints, 1);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, solutionMatrix, AZMinusB);
+      CommonOps_DDRM.subtractEquals(AZMinusB, linearEqualityConstraintsBVector);
 
-      DenseMatrix64F AATransposeInverse = new DenseMatrix64F(numberOfConstraints, numberOfConstraints);
-      DenseMatrix64F linearEqualityConstraintsAMatrixTranspose = new DenseMatrix64F(linearEqualityConstraintsAMatrix);
-      CommonOps.transpose(linearEqualityConstraintsAMatrixTranspose);
+      DMatrixRMaj AATransposeInverse = new DMatrixRMaj(numberOfConstraints, numberOfConstraints);
+      DMatrixRMaj linearEqualityConstraintsAMatrixTranspose = new DMatrixRMaj(linearEqualityConstraintsAMatrix);
+      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrixTranspose);
 
-      CommonOps.mult(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose, AATransposeInverse);
-      CommonOps.invert(AATransposeInverse);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose, AATransposeInverse);
+      CommonOps_DDRM.invert(AATransposeInverse);
 
-      DenseMatrix64F ATransposeAATransposeInverse = new DenseMatrix64F(numberOfVariables, numberOfConstraints);
-      CommonOps.mult(linearEqualityConstraintsAMatrixTranspose, AATransposeInverse, ATransposeAATransposeInverse);
+      DMatrixRMaj ATransposeAATransposeInverse = new DMatrixRMaj(numberOfVariables, numberOfConstraints);
+      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrixTranspose, AATransposeInverse, ATransposeAATransposeInverse);
 
-      DenseMatrix64F vectorToSubtract = new DenseMatrix64F(numberOfVariables, 1);
-      CommonOps.mult(ATransposeAATransposeInverse, AZMinusB, vectorToSubtract);
+      DMatrixRMaj vectorToSubtract = new DMatrixRMaj(numberOfVariables, 1);
+      CommonOps_DDRM.mult(ATransposeAATransposeInverse, AZMinusB, vectorToSubtract);
 
-      DenseMatrix64F projectedSolutionMatrix = new DenseMatrix64F(solutionMatrix);
-      CommonOps.subtractEquals(projectedSolutionMatrix, vectorToSubtract);
+      DMatrixRMaj projectedSolutionMatrix = new DMatrixRMaj(solutionMatrix);
+      CommonOps_DDRM.subtractEquals(projectedSolutionMatrix, vectorToSubtract);
 
       return projectedSolutionMatrix;
    }
 
-   private double getMaxAbsoluteDataEntry(DenseMatrix64F matrix)
+   private double getMaxAbsoluteDataEntry(DMatrixRMaj matrix)
    {
       int numberOfRows = matrix.getNumRows();
       int numberOfColumns = matrix.getNumCols();
@@ -2081,7 +2081,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       return max;
    }
 
-   private double getMaxSignedDataEntry(DenseMatrix64F matrix)
+   private double getMaxSignedDataEntry(DMatrixRMaj matrix)
    {
       int numberOfRows = matrix.getNumRows();
       int numberOfColumns = matrix.getNumCols();
@@ -2103,18 +2103,18 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
       return max;
    }
 
-   public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns)
+   public static DMatrixRMaj nextDMatrixRMaj(Random random, int numberOfRows, int numberOfColumns)
    {
-      return nextDenseMatrix64F(random, numberOfRows, numberOfColumns, 1.0);
+      return nextDMatrixRMaj(random, numberOfRows, numberOfColumns, 1.0);
    }
 
-   public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns, double maxAbsoluteValue)
+   public static DMatrixRMaj nextDMatrixRMaj(Random random, int numberOfRows, int numberOfColumns, double maxAbsoluteValue)
    {
-      return RandomMatrices.createRandom(numberOfRows, numberOfColumns, -maxAbsoluteValue, maxAbsoluteValue, random);
+      return RandomMatrices_DDRM.rectangle(numberOfRows, numberOfColumns, -maxAbsoluteValue, maxAbsoluteValue, random);
    }
 
-   public static DenseMatrix64F nextDenseMatrix64F(Random random, int numberOfRows, int numberOfColumns, double boundaryOne, double boundaryTwo)
+   public static DMatrixRMaj nextDMatrixRMaj(Random random, int numberOfRows, int numberOfColumns, double boundaryOne, double boundaryTwo)
    {
-      return RandomMatrices.createRandom(numberOfRows, numberOfColumns, boundaryOne, boundaryTwo, random);
+      return RandomMatrices_DDRM.rectangle(numberOfRows, numberOfColumns, boundaryOne, boundaryTwo, random);
    }
 }

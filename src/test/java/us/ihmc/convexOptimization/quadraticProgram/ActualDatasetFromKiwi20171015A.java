@@ -1,15 +1,15 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 
 public class ActualDatasetFromKiwi20171015A
 {
    private static final double Infinity = Double.POSITIVE_INFINITY;
 
-   private final DenseMatrix64F costQuadraticMatrix;
-   private final DenseMatrix64F costLinearVector;
-   private final DenseMatrix64F variableLowerBounds;
-   private final DenseMatrix64F variableUpperBounds;
+   private final DMatrixRMaj costQuadraticMatrix;
+   private final DMatrixRMaj costLinearVector;
+   private final DMatrixRMaj variableLowerBounds;
+   private final DMatrixRMaj variableUpperBounds;
 
    public ActualDatasetFromKiwi20171015A()
    {
@@ -1198,28 +1198,28 @@ public class ActualDatasetFromKiwi20171015A
             {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity},
             {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity},
             {Infinity}, {Infinity}, {Infinity}};
-      costQuadraticMatrix = new DenseMatrix64F(HData);
-      costLinearVector = new DenseMatrix64F(fData);
-      variableLowerBounds = new DenseMatrix64F(lowerBoundsData);
-      variableUpperBounds = new DenseMatrix64F(upperBoundsData);
+      costQuadraticMatrix = new DMatrixRMaj(HData);
+      costLinearVector = new DMatrixRMaj(fData);
+      variableLowerBounds = new DMatrixRMaj(lowerBoundsData);
+      variableUpperBounds = new DMatrixRMaj(upperBoundsData);
    }
 
-   public DenseMatrix64F getCostQuadraticMatrix()
+   public DMatrixRMaj getCostQuadraticMatrix()
    {
       return costQuadraticMatrix;
    }
 
-   public DenseMatrix64F getCostLinearVector()
+   public DMatrixRMaj getCostLinearVector()
    {
       return costLinearVector;
    }
 
-   public DenseMatrix64F getVariableLowerBounds()
+   public DMatrixRMaj getVariableLowerBounds()
    {
       return variableLowerBounds;
    }
 
-   public DenseMatrix64F getVariableUpperBounds()
+   public DMatrixRMaj getVariableUpperBounds()
    {
       return variableUpperBounds;
    }
