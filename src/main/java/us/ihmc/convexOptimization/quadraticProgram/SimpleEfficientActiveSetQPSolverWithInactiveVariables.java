@@ -1,7 +1,7 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import us.ihmc.commons.MathTools;
 import us.ihmc.matrixlib.MatrixTools;
@@ -10,20 +10,20 @@ import us.ihmc.matrixlib.NativeCommonOps;
 public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends SimpleEfficientActiveSetQPSolver
       implements ActiveSetQPSolverWithInactiveVariablesInterface
 {
-   private final DenseMatrix64F originalQuadraticCostQMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalQuadraticCostQVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalQuadraticCostQMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalQuadraticCostQVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalLinearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalLinearEqualityConstraintsBVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalLinearInequalityConstraintsCMatrixO = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalLinearInequalityConstraintsDVectorO = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalLinearInequalityConstraintsCMatrixO = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalLinearInequalityConstraintsDVectorO = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalVariableLowerBounds = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalVariableUpperBounds = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalVariableLowerBounds = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalVariableUpperBounds = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F activeVariables = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F activeVariableSolution = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj activeVariables = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj activeVariableSolution = new DMatrixRMaj(0, 0);
 
    private void setMatricesFromOriginal()
    {
@@ -75,7 +75,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
       removeZeroRowsFromConstraints(linearInequalityConstraintsCMatrixO, linearInequalityConstraintsDVectorO);
    }
 
-   private static void removeZeroRowsFromConstraints(DenseMatrix64F matrix, DenseMatrix64F vector)
+   private static void removeZeroRowsFromConstraints(DMatrixRMaj matrix, DMatrixRMaj vector)
    {
       for (int rowIndex = vector.numRows - 1; rowIndex >= 0; rowIndex--)
       {
@@ -95,11 +95,11 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
       }
    }
 
-   private void copyActiveVariableSolutionToAllVariables(DenseMatrix64F solutionToPack, DenseMatrix64F activeVariableSolution)
+   private void copyActiveVariableSolutionToAllVariables(DMatrixRMaj solutionToPack, DMatrixRMaj activeVariableSolution)
    {
       if (MatrixTools.containsNaN(activeVariableSolution))
       {
-         CommonOps.fill(solutionToPack, Double.NaN);
+         CommonOps_DDRM.fill(solutionToPack, Double.NaN);
          return;
       }
 
@@ -118,7 +118,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setLowerBounds(DenseMatrix64F variableLowerBounds)
+   public void setLowerBounds(DMatrixRMaj variableLowerBounds)
    {
       if (variableLowerBounds.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -127,7 +127,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setUpperBounds(DenseMatrix64F variableUpperBounds)
+   public void setUpperBounds(DMatrixRMaj variableUpperBounds)
    {
       if (variableUpperBounds.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableUpperBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -136,7 +136,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setQuadraticCostFunction(DenseMatrix64F costQuadraticMatrix, DenseMatrix64F costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -146,10 +146,10 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
          throw new RuntimeException("costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols()");
 
       symmetricCostQuadraticMatrix.reshape(costQuadraticMatrix.getNumCols(), costQuadraticMatrix.getNumRows());
-      CommonOps.transpose(costQuadraticMatrix, symmetricCostQuadraticMatrix);
+      CommonOps_DDRM.transpose(costQuadraticMatrix, symmetricCostQuadraticMatrix);
 
-      CommonOps.add(costQuadraticMatrix, symmetricCostQuadraticMatrix, symmetricCostQuadraticMatrix);
-      CommonOps.scale(0.5, symmetricCostQuadraticMatrix);
+      CommonOps_DDRM.add(costQuadraticMatrix, symmetricCostQuadraticMatrix, symmetricCostQuadraticMatrix);
+      CommonOps_DDRM.scale(0.5, symmetricCostQuadraticMatrix);
       originalQuadraticCostQMatrix.set(symmetricCostQuadraticMatrix);
       originalQuadraticCostQVector.set(costLinearVector);
       this.quadraticCostScalar = quadraticCostScalar;
@@ -158,16 +158,16 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public double getObjectiveCost(DenseMatrix64F x)
+   public double getObjectiveCost(DMatrixRMaj x)
    {
       NativeCommonOps.multQuad(x, originalQuadraticCostQMatrix, computedObjectiveFunctionValue);
-      CommonOps.scale(0.5, computedObjectiveFunctionValue);
-      CommonOps.multAddTransA(originalQuadraticCostQVector, x, computedObjectiveFunctionValue);
+      CommonOps_DDRM.scale(0.5, computedObjectiveFunctionValue);
+      CommonOps_DDRM.multAddTransA(originalQuadraticCostQVector, x, computedObjectiveFunctionValue);
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
    @Override
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       if (linearEqualityConstraintsBVector.getNumCols() != 1)
          throw new RuntimeException("linearEqualityConstraintsBVector.getNumCols() != 1");
@@ -181,7 +181,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
    {
       if (linearInequalityConstraintDVector.getNumCols() != 1)
          throw new RuntimeException("linearInequalityConstraintDVector.getNumCols() != 1");
@@ -195,7 +195,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setActiveVariables(DenseMatrix64F activeVariables)
+   public void setActiveVariables(DMatrixRMaj activeVariables)
    {
       if (activeVariables.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("activeVariables.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -231,7 +231,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    public void setAllVariablesActive()
    {
       activeVariables.reshape(originalQuadraticCostQMatrix.getNumRows(), 1);
-      CommonOps.fill(activeVariables, 1.0);
+      CommonOps_DDRM.fill(activeVariables, 1.0);
    }
 
    @Override
@@ -256,7 +256,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public int solve(DenseMatrix64F solutionToPack)
+   public int solve(DMatrixRMaj solutionToPack)
    {
       removeInactiveVariables();
 

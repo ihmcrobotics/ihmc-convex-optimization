@@ -1,16 +1,16 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import us.ihmc.matrixlib.MatrixTools;
 
 public abstract class AbstractActiveSetQPSolver
 {
-   protected DenseMatrix64F linearEqualityConstraintA, linearEqualityConstraintATranspose, linearEqualityConstraintB;
-   protected DenseMatrix64F linearInequalityConstraintA, linearInequalityConstraintB;
-   protected DenseMatrix64F activeSetA, activeSetB;
-   protected DenseMatrix64F quadraticCostGMatrix, quadraticCostFVector;
+   protected DMatrixRMaj linearEqualityConstraintA, linearEqualityConstraintATranspose, linearEqualityConstraintB;
+   protected DMatrixRMaj linearInequalityConstraintA, linearInequalityConstraintB;
+   protected DMatrixRMaj activeSetA, activeSetB;
+   protected DMatrixRMaj quadraticCostGMatrix, quadraticCostFVector;
    protected double quadraticCostScalar;
 
    protected int numberOfVariablesToSolve;
@@ -40,18 +40,18 @@ public abstract class AbstractActiveSetQPSolver
    {
       assertCorrectSize(quadraticCostFunctionWMatrix);
       assertCorrectSize(quadraticCostFunctionGVector);
-      setQuadraticCostFunction(new DenseMatrix64F(quadraticCostFunctionWMatrix), MatrixTools.createVector(quadraticCostFunctionGVector), quadraticCostScalar);
+      setQuadraticCostFunction(new DMatrixRMaj(quadraticCostFunctionWMatrix), MatrixTools.createVector(quadraticCostFunctionGVector), quadraticCostScalar);
    }
 
-   public void setQuadraticCostFunction(DenseMatrix64F costQuadraticMatrix, DenseMatrix64F costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
       setAndAssertCorrectNumberOfVariablesToSolve(costQuadraticMatrix.numCols);
       setAndAssertCorrectNumberOfVariablesToSolve(costQuadraticMatrix.numRows);
       setAndAssertCorrectNumberOfVariablesToSolve(costLinearVector.numRows);
-      DenseMatrix64F symCostQuadraticMatrix = new DenseMatrix64F(costQuadraticMatrix);
-      CommonOps.transpose(symCostQuadraticMatrix);
-      CommonOps.add(costQuadraticMatrix, symCostQuadraticMatrix, symCostQuadraticMatrix);
-      CommonOps.scale(0.5, symCostQuadraticMatrix);
+      DMatrixRMaj symCostQuadraticMatrix = new DMatrixRMaj(costQuadraticMatrix);
+      CommonOps_DDRM.transpose(symCostQuadraticMatrix);
+      CommonOps_DDRM.add(costQuadraticMatrix, symCostQuadraticMatrix, symCostQuadraticMatrix);
+      CommonOps_DDRM.scale(0.5, symCostQuadraticMatrix);
       quadraticCostGMatrix = symCostQuadraticMatrix;
       quadraticCostFVector = costLinearVector;
       this.quadraticCostScalar = quadraticCostScalar;
@@ -62,15 +62,15 @@ public abstract class AbstractActiveSetQPSolver
       assertCorrectColumnSize(linearEqualityConstraintsAMatrix);
       if (linearEqualityConstraintsAMatrix.length != linearEqualityConstraintsBVector.length)
          throw new RuntimeException();
-      setLinearEqualityConstraints(new DenseMatrix64F(linearEqualityConstraintsAMatrix), MatrixTools.createVector(linearEqualityConstraintsBVector));
+      setLinearEqualityConstraints(new DMatrixRMaj(linearEqualityConstraintsAMatrix), MatrixTools.createVector(linearEqualityConstraintsBVector));
    }
 
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       setAndAssertCorrectNumberOfVariablesToSolve(linearEqualityConstraintsAMatrix.numCols);
       linearEqualityConstraintB = linearEqualityConstraintsBVector;
       linearEqualityConstraintA = linearEqualityConstraintsAMatrix;
-      linearEqualityConstraintATranspose = CommonOps.transpose(linearEqualityConstraintA, null);
+      linearEqualityConstraintATranspose = CommonOps_DDRM.transpose(linearEqualityConstraintA, null);
    }
 
    public void setLinearInequalityConstraints(double[][] linearInequalityConstraintPVectors, double[] linearInequalityConstraintFs)
@@ -78,10 +78,10 @@ public abstract class AbstractActiveSetQPSolver
       assertCorrectColumnSize(linearInequalityConstraintPVectors);
       if (linearInequalityConstraintPVectors.length != linearInequalityConstraintFs.length)
          throw new RuntimeException();
-      setLinearInequalityConstraints(new DenseMatrix64F(linearInequalityConstraintPVectors), MatrixTools.createVector(linearInequalityConstraintFs));
+      setLinearInequalityConstraints(new DMatrixRMaj(linearInequalityConstraintPVectors), MatrixTools.createVector(linearInequalityConstraintFs));
    }
 
-   public void setLinearInequalityConstraints(DenseMatrix64F inequalityA, DenseMatrix64F inequalityB)
+   public void setLinearInequalityConstraints(DMatrixRMaj inequalityA, DMatrixRMaj inequalityB)
    {
       linearInequalityConstraintA = inequalityA;
       linearInequalityConstraintB = inequalityB;
@@ -168,7 +168,7 @@ public abstract class AbstractActiveSetQPSolver
 
    public abstract double[] solve();
 
-   protected static void setPartialMatrix(double[][] fromMatrix, int startRow, int startColumn, DenseMatrix64F toMatrix)
+   protected static void setPartialMatrix(double[][] fromMatrix, int startRow, int startColumn, DMatrixRMaj toMatrix)
    {
       for (int i = 0; i < fromMatrix.length; i++)
       {
@@ -179,7 +179,7 @@ public abstract class AbstractActiveSetQPSolver
       }
    }
 
-   protected static void setPartialVector(double[] fromVector, int startRow, DenseMatrix64F toVector)
+   protected static void setPartialVector(double[] fromVector, int startRow, DMatrixRMaj toVector)
    {
       for (int i = 0; i < fromVector.length; i++)
       {
@@ -198,13 +198,13 @@ public abstract class AbstractActiveSetQPSolver
       }
    }
 
-   DenseMatrix64F obj = new DenseMatrix64F(1, 1);
+   DMatrixRMaj obj = new DMatrixRMaj(1, 1);
 
-   public double getObjectiveCost(DenseMatrix64F x)
+   public double getObjectiveCost(DMatrixRMaj x)
    {
       MatrixTools.multQuad(x, quadraticCostGMatrix, obj);
-      CommonOps.scale(0.5, obj);
-      CommonOps.multAddTransA(quadraticCostFVector, x, obj);
+      CommonOps_DDRM.scale(0.5, obj);
+      CommonOps_DDRM.multAddTransA(quadraticCostFVector, x, obj);
       return obj.get(0, 0) + 0.5 * quadraticCostScalar;
    }
 
@@ -231,24 +231,24 @@ public abstract class AbstractActiveSetQPSolver
       assert numberOfVariablesToSolve > 0;
       if (linearEqualityConstraintA == null)
       {
-         linearEqualityConstraintA = new DenseMatrix64F(0, numberOfVariablesToSolve);
-         linearEqualityConstraintATranspose = new DenseMatrix64F(numberOfVariablesToSolve, 0);
-         linearEqualityConstraintB = new DenseMatrix64F(0, 1);
+         linearEqualityConstraintA = new DMatrixRMaj(0, numberOfVariablesToSolve);
+         linearEqualityConstraintATranspose = new DMatrixRMaj(numberOfVariablesToSolve, 0);
+         linearEqualityConstraintB = new DMatrixRMaj(0, 1);
       }
 
       if (linearInequalityConstraintA == null)
       {
-         linearInequalityConstraintA = new DenseMatrix64F(0, numberOfVariablesToSolve);
-         linearInequalityConstraintB = new DenseMatrix64F(0, 1);
+         linearInequalityConstraintA = new DMatrixRMaj(0, numberOfVariablesToSolve);
+         linearInequalityConstraintB = new DMatrixRMaj(0, 1);
       }
 
       if (quadraticCostGMatrix == null)
       {
-         quadraticCostGMatrix = new DenseMatrix64F(numberOfVariablesToSolve, numberOfVariablesToSolve);
+         quadraticCostGMatrix = new DMatrixRMaj(numberOfVariablesToSolve, numberOfVariablesToSolve);
       }
       if (quadraticCostFVector == null)
       {
-         quadraticCostFVector = new DenseMatrix64F(numberOfVariablesToSolve, 1);
+         quadraticCostFVector = new DMatrixRMaj(numberOfVariablesToSolve, 1);
       }
    }
 

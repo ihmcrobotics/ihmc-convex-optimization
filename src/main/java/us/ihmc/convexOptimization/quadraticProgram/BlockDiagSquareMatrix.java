@@ -1,29 +1,29 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.factory.LinearSolverFactory;
-import org.ejml.interfaces.linsol.LinearSolver;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
 
-public class BlockDiagSquareMatrix extends DenseMatrix64F
+public class BlockDiagSquareMatrix extends DMatrixRMaj
 {
    private static final long serialVersionUID = 8813856249678942997L;
 
    int[] blockSizes;
    int[] blockStarts;
 
-   DenseMatrix64F[] tmpMatrix;
+   DMatrixRMaj[] tmpMatrix;
 
    public BlockDiagSquareMatrix(int... blockSizes)
    {
       super(0);
       this.blockSizes = blockSizes;
       blockStarts = new int[getNumBlocks() + 1];
-      tmpMatrix = new DenseMatrix64F[getNumBlocks()];
+      tmpMatrix = new DMatrixRMaj[getNumBlocks()];
       int matrixRows = 0;
       for (int i = 0; i < getNumBlocks(); i++)
       {
-         tmpMatrix[i] = new DenseMatrix64F(blockSizes[i], blockSizes[i]);
+         tmpMatrix[i] = new DMatrixRMaj(blockSizes[i], blockSizes[i]);
          blockStarts[i] = matrixRows;
          matrixRows += blockSizes[i];
       }
@@ -37,26 +37,26 @@ public class BlockDiagSquareMatrix extends DenseMatrix64F
       return blockSizes.length;
    }
 
-   public void setBlock(DenseMatrix64F srcBlock, int blockId)
+   public void setBlock(DMatrixRMaj srcBlock, int blockId)
    {
       setBlock(srcBlock, blockId, this);
    }
 
-   public void setBlock(DenseMatrix64F srcBlock, int blockId, DenseMatrix64F dstMatrix)
+   public void setBlock(DMatrixRMaj srcBlock, int blockId, DMatrixRMaj dstMatrix)
    {
       dstMatrix.reshape(numRows, numCols);
       int startIndex = blockStarts[blockId];
-      CommonOps.insert(srcBlock, dstMatrix, startIndex, startIndex);
+      CommonOps_DDRM.insert(srcBlock, dstMatrix, startIndex, startIndex);
    }
 
-   public void packBlock(DenseMatrix64F dstBlock, int blockId, int destX0, int destY0)
+   public void packBlock(DMatrixRMaj dstBlock, int blockId, int destX0, int destY0)
    {
       int startIndex = blockStarts[blockId];
       int endIndex = blockStarts[blockId + 1];
-      CommonOps.extract(this, startIndex, endIndex, startIndex, endIndex, dstBlock, destX0, destY0);
+      CommonOps_DDRM.extract(this, startIndex, endIndex, startIndex, endIndex, dstBlock, destX0, destY0);
    }
 
-   public void packInverse(LinearSolver<DenseMatrix64F> solver, BlockDiagSquareMatrix matrixToPack)
+   public void packInverse(LinearSolverDense<DMatrixRMaj> solver, BlockDiagSquareMatrix matrixToPack)
    {
       for (int i = 0; i < blockSizes.length; i++)
       {
@@ -68,7 +68,7 @@ public class BlockDiagSquareMatrix extends DenseMatrix64F
       }
    }
 
-   public void packInverse(LinearSolver<DenseMatrix64F> solver, DenseMatrix64F matrixToPack)
+   public void packInverse(LinearSolverDense<DMatrixRMaj> solver, DMatrixRMaj matrixToPack)
    {
       matrixToPack.zero();
       for (int i = 0; i < blockSizes.length; i++)
@@ -87,10 +87,10 @@ public class BlockDiagSquareMatrix extends DenseMatrix64F
     * @param b
     * @param c
     */
-   DenseMatrix64F multTempB = new DenseMatrix64F(0);
-   DenseMatrix64F multTempC = new DenseMatrix64F(0);
+   DMatrixRMaj multTempB = new DMatrixRMaj(0);
+   DMatrixRMaj multTempC = new DMatrixRMaj(0);
 
-   public void multTransB(DenseMatrix64F b, DenseMatrix64F c)
+   public void multTransB(DMatrixRMaj b, DMatrixRMaj c)
    {
       for (int i = 0; i < blockSizes.length; i++)
       {
@@ -111,8 +111,8 @@ public class BlockDiagSquareMatrix extends DenseMatrix64F
             /*
              * tmpMatrix[i].reshape(blockSizes[i] , blockSizes[i]); packBlock(tmpMatrix[i], i, 0, 0);
              * multTempB.reshape(b.numRows, blockSizes[i]); multTempC.reshape(blockSizes[i], c.numCols);
-             * CommonOps.extract(b, 0, b.numRows, blockStarts[i], blockStarts[i+1], multTempB, 0, 0);
-             * CommonOps.multTransB(tmpMatrix[i], multTempB, multTempC); CommonOps.insert(multTempC, c,
+             * CommonOps_DDRM.extract(b, 0, b.numRows, blockStarts[i], blockStarts[i+1], multTempB, 0, 0);
+             * CommonOps_DDRM.multTransB(tmpMatrix[i], multTempB, multTempC); CommonOps_DDRM.insert(multTempC, c,
              * blockStarts[i], 0);
              */
          }
@@ -126,7 +126,7 @@ public class BlockDiagSquareMatrix extends DenseMatrix64F
     * @param b
     * @param c
     */
-   public void mult(double alpha, DenseMatrix64F b, DenseMatrix64F c)
+   public void mult(double alpha, DMatrixRMaj b, DMatrixRMaj c)
    {
       for (int i = 0; i < blockSizes.length; i++)
       {
@@ -134,24 +134,24 @@ public class BlockDiagSquareMatrix extends DenseMatrix64F
          packBlock(tmpMatrix[i], i, 0, 0);
          multTempB.reshape(blockSizes[i], b.numCols);
          multTempC.reshape(blockSizes[i], c.numCols);
-         CommonOps.extract(b, blockStarts[i], blockStarts[i + 1], 0, b.numCols, multTempB, 0, 0);
-         CommonOps.mult(alpha, tmpMatrix[i], multTempB, multTempC);
-         CommonOps.insert(multTempC, c, blockStarts[i], 0);
+         CommonOps_DDRM.extract(b, blockStarts[i], blockStarts[i + 1], 0, b.numCols, multTempB, 0, 0);
+         CommonOps_DDRM.mult(alpha, tmpMatrix[i], multTempB, multTempC);
+         CommonOps_DDRM.insert(multTempC, c, blockStarts[i], 0);
       }
    }
 
    public static void main(String[] arg)
    {
       BlockDiagSquareMatrix m = new BlockDiagSquareMatrix(1, 2);
-      DenseMatrix64F b1 = new DenseMatrix64F(1, 1, true, 1);
-      DenseMatrix64F b2 = new DenseMatrix64F(2, 2, true, 2, 3, 4, 5);
+      DMatrixRMaj b1 = new DMatrixRMaj(1, 1, true, 1);
+      DMatrixRMaj b2 = new DMatrixRMaj(2, 2, true, 2, 3, 4, 5);
 
       m.setBlock(b1, 0);
       m.setBlock(b2, 1);
 
       System.out.println(m);
 
-      m.packInverse(LinearSolverFactory.general(m.numRows, m.numCols), m);
+      m.packInverse(LinearSolverFactory_DDRM.general(m.numRows, m.numCols), m);
       b1.zero();
       b2.zero();
 

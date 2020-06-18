@@ -1,15 +1,15 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 
 public class ActualDatasetFrom20160319
 {
    private static final double Infinity = Double.POSITIVE_INFINITY;
 
-   private final DenseMatrix64F costQuadraticMatrix;
-   private final DenseMatrix64F costLinearVector;
-   private final DenseMatrix64F variableLowerBounds;
-   private final DenseMatrix64F variableUpperBounds;
+   private final DMatrixRMaj costQuadraticMatrix;
+   private final DMatrixRMaj costLinearVector;
+   private final DMatrixRMaj variableLowerBounds;
+   private final DMatrixRMaj variableUpperBounds;
 
    public ActualDatasetFrom20160319()
    {
@@ -700,7 +700,7 @@ public class ActualDatasetFrom20160319
                   -60.3386750239527, 64.48497001943974, 208.85136202465375, 116.93795672744322, -23.20527968615551, 102.64322330963329, 242.78645972323204,
                   107.88815301499388, -32.96953477728983, 92.16919205141862, 233.02687984370232, 118.15182006224185, -23.670147280125185, 103.65966748381533,
                   245.4816348261824, 111.15878992080374, -31.215253486910807, 95.5660978751949, 237.94515128290942}};
-      costQuadraticMatrix = new DenseMatrix64F(HData);
+      costQuadraticMatrix = new DMatrixRMaj(HData);
       double[][] fData = new double[][] {{25134.49278441225}, {236658.7545830524}, {-1075.6117421079057}, {391891.5113043774}, {170880.52841264984},
             {4.8650310713514335E7}, {-3543.304212072391}, {256.13151561914697}, {3706.5585393994234}, {889660.8697652605}, {218583.1377856613},
             {-215434.8212993806}, {51995.418016643845}, {-352891.31030792656}, {-352836.3141225593}, {3050.195110623454}, {15163.709272454144},
@@ -713,38 +713,38 @@ public class ActualDatasetFrom20160319
             {-208982.8965520195}, {-208945.70421588732}, {-208906.34233789195}, {-208943.19030089217}, {-208982.49397315463}, {-208945.24464686654},
             {-208905.93998144762}, {-208942.817490589}, {-208982.06550414336}, {-208945.00118712906}, {-208905.7531735635}, {-208942.55099209034},
             {-208981.75490563663}, {-208944.6466605952}, {-208905.44274703643}};
-      costLinearVector = new DenseMatrix64F(fData);
+      costLinearVector = new DMatrixRMaj(fData);
       double[][] lowerBoundsData = new double[][] {{-Infinity}, {-Infinity}, {-Infinity}, {-Infinity}, {-Infinity}, {-Infinity}, {-200.0}, {-200.0}, {-200.0},
             {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {0.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0},
             {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {-200.0}, {4.0}, {4.0}, {4.0}, {4.0},
             {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0},
             {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}, {4.0}};
-      variableLowerBounds = new DenseMatrix64F(lowerBoundsData);
+      variableLowerBounds = new DMatrixRMaj(lowerBoundsData);
       double[][] upperBoundsData = new double[][] {{Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {200.0}, {200.0}, {200.0}, {200.0},
             {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {-0.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0},
             {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {200.0}, {Infinity}, {Infinity}, {Infinity}, {Infinity},
             {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity},
             {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity}, {Infinity},
             {Infinity}, {Infinity}, {Infinity}, {Infinity}};
-      variableUpperBounds = new DenseMatrix64F(upperBoundsData);
+      variableUpperBounds = new DMatrixRMaj(upperBoundsData);
    }
 
-   public DenseMatrix64F getCostQuadraticMatrix()
+   public DMatrixRMaj getCostQuadraticMatrix()
    {
       return costQuadraticMatrix;
    }
 
-   public DenseMatrix64F getCostLinearVector()
+   public DMatrixRMaj getCostLinearVector()
    {
       return costLinearVector;
    }
 
-   public DenseMatrix64F getVariableLowerBounds()
+   public DMatrixRMaj getVariableLowerBounds()
    {
       return variableLowerBounds;
    }
 
-   public DenseMatrix64F getVariableUpperBounds()
+   public DMatrixRMaj getVariableUpperBounds()
    {
       return variableUpperBounds;
    }

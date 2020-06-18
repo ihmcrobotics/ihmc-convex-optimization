@@ -1,7 +1,7 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.ops.CommonOps;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 import us.ihmc.commons.MathTools;
 import us.ihmc.matrixlib.MatrixTools;
@@ -9,26 +9,26 @@ import us.ihmc.matrixlib.NativeCommonOps;
 
 public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver implements ActiveSetQPSolverWithInactiveVariablesInterface
 {
-   private final DenseMatrix64F originalQuadraticCostQMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalQuadraticCostQVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalQuadraticCostQMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalQuadraticCostQVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalLinearEqualityConstraintsAMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalLinearEqualityConstraintsBVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalLinearInequalityConstraintsCMatrixO = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalLinearInequalityConstraintsDVectorO = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalLinearInequalityConstraintsCMatrixO = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalLinearInequalityConstraintsDVectorO = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalLowerBoundsCMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalVariableLowerBounds = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalLowerBoundsCMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalVariableLowerBounds = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F originalUpperBoundsCMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F originalVariableUpperBounds = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj originalUpperBoundsCMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj originalVariableUpperBounds = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F activeVariables = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F activeVariableSolution = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj activeVariables = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj activeVariableSolution = new DMatrixRMaj(0, 0);
 
    @Override
-   public void setActiveVariables(DenseMatrix64F activeVariables)
+   public void setActiveVariables(DMatrixRMaj activeVariables)
    {
       if (activeVariables.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("activeVariables.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -64,11 +64,11 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    public void setAllVariablesActive()
    {
       activeVariables.reshape(originalQuadraticCostQMatrix.getNumRows(), 1);
-      CommonOps.fill(activeVariables, 1.0);
+      CommonOps_DDRM.fill(activeVariables, 1.0);
    }
 
    @Override
-   public void setLowerBounds(DenseMatrix64F variableLowerBounds)
+   public void setLowerBounds(DMatrixRMaj variableLowerBounds)
    {
       int numberOfLowerBounds = variableLowerBounds.getNumRows();
 
@@ -76,28 +76,28 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
          throw new RuntimeException("variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
 
       originalLowerBoundsCMatrix.reshape(numberOfLowerBounds, numberOfLowerBounds);
-      CommonOps.setIdentity(originalLowerBoundsCMatrix);
+      CommonOps_DDRM.setIdentity(originalLowerBoundsCMatrix);
 
       originalVariableLowerBounds.set(variableLowerBounds);
-      CommonOps.scale(-1.0, originalVariableLowerBounds);
+      CommonOps_DDRM.scale(-1.0, originalVariableLowerBounds);
    }
 
    @Override
-   public void setUpperBounds(DenseMatrix64F variableUpperBounds)
+   public void setUpperBounds(DMatrixRMaj variableUpperBounds)
    {
       int numberOfUpperBounds = variableUpperBounds.getNumRows();
       if (numberOfUpperBounds != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableUpperBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
 
       originalUpperBoundsCMatrix.reshape(numberOfUpperBounds, numberOfUpperBounds);
-      CommonOps.setIdentity(originalUpperBoundsCMatrix);
-      CommonOps.scale(-1.0, originalUpperBoundsCMatrix);
+      CommonOps_DDRM.setIdentity(originalUpperBoundsCMatrix);
+      CommonOps_DDRM.scale(-1.0, originalUpperBoundsCMatrix);
 
       originalVariableUpperBounds.set(variableUpperBounds);
    }
 
    @Override
-   public void setQuadraticCostFunction(DenseMatrix64F costQuadraticMatrix, DenseMatrix64F costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -114,16 +114,16 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public double getObjectiveCost(DenseMatrix64F x)
+   public double getObjectiveCost(DMatrixRMaj x)
    {
       NativeCommonOps.multQuad(x, originalQuadraticCostQMatrix, computedObjectiveFunctionValue);
-      CommonOps.scale(0.5, computedObjectiveFunctionValue);
-      CommonOps.multAddTransA(originalQuadraticCostQVector, x, computedObjectiveFunctionValue);
+      CommonOps_DDRM.scale(0.5, computedObjectiveFunctionValue);
+      CommonOps_DDRM.multAddTransA(originalQuadraticCostQVector, x, computedObjectiveFunctionValue);
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
    @Override
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       int numberOfEqualityConstraints = linearEqualityConstraintsBVector.getNumRows();
 
@@ -135,14 +135,14 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
          throw new RuntimeException("linearEqualityConstraintsAMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       originalLinearEqualityConstraintsAMatrix.reshape(linearEqualityConstraintsAMatrix.getNumCols(), numberOfEqualityConstraints);
-      CommonOps.transpose(linearEqualityConstraintsAMatrix, originalLinearEqualityConstraintsAMatrix);
-      CommonOps.scale(-1.0, originalLinearEqualityConstraintsAMatrix);
+      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, originalLinearEqualityConstraintsAMatrix);
+      CommonOps_DDRM.scale(-1.0, originalLinearEqualityConstraintsAMatrix);
 
       originalLinearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
    }
 
    @Override
-   public void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
    {
       int numberOfInequalityConstraints = linearInequalityConstraintDVector.getNumRows();
 
@@ -154,8 +154,8 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
          throw new RuntimeException("linearInequalityConstraintCMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       originalLinearInequalityConstraintsCMatrixO.reshape(linearInequalityConstraintCMatrix.getNumCols(), numberOfInequalityConstraints);
-      CommonOps.transpose(linearInequalityConstraintCMatrix, originalLinearInequalityConstraintsCMatrixO);
-      CommonOps.scale(-1.0, originalLinearInequalityConstraintsCMatrixO);
+      CommonOps_DDRM.transpose(linearInequalityConstraintCMatrix, originalLinearInequalityConstraintsCMatrixO);
+      CommonOps_DDRM.scale(-1.0, originalLinearInequalityConstraintsCMatrixO);
 
       originalLinearInequalityConstraintsDVectorO.set(linearInequalityConstraintDVector);
    }
@@ -185,7 +185,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public int solve(DenseMatrix64F solutionToPack)
+   public int solve(DMatrixRMaj solutionToPack)
    {
       removeInactiveVariables();
 
@@ -259,7 +259,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
       removeZeroColumnsFromConstraints(linearInequalityConstraintsCMatrixO, linearInequalityConstraintsDVectorO);
    }
 
-   private static void removeZeroColumnsFromConstraints(DenseMatrix64F matrix, DenseMatrix64F vector)
+   private static void removeZeroColumnsFromConstraints(DMatrixRMaj matrix, DMatrixRMaj vector)
    {
       for (int rowIndex = vector.numRows - 1; rowIndex >= 0; rowIndex--)
       {
@@ -279,11 +279,11 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
       }
    }
 
-   private void copyActiveVariableSolutionToAllVariables(DenseMatrix64F solutionToPack, DenseMatrix64F activeVariableSolution)
+   private void copyActiveVariableSolutionToAllVariables(DMatrixRMaj solutionToPack, DMatrixRMaj activeVariableSolution)
    {
       if (MatrixTools.containsNaN(activeVariableSolution))
       {
-         CommonOps.fill(solutionToPack, Double.NaN);
+         CommonOps_DDRM.fill(solutionToPack, Double.NaN);
          return;
       }
 

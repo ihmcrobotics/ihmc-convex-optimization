@@ -1,9 +1,9 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
-import org.ejml.data.DenseMatrix64F;
-import org.ejml.factory.DecompositionFactory;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition;
-import org.ejml.ops.CommonOps;
 
 import gnu.trove.list.array.TIntArrayList;
 import us.ihmc.commons.MathTools;
@@ -50,37 +50,37 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    //private static final double epsilon = 1.0e-12;
    private static final double epsilon = 1.0e-24;
 
-   private final DenseMatrix64F R = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj R = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F inequalityConstraintViolations = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F stepDirectionInPrimalSpace = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F infeasibilityMultiplier = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F d = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj inequalityConstraintViolations = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj stepDirectionInPrimalSpace = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj infeasibilityMultiplier = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj d = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F violatedConstraintNormal = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F previousLagrangeMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F previousSolution = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj violatedConstraintNormal = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj previousLagrangeMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj previousSolution = new DMatrixRMaj(0, 0);
 
    private final TIntArrayList activeSetIndices = new TIntArrayList(0);
    private final TIntArrayList previousActiveSetIndices = new TIntArrayList(0);
    private final TIntArrayList inactiveSetIndices = new TIntArrayList(0);
    private final TIntArrayList excludeConstraintFromActiveSet = new TIntArrayList(0); // booleans
 
-   private final DenseMatrix64F J = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F Q_augmented = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F q_augmented = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F Q_augmented_inv = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj J = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj Q_augmented = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj q_augmented = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj Q_augmented_inv = new DMatrixRMaj(0, 0);
 
-   private final CholeskyDecomposition<DenseMatrix64F> decomposer = DecompositionFactory.chol(defaultSize, false);
+   private final CholeskyDecomposition<DMatrixRMaj> decomposer = DecompositionFactory_DDRM.chol(defaultSize, false);
 
-   private final DenseMatrix64F decomposedQuadraticCostQMatrix = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj decomposedQuadraticCostQMatrix = new DMatrixRMaj(0, 0);
 
-   private final DenseMatrix64F totalLinearInequalityConstraintsCMatrix = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F totalLinearInequalityConstraintsDVector = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj totalLinearInequalityConstraintsCMatrix = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj totalLinearInequalityConstraintsDVector = new DMatrixRMaj(0, 0);
 
-   protected final DenseMatrix64F lowerBoundsCMatrix = new DenseMatrix64F(0, 0);
-   protected final DenseMatrix64F upperBoundsCMatrix = new DenseMatrix64F(0, 0);
+   protected final DMatrixRMaj lowerBoundsCMatrix = new DMatrixRMaj(0, 0);
+   protected final DMatrixRMaj upperBoundsCMatrix = new DMatrixRMaj(0, 0);
 
    private int problemSize;
    private int numberOfInequalityConstraints;
@@ -97,7 +97,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    private double convergenceThreshold = 1.0e-14;
    //private double convergenceThreshold = Double.MIN_VALUE;
 
-   protected final DenseMatrix64F computedObjectiveFunctionValue = new DenseMatrix64F(1, 1);
+   protected final DMatrixRMaj computedObjectiveFunctionValue = new DMatrixRMaj(1, 1);
 
    public void setRequireInequalityConstraintsSatisfied(boolean requireInequalityConstraintsSatisfied)
    {
@@ -144,35 +144,35 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public void setLowerBounds(DenseMatrix64F variableLowerBounds)
+   public void setLowerBounds(DMatrixRMaj variableLowerBounds)
    {
       int numberOfLowerBounds = variableLowerBounds.getNumRows();
       if (numberOfLowerBounds != quadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
 
       lowerBoundsCMatrix.reshape(numberOfLowerBounds, numberOfLowerBounds);
-      CommonOps.setIdentity(lowerBoundsCMatrix);
+      CommonOps_DDRM.setIdentity(lowerBoundsCMatrix);
 
       this.variableLowerBounds.set(variableLowerBounds);
-      CommonOps.scale(-1.0, this.variableLowerBounds);
+      CommonOps_DDRM.scale(-1.0, this.variableLowerBounds);
    }
 
    @Override
-   public void setUpperBounds(DenseMatrix64F variableUpperBounds)
+   public void setUpperBounds(DMatrixRMaj variableUpperBounds)
    {
       int numberOfUpperBounds = variableUpperBounds.getNumRows();
       if (numberOfUpperBounds != quadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableUpperBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
 
       upperBoundsCMatrix.reshape(numberOfUpperBounds, numberOfUpperBounds);
-      CommonOps.setIdentity(upperBoundsCMatrix);
-      CommonOps.scale(-1.0, upperBoundsCMatrix);
+      CommonOps_DDRM.setIdentity(upperBoundsCMatrix);
+      CommonOps_DDRM.scale(-1.0, upperBoundsCMatrix);
 
       this.variableUpperBounds.set(variableUpperBounds);
    }
 
    @Override
-   public void setQuadraticCostFunction(DenseMatrix64F costQuadraticMatrix, DenseMatrix64F costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -187,16 +187,16 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public double getObjectiveCost(DenseMatrix64F x)
+   public double getObjectiveCost(DMatrixRMaj x)
    {
       NativeCommonOps.multQuad(x, quadraticCostQMatrix, computedObjectiveFunctionValue);
-      CommonOps.scale(0.5, computedObjectiveFunctionValue);
-      CommonOps.multAddTransA(quadraticCostQVector, x, computedObjectiveFunctionValue);
+      CommonOps_DDRM.scale(0.5, computedObjectiveFunctionValue);
+      CommonOps_DDRM.multAddTransA(quadraticCostQVector, x, computedObjectiveFunctionValue);
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
    @Override
-   public void setLinearEqualityConstraints(DenseMatrix64F linearEqualityConstraintsAMatrix, DenseMatrix64F linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       int numberOfEqualityConstraints = linearEqualityConstraintsBVector.getNumRows();
 
@@ -208,14 +208,14 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          throw new RuntimeException("linearEqualityConstraintsAMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       this.linearEqualityConstraintsAMatrix.reshape(quadraticCostQMatrix.getNumCols(), numberOfEqualityConstraints);
-      CommonOps.transpose(linearEqualityConstraintsAMatrix, this.linearEqualityConstraintsAMatrix);
-      CommonOps.scale(-1.0, this.linearEqualityConstraintsAMatrix);
+      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, this.linearEqualityConstraintsAMatrix);
+      CommonOps_DDRM.scale(-1.0, this.linearEqualityConstraintsAMatrix);
 
       this.linearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
    }
 
    @Override
-   public void setLinearInequalityConstraints(DenseMatrix64F linearInequalityConstraintCMatrix, DenseMatrix64F linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
    {
       int numberOfInequalityConstraints = linearInequalityConstraintDVector.getNumRows();
 
@@ -227,8 +227,8 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          throw new RuntimeException("linearInequalityConstraintCMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       linearInequalityConstraintsCMatrixO.reshape(quadraticCostQMatrix.getNumCols(), numberOfInequalityConstraints);
-      CommonOps.transpose(linearInequalityConstraintCMatrix, linearInequalityConstraintsCMatrixO);
-      CommonOps.scale(-1.0, linearInequalityConstraintsCMatrixO);
+      CommonOps_DDRM.transpose(linearInequalityConstraintCMatrix, linearInequalityConstraintsCMatrixO);
+      CommonOps_DDRM.scale(-1.0, linearInequalityConstraintsCMatrixO);
 
       linearInequalityConstraintsDVectorO.set(linearInequalityConstraintDVector);
    }
@@ -245,13 +245,13 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       // TODO
    }
 
-   private final DenseMatrix64F lagrangeEqualityConstraintMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeInequalityConstraintMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeLowerBoundMultipliers = new DenseMatrix64F(0, 0);
-   private final DenseMatrix64F lagrangeUpperBoundMultipliers = new DenseMatrix64F(0, 0);
+   private final DMatrixRMaj lagrangeEqualityConstraintMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeInequalityConstraintMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 0);
+   private final DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 0);
 
    @Override
-   public int solve(DenseMatrix64F solutionToPack)
+   public int solve(DMatrixRMaj solutionToPack)
    {
       numberOfEqualityConstraints = linearEqualityConstraintsBVector.getNumRows();
       numberOfLowerBounds = variableLowerBounds.getNumRows();
@@ -284,7 +284,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       /** Preprocessing phase */
 
       // compute the trace of the original matrix quadraticCostQMatrix
-      c1 = CommonOps.trace(quadraticCostQMatrix);
+      c1 = CommonOps_DDRM.trace(quadraticCostQMatrix);
 
       // decompose the matrix quadraticCostQMatrix in the form L^T L
       decomposedQuadraticCostQMatrix.set(quadraticCostQMatrix);
@@ -294,7 +294,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
 
       // compute the inverse of the factorized matrix G^-1, this is the initial value for H //// TODO: 5/14/17 combine this with the decomposition
       NativeCommonOps.invert(decomposedQuadraticCostQMatrix, J);
-      c2 = CommonOps.trace(J);
+      c2 = CommonOps_DDRM.trace(J);
 
       int numberOfIterations = 0;
 
@@ -311,7 +311,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
             MatrixTools.setMatrixBlock(Q_augmented, 0, problemSize, linearEqualityConstraintsAMatrix, 0, 0, problemSize, numberOfEqualityConstraints, -1.0);
 
             tempMatrix.reshape(numberOfEqualityConstraints, problemSize);
-            CommonOps.transpose(linearEqualityConstraintsAMatrix, tempMatrix);
+            CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, tempMatrix);
 
             MatrixTools.setMatrixBlock(Q_augmented, problemSize, 0, tempMatrix, 0, 0, numberOfEqualityConstraints, problemSize, 1.0);
 
@@ -321,7 +321,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
             MatrixTools.setMatrixBlock(q_augmented, problemSize, 0, linearEqualityConstraintsBVector, 0, 0, numberOfEqualityConstraints, 1, -1.0);
 
             tempMatrix.reshape(problemSize + numberOfEqualityConstraints, 1);
-            CommonOps.mult(Q_augmented_inv, q_augmented, tempMatrix);
+            CommonOps_DDRM.mult(Q_augmented_inv, q_augmented, tempMatrix);
             MatrixTools.setMatrixBlock(solutionToPack, 0, 0, tempMatrix, 0, 0, problemSize, 1, 1.0);
             MatrixTools.setMatrixBlock(lagrangeMultipliers, 0, 0, tempMatrix, problemSize, 0, numberOfEqualityConstraints, 1, 1.0);
 
@@ -336,11 +336,11 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
 
                if (!addConstraint())
                { // Constraints are linearly dependent
-                  CommonOps.fill(solutionToPack, Double.NaN);
-                  CommonOps.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
-                  CommonOps.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
-                  CommonOps.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
-                  CommonOps.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
+                  CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+                  CommonOps_DDRM.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
+                  CommonOps_DDRM.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
+                  CommonOps_DDRM.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
+                  CommonOps_DDRM.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
                   return numberOfIterations - 1;
                }
             }
@@ -353,8 +353,8 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
             // this is the feasible point in the dual space.
             // x = -G^-1 * g0 = -J * J^T * g0
             tempMatrix.reshape(problemSize, 1);
-            CommonOps.multTransA(J, quadraticCostQVector, tempMatrix);
-            CommonOps.mult(-1.0, J, tempMatrix, solutionToPack);
+            CommonOps_DDRM.multTransA(J, quadraticCostQVector, tempMatrix);
+            CommonOps_DDRM.mult(-1.0, J, tempMatrix, solutionToPack);
 
             // Add equality constraints to the working set A
             numberOfActiveConstraints = 0;
@@ -368,8 +368,8 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          // this is the feasible point in the dual space.
          // x = -G^-1 * g0 = -J * J^T * g0
          tempMatrix.reshape(problemSize, 1);
-         CommonOps.multTransA(J, quadraticCostQVector, tempMatrix);
-         CommonOps.mult(-1.0, J, tempMatrix, solutionToPack);
+         CommonOps_DDRM.multTransA(J, quadraticCostQVector, tempMatrix);
+         CommonOps_DDRM.mult(-1.0, J, tempMatrix, solutionToPack);
 
          // Add equality constraints to the working set A
          numberOfActiveConstraints = 0;
@@ -385,7 +385,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
             double stepLengthForEqualityConstraint = computeStepLengthForEqualityConstraint(solutionToPack, equalityConstraintIndex);
 
             // set x = x + minimumStepInPrimalSpace * stepDirectionInPrimalSpace
-            CommonOps.addEquals(solutionToPack, stepLengthForEqualityConstraint, stepDirectionInPrimalSpace);
+            CommonOps_DDRM.addEquals(solutionToPack, stepLengthForEqualityConstraint, stepDirectionInPrimalSpace);
 
             // set u = u+
             lagrangeMultipliers.set(numberOfActiveConstraints, stepLengthForEqualityConstraint);
@@ -396,11 +396,11 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
 
             if (!addConstraint())
             { // Constraints are linearly dependent
-               CommonOps.fill(solutionToPack, Double.NaN);
-               CommonOps.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
-               CommonOps.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
-               CommonOps.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
-               CommonOps.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+               CommonOps_DDRM.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
                return numberOfIterations - 1;
             }
          }
@@ -449,11 +449,11 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
                {
                   if (requireInequalityConstraintsSatisfied)
                   { // the active set clearly wasn't satisfied, so the solution isn't valid.
-                     CommonOps.fill(solutionToPack, Double.NaN);
-                     CommonOps.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
-                     CommonOps.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
-                     CommonOps.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
-                     CommonOps.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
+                     CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+                     CommonOps_DDRM.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
+                     CommonOps_DDRM.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
+                     CommonOps_DDRM.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
+                     CommonOps_DDRM.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
                      return numberOfIterations;
                   }
                   else
@@ -504,11 +504,11 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
 
                break;
             case FAILED:
-               CommonOps.fill(solutionToPack, Double.NaN);
-               CommonOps.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
-               CommonOps.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
-               CommonOps.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
-               CommonOps.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+               CommonOps_DDRM.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
+               CommonOps_DDRM.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
                return numberOfIterations;
             default:
                throw new RuntimeException("This is an empty state.");
@@ -520,11 +520,11 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          // Step 2c: determine new S-pair and take step:
          if (!Double.isFinite(stepLength))
          { // case (i): no step in primal or dual space, QP is infeasible
-            CommonOps.fill(solutionToPack, Double.NaN);
-            CommonOps.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
-            CommonOps.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
-            CommonOps.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
-            CommonOps.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
+            CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+            CommonOps_DDRM.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
+            CommonOps_DDRM.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
+            CommonOps_DDRM.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
+            CommonOps_DDRM.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
             return numberOfIterations;
          }
          else if (!Double.isFinite(fullStepLength))
@@ -545,18 +545,18 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          }
       }
 
-      CommonOps.fill(solutionToPack, Double.NaN);
-      CommonOps.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
-      CommonOps.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
-      CommonOps.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
-      CommonOps.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
+      CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+      CommonOps_DDRM.fill(lagrangeEqualityConstraintMultipliers, Double.POSITIVE_INFINITY);
+      CommonOps_DDRM.fill(lagrangeInequalityConstraintMultipliers, Double.POSITIVE_INFINITY);
+      CommonOps_DDRM.fill(lagrangeLowerBoundMultipliers, Double.POSITIVE_INFINITY);
+      CommonOps_DDRM.fill(lagrangeUpperBoundMultipliers, Double.POSITIVE_INFINITY);
       return numberOfIterations - 1;
    }
 
    private void compute_d()
    {
       // compute d = H^T * np
-      CommonOps.multTransA(J, violatedConstraintNormal, d);
+      CommonOps_DDRM.multTransA(J, violatedConstraintNormal, d);
    }
 
    // compute z = H np: the step direction in the primal space (through J, see the paper)
@@ -587,7 +587,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       }
    }
 
-   private boolean computeConstraintViolations(DenseMatrix64F solutionToPack, double c1, double c2)
+   private boolean computeConstraintViolations(DMatrixRMaj solutionToPack, double c1, double c2)
    {
       // step 1: choose a violated constraint
       for (int activeInequalityIndex = numberOfEqualityConstraints; activeInequalityIndex < numberOfActiveConstraints; activeInequalityIndex++)
@@ -624,14 +624,14 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       return false;
    }
 
-   private double computeStepLengthForEqualityConstraint(DenseMatrix64F solutionToPack, int equalityConstraintIndex)
+   private double computeStepLengthForEqualityConstraint(DMatrixRMaj solutionToPack, int equalityConstraintIndex)
    {
       // compute full step length: i.e., the minimum step in primal space s.t. the constraint becomes feasible
       double fullStepLength = 0.0;
-      if (!MathTools.epsilonEquals(CommonOps.dot(stepDirectionInPrimalSpace, stepDirectionInPrimalSpace), 0.0, epsilon)) // i.e. z != 0
+      if (!MathTools.epsilonEquals(CommonOps_DDRM.dot(stepDirectionInPrimalSpace, stepDirectionInPrimalSpace), 0.0, epsilon)) // i.e. z != 0
       {
-         fullStepLength = (-CommonOps.dot(violatedConstraintNormal, solutionToPack) - linearEqualityConstraintsBVector.get(equalityConstraintIndex))
-               / CommonOps.dot(stepDirectionInPrimalSpace, violatedConstraintNormal);
+         fullStepLength = (-CommonOps_DDRM.dot(violatedConstraintNormal, solutionToPack) - linearEqualityConstraintsBVector.get(equalityConstraintIndex))
+               / CommonOps_DDRM.dot(stepDirectionInPrimalSpace, violatedConstraintNormal);
       }
       return fullStepLength;
    }
@@ -659,7 +659,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       double fullStepLength = Double.POSITIVE_INFINITY;
       // Compute full step length (minimum step in primal space such that the violated constraint becomes feasible
       {
-         fullStepLength = -inequalityConstraintViolations.get(violatedConstraintIndex) / CommonOps.dot(stepDirectionInPrimalSpace, violatedConstraintNormal);
+         fullStepLength = -inequalityConstraintViolations.get(violatedConstraintIndex) / CommonOps_DDRM.dot(stepDirectionInPrimalSpace, violatedConstraintNormal);
          if (fullStepLength < 0.0) // patch suggested by Takano Akio for handling numerical inconsistencies
             fullStepLength = Double.POSITIVE_INFINITY;
       }
@@ -681,9 +681,9 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          return QuadProgStep.FAILED;
    }
 
-   private QuadProgStep takeStepInPrimalAndDualSpace(DenseMatrix64F solutionToPack, double stepLength, double fullStepLength, int mostViolatedConstraintIndex)
+   private QuadProgStep takeStepInPrimalAndDualSpace(DMatrixRMaj solutionToPack, double stepLength, double fullStepLength, int mostViolatedConstraintIndex)
    {
-      CommonOps.addEquals(solutionToPack, stepLength, stepDirectionInPrimalSpace);
+      CommonOps_DDRM.addEquals(solutionToPack, stepLength, stepDirectionInPrimalSpace);
 
       // u = u + t * [r 1]
       MatrixTools.addMatrixBlock(lagrangeMultipliers, 0, 0, infeasibilityMultiplier, 0, 0, numberOfActiveConstraints, 1, stepLength);
@@ -806,7 +806,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    /** the only time this should be called is when removing an inequality constraint **/
-   private boolean deleteConstraint(DenseMatrix64F J)
+   private boolean deleteConstraint(DMatrixRMaj J)
    {
       double cc, ss, h, xny, t1, t2;
       int qq = -1;
@@ -988,9 +988,9 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    // TODO make this more efficient
-   private void partitionLagrangeMultipliers(DenseMatrix64F lagrangeEqualityConstraintMultipliersToPack,
-                                             DenseMatrix64F lagrangeInequalityConstraintMultipliersToPack, DenseMatrix64F lagrangeLowerBoundMultipliersToPack,
-                                             DenseMatrix64F lagrangeUpperBoundMultipliersToPack)
+   private void partitionLagrangeMultipliers(DMatrixRMaj lagrangeEqualityConstraintMultipliersToPack,
+                                             DMatrixRMaj lagrangeInequalityConstraintMultipliersToPack, DMatrixRMaj lagrangeLowerBoundMultipliersToPack,
+                                             DMatrixRMaj lagrangeUpperBoundMultipliersToPack)
    {
       MatrixTools.setMatrixBlock(lagrangeEqualityConstraintMultipliersToPack, 0, 0, lagrangeMultipliers, 0, 0, numberOfEqualityConstraints, 1, 1.0);
 
@@ -1056,28 +1056,28 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       return a1 * Math.sqrt(2.0);
    }
 
-   private final DenseMatrix64F tempMatrix = new DenseMatrix64F(defaultSize, defaultSize);
+   private final DMatrixRMaj tempMatrix = new DMatrixRMaj(defaultSize, defaultSize);
 
    @Override
-   public void getLagrangeEqualityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeEqualityConstraintMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeEqualityConstraintMultipliers);
    }
 
    @Override
-   public void getLagrangeInequalityConstraintMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeInequalityConstraintMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeInequalityConstraintMultipliers);
    }
 
    @Override
-   public void getLagrangeLowerBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeLowerBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeLowerBoundMultipliers);
    }
 
    @Override
-   public void getLagrangeUpperBoundsMultipliers(DenseMatrix64F multipliersMatrixToPack)
+   public void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeUpperBoundMultipliers);
    }

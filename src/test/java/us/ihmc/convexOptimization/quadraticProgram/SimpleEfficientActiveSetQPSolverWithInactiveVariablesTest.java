@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.ejml.data.DenseMatrix64F;
+import org.ejml.data.DMatrixRMaj;
 import org.junit.jupiter.api.Test;
 
 import us.ihmc.matrixlib.MatrixTools;
@@ -40,7 +40,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
    }
 
    @Override
-   public DenseMatrix64F getLowerBounds()
+   public DMatrixRMaj getLowerBounds()
    {
       // Need to modify the bounds for some tests to get a valid problem for this type of solver.
       return MatrixTools.createVector(-5.0, 6.0, -2.0);
@@ -65,18 +65,18 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      DenseMatrix64F costQuadraticMatrix = new DenseMatrix64F(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
-      DenseMatrix64F costLinearVector = MatrixTools.createVector(0.0, 0.0);
+      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DenseMatrix64F linearInequalityConstraintsCMatrix = new DenseMatrix64F(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
-      DenseMatrix64F linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
+      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
-      DenseMatrix64F solution = new DenseMatrix64F(2, 1);
-      DenseMatrix64F lagrangeEqualityMultipliers = new DenseMatrix64F(0, 1);
-      DenseMatrix64F lagrangeInequalityMultipliers = new DenseMatrix64F(3, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+      DMatrixRMaj lagrangeEqualityMultipliers = new DMatrixRMaj(0, 1);
+      DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(3, 1);
       int numberOfIterations1 = solver.solve(solution);
       solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
       solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
@@ -108,7 +108,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
-      DenseMatrix64F solution = new DenseMatrix64F(dataset.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
       int numberOfIterations = solver.solve(solution);
 
@@ -126,7 +126,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
-      DenseMatrix64F solution = new DenseMatrix64F(dataset.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
       int numberOfIterations = solver.solve(solution);
 
@@ -149,7 +149,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
       solver.clear();
       solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
-      DenseMatrix64F solution = new DenseMatrix64F(dataset.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
       int numberOfIterations = solver.solve(solution);
 
@@ -162,7 +162,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariablesTest extends A
    {
       ActualDatasetFromKiwi20171015A datasetA = new ActualDatasetFromKiwi20171015A();
       ActualDatasetFromKiwi20171015B datasetB = new ActualDatasetFromKiwi20171015B();
-      DenseMatrix64F solution = new DenseMatrix64F(datasetA.getProblemSize(), 1);
+      DMatrixRMaj solution = new DMatrixRMaj(datasetA.getProblemSize(), 1);
 
       ActiveSetQPSolver solver = createSolverToTest();
       solver.setUseWarmStart(true);
