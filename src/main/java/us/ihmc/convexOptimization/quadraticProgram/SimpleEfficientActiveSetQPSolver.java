@@ -174,9 +174,6 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
          throw new RuntimeException("costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols()");
       
       this.costQuadraticMatrix.set(costQuadraticMatrix);
-
-      symmetricCostQuadraticMatrix.reshape(costQuadraticMatrix.getNumCols(), costQuadraticMatrix.getNumRows());
-      quadraticCostQMatrix.reshape(costQuadraticMatrix.getNumCols(), costQuadraticMatrix.getNumRows());
       symmetricCostQuadraticMatrix.transpose(this.costQuadraticMatrix);
 
       symmetricCostQuadraticMatrix.add(this.costQuadraticMatrix, symmetricCostQuadraticMatrix);
@@ -357,9 +354,6 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
       QInverse.invert(quadraticCostQMatrix);
 
-      AQInverse.reshape(numberOfEqualityConstraints, numberOfVariables);
-      QInverseATranspose.reshape(numberOfVariables, numberOfEqualityConstraints);
-      AQInverseATranspose.reshape(numberOfEqualityConstraints, numberOfEqualityConstraints);
 
       if (numberOfEqualityConstraints > 0)
       {
@@ -367,25 +361,31 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
          QInverseATranspose.multTransB(QInverse, linearEqualityConstraintsAMatrix);
          AQInverseATranspose.multTransB(AQInverse, linearEqualityConstraintsAMatrix);
       }
+      else
+      {
+         AQInverse.reshape(numberOfEqualityConstraints, numberOfVariables);
+         QInverseATranspose.reshape(numberOfVariables, numberOfEqualityConstraints);
+         AQInverseATranspose.reshape(numberOfEqualityConstraints, numberOfEqualityConstraints);         
+      }
    }
 
    private void computeCBarTempMatrices()
    {
       if (CBar.getNumRows() > 0)
       {
-         AQInverseCBarTranspose.reshape(AQInverse.getNumRows(), CBar.getNumRows());
+         
          AQInverseCBarTranspose.multTransB(AQInverse, CBar);
 
-         CBarQInverseATranspose.reshape(CBar.getNumRows(), QInverseATranspose.getNumCols());
+         
          CBarQInverseATranspose.mult(CBar, QInverseATranspose);
 
-         CBarQInverse.reshape(CBar.getNumRows(), QInverse.getNumCols());
+         
          CBarQInverse.mult(CBar, QInverse);
 
-         QInverseCBarTranspose.reshape(QInverse.getNumRows(), CBar.getNumRows());
+         
          QInverseCBarTranspose.multTransB(QInverse, CBar);
 
-         CBarQInverseCBarTranspose.reshape(CBar.getNumRows(), QInverseCBarTranspose.getNumCols());
+         
          CBarQInverseCBarTranspose.mult(CBar, QInverseCBarTranspose);
       }
       else
@@ -402,28 +402,26 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    {
       if (CHat.getNumRows() > 0)
       {
-         AQInverseCHatTranspose.reshape(AQInverse.getNumRows(), CHat.getNumRows());
          AQInverseCHatTranspose.multTransB(AQInverse, CHat);
 
-         CHatQInverseATranspose.reshape(CHat.getNumRows(), QInverseATranspose.getNumCols());
          CHatQInverseATranspose.mult(CHat, QInverseATranspose);
 
-         CHatQInverse.reshape(CHat.getNumRows(), QInverse.getNumCols());
          CHatQInverse.mult(CHat, QInverse);
 
-         QInverseCHatTranspose.reshape(QInverse.getNumRows(), CHat.getNumRows());
          QInverseCHatTranspose.multTransB(QInverse, CHat);
 
-         CHatQInverseCHatTranspose.reshape(CHat.getNumRows(), QInverseCHatTranspose.getNumCols());
          CHatQInverseCHatTranspose.mult(CHat, QInverseCHatTranspose);
 
-         CBarQInverseCHatTranspose.reshape(CBar.getNumRows(), CHat.getNumRows());
-         CHatQInverseCBarTranspose.reshape(CHat.getNumRows(), CBar.getNumRows());
 
          if (CBar.getNumRows() > 0)
          {
             CBarQInverseCHatTranspose.mult(CBar, QInverseCHatTranspose);
             CHatQInverseCBarTranspose.mult(CHat, QInverseCBarTranspose);
+         }
+         else
+         {
+            CBarQInverseCHatTranspose.reshape(CBar.getNumRows(), CHat.getNumRows());
+            CHatQInverseCBarTranspose.reshape(CHat.getNumRows(), CBar.getNumRows());            
          }
       }
       else
@@ -457,7 +455,6 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
             maxUpperBoundViolation = Double.NEGATIVE_INFINITY;
       if (numberOfInequalityConstraints != 0)
       {
-         linearInequalityConstraintsCheck.reshape(numberOfInequalityConstraints, 1);
          linearInequalityConstraintsCheck.scale(-1.0, linearInequalityConstraintsDVectorO);
          linearInequalityConstraintsCheck.multAdd(linearInequalityConstraintsCMatrixO, solutionToPack);
 
@@ -471,7 +468,6 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
          }
       }
 
-      lowerBoundViolations.reshape(numberOfLowerBoundConstraints, 1);
       if (numberOfLowerBoundConstraints != 0)
       {
          lowerBoundViolations.subtract(variableLowerBounds, solutionToPack);
@@ -485,8 +481,12 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
                maxLowerBoundViolation = lowerBoundViolations.get(i, 0);
          }
       }
+      else
+      {
+         lowerBoundViolations.reshape(numberOfLowerBoundConstraints, 1);         
+      }
 
-      upperBoundViolations.reshape(numberOfUpperBoundConstraints, 1);
+      
       if (numberOfUpperBoundConstraints != 0)
       {
          upperBoundViolations.subtract(solutionToPack, variableUpperBounds);
@@ -499,6 +499,10 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
             if (upperBoundViolations.get(i, 0) >= maxUpperBoundViolation)
                maxUpperBoundViolation = upperBoundViolations.get(i, 0);
          }
+      }
+      else
+      {
+         upperBoundViolations.reshape(numberOfUpperBoundConstraints, 1);
       }
 
       double maxConstraintViolation = Math.max(maxInequalityViolation, Math.max(maxLowerBoundViolation, maxUpperBoundViolation));
@@ -836,10 +840,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       AAndC.insert(CBar, numberOfOriginalEqualityConstraints, 0);
       AAndC.insert(CHat, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
 
-      ATransposeMuAndCTransposeLambda.reshape(numberOfVariables, 1);
       ATransposeMuAndCTransposeLambda.multTransA(AAndC, augmentedLagrangeMultipliers);
 
-      tempVector.reshape(quadraticCostQVector.getNumRows(), 1);
       tempVector.add(quadraticCostQVector, ATransposeMuAndCTransposeLambda);
 
       xSolutionToPack.mult(-1.0, QInverse, tempVector);
