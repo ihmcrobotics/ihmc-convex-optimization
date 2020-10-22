@@ -37,7 +37,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private final TIntArrayList activeLowerBoundIndices = new TIntArrayList();
 
    // Some temporary matrices:
-   private final NativeMatrix nativexSolutionMatrix = new NativeMatrix(0, 0);
+   protected final NativeMatrix nativexSolutionMatrix = new NativeMatrix(0, 0);
    protected final NativeMatrix costQuadraticMatrix = new NativeMatrix(0, 0);
    protected final NativeMatrix symmetricCostQuadraticMatrix = new NativeMatrix(0, 0);
 

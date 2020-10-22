@@ -5,22 +5,22 @@ import org.ejml.dense.row.CommonOps_DDRM;
 
 import us.ihmc.commons.MathTools;
 import us.ihmc.matrixlib.MatrixTools;
-import us.ihmc.matrixlib.NativeCommonOps;
+import us.ihmc.matrixlib.NativeMatrix;
 
 public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends SimpleEfficientActiveSetQPSolver
       implements ActiveSetQPSolverWithInactiveVariablesInterface
 {
-   private final DMatrixRMaj originalQuadraticCostQMatrix = new DMatrixRMaj(0, 0);
-   private final DMatrixRMaj originalQuadraticCostQVector = new DMatrixRMaj(0, 0);
+   private final NativeMatrix originalQuadraticCostQMatrix = new NativeMatrix(0, 0);
+   private final NativeMatrix originalQuadraticCostQVector = new NativeMatrix(0, 0);
 
-   private final DMatrixRMaj originalLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
-   private final DMatrixRMaj originalLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
+   private final NativeMatrix originalLinearEqualityConstraintsAMatrix = new NativeMatrix(0, 0);
+   private final NativeMatrix originalLinearEqualityConstraintsBVector = new NativeMatrix(0, 0);
 
-   private final DMatrixRMaj originalLinearInequalityConstraintsCMatrixO = new DMatrixRMaj(0, 0);
-   private final DMatrixRMaj originalLinearInequalityConstraintsDVectorO = new DMatrixRMaj(0, 0);
+   private final NativeMatrix originalLinearInequalityConstraintsCMatrixO = new NativeMatrix(0, 0);
+   private final NativeMatrix originalLinearInequalityConstraintsDVectorO = new NativeMatrix(0, 0);
 
-   private final DMatrixRMaj originalVariableLowerBounds = new DMatrixRMaj(0, 0);
-   private final DMatrixRMaj originalVariableUpperBounds = new DMatrixRMaj(0, 0);
+   private final NativeMatrix originalVariableLowerBounds = new NativeMatrix(0, 0);
+   private final NativeMatrix originalVariableUpperBounds = new NativeMatrix(0, 0);
 
    private final DMatrixRMaj activeVariables = new DMatrixRMaj(0, 0);
    private final DMatrixRMaj activeVariableSolution = new DMatrixRMaj(0, 0);
@@ -49,20 +49,20 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
          if (activeVariables.get(variableIndex) == 1.0)
             continue;
 
-         MatrixTools.removeRow(quadraticCostQMatrix, variableIndex);
-         MatrixTools.removeColumn(quadraticCostQMatrix, variableIndex);
+         quadraticCostQMatrix.removeRow(variableIndex);
+         quadraticCostQMatrix.removeColumn(variableIndex);
 
-         MatrixTools.removeRow(quadraticCostQVector, variableIndex);
+         quadraticCostQVector.removeRow(variableIndex);
 
          if (linearEqualityConstraintsAMatrix.getNumElements() > 0)
-            MatrixTools.removeColumn(linearEqualityConstraintsAMatrix, variableIndex);
+            linearEqualityConstraintsAMatrix.removeColumn(variableIndex);
          if (linearInequalityConstraintsCMatrixO.getNumElements() > 0)
-            MatrixTools.removeColumn(linearInequalityConstraintsCMatrixO, variableIndex);
+            linearInequalityConstraintsCMatrixO.removeColumn(variableIndex);
 
          if (variableLowerBounds.getNumElements() > 0)
-            MatrixTools.removeRow(variableLowerBounds, variableIndex);
+            variableLowerBounds.removeRow(variableIndex);
          if (variableUpperBounds.getNumElements() > 0)
-            MatrixTools.removeRow(variableUpperBounds, variableIndex);
+            variableUpperBounds.removeRow(variableIndex);
       }
 
       int numVars = quadraticCostQMatrix.getNumRows();
@@ -75,9 +75,9 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
       removeZeroRowsFromConstraints(linearInequalityConstraintsCMatrixO, linearInequalityConstraintsDVectorO);
    }
 
-   private static void removeZeroRowsFromConstraints(DMatrixRMaj matrix, DMatrixRMaj vector)
+   private static void removeZeroRowsFromConstraints(NativeMatrix matrix, NativeMatrix vector)
    {
-      for (int rowIndex = vector.numRows - 1; rowIndex >= 0; rowIndex--)
+      for (int rowIndex = vector.getNumRows() - 1; rowIndex >= 0; rowIndex--)
       {
          double sumOfRowElements = 0.0;
 
@@ -89,8 +89,8 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
          boolean isZeroRow = MathTools.epsilonEquals(sumOfRowElements, 0.0, 1e-12);
          if (isZeroRow)
          {
-            MatrixTools.removeRow(matrix, rowIndex);
-            MatrixTools.removeRow(vector, rowIndex);
+            matrix.removeRow(rowIndex);
+            vector.removeRow(rowIndex);
          }
       }
    }
@@ -145,11 +145,12 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
       if (costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols())
          throw new RuntimeException("costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols()");
 
-      symmetricCostQuadraticMatrix.reshape(costQuadraticMatrix.getNumCols(), costQuadraticMatrix.getNumRows());
-      CommonOps_DDRM.transpose(costQuadraticMatrix, symmetricCostQuadraticMatrix);
+      this.costQuadraticMatrix.set(costQuadraticMatrix);
+      
+      symmetricCostQuadraticMatrix.transpose(this.costQuadraticMatrix);
+      symmetricCostQuadraticMatrix.add(this.costQuadraticMatrix, symmetricCostQuadraticMatrix);   // Note: Check for aliasing
+      symmetricCostQuadraticMatrix.scale(0.5);
 
-      CommonOps_DDRM.add(costQuadraticMatrix, symmetricCostQuadraticMatrix, symmetricCostQuadraticMatrix);
-      CommonOps_DDRM.scale(0.5, symmetricCostQuadraticMatrix);
       originalQuadraticCostQMatrix.set(symmetricCostQuadraticMatrix);
       originalQuadraticCostQVector.set(costLinearVector);
       this.quadraticCostScalar = quadraticCostScalar;
@@ -160,9 +161,10 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    @Override
    public double getObjectiveCost(DMatrixRMaj x)
    {
-      NativeCommonOps.multQuad(x, originalQuadraticCostQMatrix, computedObjectiveFunctionValue);
-      CommonOps_DDRM.scale(0.5, computedObjectiveFunctionValue);
-      CommonOps_DDRM.multAddTransA(originalQuadraticCostQVector, x, computedObjectiveFunctionValue);
+      nativexSolutionMatrix.set(x);
+      computedObjectiveFunctionValue.multQuad(nativexSolutionMatrix, originalQuadraticCostQMatrix);
+      computedObjectiveFunctionValue.scale(0.5);
+      computedObjectiveFunctionValue.multAddTransA(originalQuadraticCostQVector, nativexSolutionMatrix);
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
@@ -260,7 +262,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    {
       removeInactiveVariables();
 
-      solutionToPack.reshape(originalQuadraticCostQMatrix.numRows, 1);
+      solutionToPack.reshape(originalQuadraticCostQMatrix.getNumRows(), 1);
 
       int numberOfIterations = super.solve(activeVariableSolution);
 
