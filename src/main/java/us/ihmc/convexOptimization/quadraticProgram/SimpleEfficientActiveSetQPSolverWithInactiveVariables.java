@@ -146,9 +146,9 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
          throw new RuntimeException("costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols()");
 
       this.costQuadraticMatrix.set(costQuadraticMatrix);
-      
+
       symmetricCostQuadraticMatrix.transpose(this.costQuadraticMatrix);
-      symmetricCostQuadraticMatrix.add(this.costQuadraticMatrix, symmetricCostQuadraticMatrix);   // Note: Check for aliasing
+      symmetricCostQuadraticMatrix.add(this.costQuadraticMatrix, symmetricCostQuadraticMatrix); // Note: Check for aliasing
       symmetricCostQuadraticMatrix.scale(0.5);
 
       originalQuadraticCostQMatrix.set(symmetricCostQuadraticMatrix);
