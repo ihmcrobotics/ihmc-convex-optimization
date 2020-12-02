@@ -27,7 +27,7 @@ mainDependencies {
    api("us.ihmc:euclid-frame:0.15.1")
    api("us.ihmc:ihmc-matrix-library:0.18.0")
    api("us.ihmc:ihmc-native-library-loader:1.3.1")
-   api("us.ihmc:ihmc-optimizer-wrappers:0.0.31")
+   api("us.ihmc:ihmc-optimizer-wrappers:0.0.32")
 }
 
 testDependencies {
