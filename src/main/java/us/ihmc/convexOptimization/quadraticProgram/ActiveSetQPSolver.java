@@ -155,6 +155,12 @@ public interface ActiveSetQPSolver
    }
 
    /**
+    * Provides a method for setting the hessian inverse externally. Done to make the overall computation faster.
+    * @param HInverse is the N-by-N inverse Hessian matrix. Not modified.
+    */
+   void setQuadraticCostInverse(DMatrixRMaj HInverse);
+
+   /**
     * Configures the function to minimize:
     * 
     * <pre>

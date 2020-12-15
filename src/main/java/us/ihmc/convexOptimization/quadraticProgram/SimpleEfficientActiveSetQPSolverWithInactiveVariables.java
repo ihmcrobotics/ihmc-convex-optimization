@@ -155,6 +155,8 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
       originalQuadraticCostQVector.set(costLinearVector);
       this.quadraticCostScalar = quadraticCostScalar;
 
+      QInverseIsSet = false;
+
       setAllVariablesActive();
    }
 

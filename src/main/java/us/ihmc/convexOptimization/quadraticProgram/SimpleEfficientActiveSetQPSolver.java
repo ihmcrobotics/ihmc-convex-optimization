@@ -110,6 +110,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private int previousNumberOfLowerBoundConstraints = 0;
    private int previousNumberOfUpperBoundConstraints = 0;
 
+   protected boolean QInverseIsSet = false;
+
    @Override
    public void setConvergenceThreshold(double convergenceThreshold)
    {
@@ -179,6 +181,19 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
       quadraticCostQVector.set(costLinearVector);
       this.quadraticCostScalar = quadraticCostScalar;
+
+      QInverseIsSet = false;
+   }
+
+   @Override
+   public void setQuadraticCostInverse(DMatrixRMaj costQuadraticMatrixInverse)
+   {
+      if (costQuadraticMatrixInverse.getNumRows() != costQuadraticMatrix.getNumRows() || costQuadraticMatrixInverse.getNumCols() != costQuadraticMatrix.getNumCols())
+         throw new RuntimeException("Inverse matrix is the wrong size.");
+
+      QInverse.set(costQuadraticMatrixInverse);
+
+      QInverseIsSet = true;
    }
 
    @Override
@@ -344,7 +359,11 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       int numberOfVariables = quadraticCostQMatrix.getNumRows();
       int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
 
-      QInverse.invert(quadraticCostQMatrix);
+      if (!QInverseIsSet)
+      {
+         QInverse.invert(quadraticCostQMatrix);
+         QInverseIsSet = true;
+      }
 
       if (numberOfEqualityConstraints > 0)
       {

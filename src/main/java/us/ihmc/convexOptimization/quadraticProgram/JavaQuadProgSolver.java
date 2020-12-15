@@ -171,6 +171,15 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
       this.variableUpperBounds.set(variableUpperBounds);
    }
 
+   /**
+    * Doesn't do anything in this class
+    */
+   @Override
+   public void setQuadraticCostInverse(DMatrixRMaj HInverse)
+   {
+
+   }
+
    @Override
    public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
