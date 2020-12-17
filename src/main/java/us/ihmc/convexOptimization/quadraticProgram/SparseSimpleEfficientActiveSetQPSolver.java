@@ -791,6 +791,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       computeCBarTempMatrices();
       computeCHatTempMatrices();
 
+      augmentedLagrangeMultipliers.reshape(numberOfAugmentedEqualityConstraints, 1);
       bigMatrixForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, numberOfAugmentedEqualityConstraints);
       bigVectorForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, 1);
 
@@ -856,6 +857,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       SparseMatrixTools.insert(CBar,AAndC, numberOfOriginalEqualityConstraints, 0);
       SparseMatrixTools.insert(CHat,AAndC, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
 
+      ATransposeMuAndCTransposeLambda.reshape(numberOfVariables, 1);
       CommonOps_DSCC.multTransA(AAndC, augmentedLagrangeMultipliers, ATransposeMuAndCTransposeLambda);
 
       CommonOps_DDRM.add(quadraticCostQVector, ATransposeMuAndCTransposeLambda, tempVector);
