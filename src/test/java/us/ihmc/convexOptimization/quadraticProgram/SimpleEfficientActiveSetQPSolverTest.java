@@ -45,7 +45,6 @@ public class SimpleEfficientActiveSetQPSolverTest extends AbstractSimpleActiveSe
       SimpleEfficientActiveSetQPSolver simpleEfficientActiveSetQPSolver = new SimpleEfficientActiveSetQPSolver();
       simpleEfficientActiveSetQPSolver.setUseWarmStart(false);
       return simpleEfficientActiveSetQPSolver;
-
    }
 
    @Test
