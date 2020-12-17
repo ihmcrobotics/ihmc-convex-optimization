@@ -7,6 +7,7 @@ import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.data.IGrowArray;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.sparse.csc.CommonOps_DSCC;
+import us.ihmc.convexOptimization.SparseMatrixTools;
 import us.ihmc.log.LogTools;
 import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
@@ -59,10 +60,14 @@ public class SparseSimpleEfficientActiveSetQPSolver
    protected final DMatrixRMaj variableLowerBounds = new DMatrixRMaj(0, 0);
    protected final DMatrixRMaj variableUpperBounds = new DMatrixRMaj(0, 0);
 
-   /** Active inequality constraints */
+   /**
+    * Active inequality constraints
+    */
    private final DMatrixSparseCSC CBar = new DMatrixSparseCSC(0, 0);
    private final DMatrixRMaj DBar = new DMatrixRMaj(0, 0);
-   /** Active variable bounds constraints */
+   /**
+    * Active variable bounds constraints
+    */
    private final DMatrixSparseCSC CHat = new DMatrixSparseCSC(0, 0);
    private final DMatrixRMaj DHat = new DMatrixRMaj(0, 0);
 
@@ -84,11 +89,11 @@ public class SparseSimpleEfficientActiveSetQPSolver
    private final DMatrixSparseCSC CBarQInverseCHatTranspose = new DMatrixSparseCSC(0, 0);
    private final DMatrixSparseCSC CHatQInverseCBarTranspose = new DMatrixSparseCSC(0, 0);
 
-   private final DMatrixRMaj AAndC = new DMatrixRMaj(0, 0);
+   private final DMatrixSparseCSC AAndC = new DMatrixSparseCSC(0, 0);
    private final DMatrixRMaj ATransposeMuAndCTransposeLambda = new DMatrixRMaj(0, 0);
 
    private final DMatrixSparseCSC bigMatrixForLagrangeMultiplierSolution = new DMatrixSparseCSC(0, 0);
-   private final DMatrixSparseCSC bigVectorForLagrangeMultiplierSolution = new DMatrixSparseCSC(0, 0);
+   private final DMatrixRMaj bigVectorForLagrangeMultiplierSolution = new DMatrixRMaj(0, 0);
 
    private final DMatrixRMaj tempVector = new DMatrixRMaj(0, 0);
    private final DMatrixRMaj augmentedLagrangeMultipliers = new DMatrixRMaj(0, 0);
@@ -436,8 +441,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       int numberOfLowerBoundConstraints = variableLowerBounds.getNumRows();
       int numberOfUpperBoundConstraints = variableUpperBounds.getNumRows();
 
-      double maxInequalityViolation = Double.NEGATIVE_INFINITY, maxLowerBoundViolation = Double.NEGATIVE_INFINITY,
-            maxUpperBoundViolation = Double.NEGATIVE_INFINITY;
+      double maxInequalityViolation = Double.NEGATIVE_INFINITY, maxLowerBoundViolation = Double.NEGATIVE_INFINITY, maxUpperBoundViolation = Double.NEGATIVE_INFINITY;
       if (numberOfInequalityConstraints != 0)
       {
          CommonOps_DDRM.scale(-1.0, linearInequalityConstraintsDVectorO, linearInequalityConstraintsCheck);
@@ -548,8 +552,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       int numberOfActiveUpperBounds = activeUpperBoundIndices.size();
       int numberOfActiveLowerBounds = activeLowerBoundIndices.size();
 
-      double minLagrangeInequalityMultiplier = Double.POSITIVE_INFINITY, minLagrangeLowerBoundMultiplier = Double.POSITIVE_INFINITY,
-            minLagrangeUpperBoundMultiplier = Double.POSITIVE_INFINITY;
+      double minLagrangeInequalityMultiplier = Double.POSITIVE_INFINITY, minLagrangeLowerBoundMultiplier = Double.POSITIVE_INFINITY, minLagrangeUpperBoundMultiplier = Double.POSITIVE_INFINITY;
 
       if (numberOfActiveInequalityConstraints != 0)
          minLagrangeInequalityMultiplier = CommonOps_DDRM.elementMin(lagrangeInequalityConstraintMultipliersToPack);
@@ -758,7 +761,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       int numberOfActiveUpperBoundConstraints = activeUpperBoundIndices.size();
 
       int numberOfAugmentedEqualityConstraints = numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints + numberOfActiveLowerBoundConstraints
-            + numberOfActiveUpperBoundConstraints;
+                                                 + numberOfActiveUpperBoundConstraints;
 
       if (numberOfAugmentedEqualityConstraints == 0)
       {
@@ -773,63 +776,76 @@ public class SparseSimpleEfficientActiveSetQPSolver
       bigMatrixForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, numberOfAugmentedEqualityConstraints);
       bigVectorForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, 1);
 
-      bigMatrixForLagrangeMultiplierSolution.insert(AQInverseATranspose, 0, 0);
-      bigMatrixForLagrangeMultiplierSolution.insert(AQInverseATranspose, 0, 0);
-      bigMatrixForLagrangeMultiplierSolution.insert(AQInverseCBarTranspose, 0, numberOfOriginalEqualityConstraints);
-      bigMatrixForLagrangeMultiplierSolution.insert(AQInverseCHatTranspose, 0, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
+      SparseMatrixTools.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
+      SparseMatrixTools.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
+      SparseMatrixTools.insert(AQInverseCBarTranspose, bigMatrixForLagrangeMultiplierSolution, 0, numberOfOriginalEqualityConstraints);
+      SparseMatrixTools.insert(AQInverseCHatTranspose,
+                               bigMatrixForLagrangeMultiplierSolution,
+                               0,
+                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
 
-      bigMatrixForLagrangeMultiplierSolution.insert(CBarQInverseATranspose, numberOfOriginalEqualityConstraints, 0);
-      bigMatrixForLagrangeMultiplierSolution.insert(CBarQInverseCBarTranspose, numberOfOriginalEqualityConstraints, numberOfOriginalEqualityConstraints);
-      bigMatrixForLagrangeMultiplierSolution.insert(CBarQInverseCHatTranspose,
-                                                    numberOfOriginalEqualityConstraints,
-                                                    numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
-      bigMatrixForLagrangeMultiplierSolution.insert(CHatQInverseATranspose, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
-      bigMatrixForLagrangeMultiplierSolution.insert(CHatQInverseCBarTranspose,
-                                                    numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
-                                                    numberOfOriginalEqualityConstraints);
-      bigMatrixForLagrangeMultiplierSolution.insert(CHatQInverseCHatTranspose,
-                                                    numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
-                                                    numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
+      SparseMatrixTools.insert(CBarQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
+      SparseMatrixTools.insert(CBarQInverseCBarTranspose,
+                               bigMatrixForLagrangeMultiplierSolution,
+                               numberOfOriginalEqualityConstraints,
+                               numberOfOriginalEqualityConstraints);
+      SparseMatrixTools.insert(CBarQInverseCHatTranspose,
+                               bigMatrixForLagrangeMultiplierSolution,
+                               numberOfOriginalEqualityConstraints,
+                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
+      SparseMatrixTools.insert(CHatQInverseATranspose,
+                               bigMatrixForLagrangeMultiplierSolution,
+                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
+                               0);
+      SparseMatrixTools.insert(CHatQInverseCBarTranspose,
+                               bigMatrixForLagrangeMultiplierSolution,
+                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
+                               numberOfOriginalEqualityConstraints);
+      SparseMatrixTools.insert(CHatQInverseCHatTranspose,
+                               bigMatrixForLagrangeMultiplierSolution,
+                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
+                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
 
       if (numberOfOriginalEqualityConstraints > 0)
       {
-         bigVectorForLagrangeMultiplierSolution.insert(linearEqualityConstraintsBVector, 0, 0);
+         CommonOps_DDRM.insert(linearEqualityConstraintsBVector, bigVectorForLagrangeMultiplierSolution, 0, 0);
          bigVectorForLagrangeMultiplierSolution.multAddBlock(AQInverse, quadraticCostQVector, 0, 0);
       }
 
       if (numberOfActiveInequalityConstraints > 0)
       {
-         bigVectorForLagrangeMultiplierSolution.insert(DBar, numberOfOriginalEqualityConstraints, 0);
+         CommonOps_DDRM.insert(DBar, bigVectorForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
          bigVectorForLagrangeMultiplierSolution.multAddBlock(CBarQInverse, quadraticCostQVector, numberOfOriginalEqualityConstraints, 0);
       }
 
       if (numberOfActiveLowerBoundConstraints + numberOfActiveUpperBoundConstraints > 0)
       {
-         bigVectorForLagrangeMultiplierSolution.insert(DHat, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
+         CommonOps_DDRM.insert(DHat, bigVectorForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
          bigVectorForLagrangeMultiplierSolution.multAddBlock(CHatQInverse,
                                                              quadraticCostQVector,
                                                              numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
                                                              0);
       }
 
-      bigVectorForLagrangeMultiplierSolution.scale(-1.0, bigVectorForLagrangeMultiplierSolution);
+      CommonOps_DDRM.scale(-1.0, bigVectorForLagrangeMultiplierSolution);
 
       augmentedLagrangeMultipliers.solveCheck(bigMatrixForLagrangeMultiplierSolution, bigVectorForLagrangeMultiplierSolution);
 
       AAndC.reshape(numberOfAugmentedEqualityConstraints, numberOfVariables);
-      AAndC.insert(linearEqualityConstraintsAMatrix, 0, 0);
-      AAndC.insert(CBar, numberOfOriginalEqualityConstraints, 0);
-      AAndC.insert(CHat, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
+      SparseMatrixTools.insert(linearEqualityConstraintsAMatrix, AAndC, 0, 0);
+      SparseMatrixTools.insert(CBar,AAndC, numberOfOriginalEqualityConstraints, 0);
+      SparseMatrixTools.insert(CHat,AAndC, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
 
-      ATransposeMuAndCTransposeLambda.multTransA(AAndC, augmentedLagrangeMultipliers);
+      CommonOps_DSCC.multTransA(AAndC, augmentedLagrangeMultipliers, ATransposeMuAndCTransposeLambda);
 
       CommonOps_DDRM.add(quadraticCostQVector, ATransposeMuAndCTransposeLambda, tempVector);
 
-      xSolutionToPack.mult(-1.0, QInverse, tempVector);
+      CommonOps_DSCC.mult(QInverse, tempVector, xSolutionToPack);
+      CommonOps_DDRM.scale(-1.0, xSolutionToPack);
 
       int startRow = 0;
       int numberOfRows = numberOfOriginalEqualityConstraints;
-      lagrangeEqualityConstraintMultipliersToPack.insert(augmentedLagrangeMultipliers, startRow, startRow + numberOfRows, 0, 1, 0, 0);
+      lagrangeEqualityConstraintMultipliersToPack.insert(augmentedLagrangeMultipliers, lagrangeEqualityConstraintMultipliersToPack, startRow, startRow + numberOfRows, 0, 1, 0, 0);
 
       startRow += numberOfRows;
       lagrangeInequalityConstraintMultipliersToPack.zero();
