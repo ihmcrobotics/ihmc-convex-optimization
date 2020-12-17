@@ -19,34 +19,45 @@ public class SparseMatrixTools
 
    public static void verticallyStackMatrices(List<DMatrixSparseCSC> srcs, DMatrixSparseCSC dest)
    {
+      verticallyStackMatrices(srcs, dest, 0);
+   }
+
+   public static void verticallyStackMatrices(List<DMatrixSparseCSC> srcs, DMatrixSparseCSC dest, int destStartColumn)
+   {
       int totalRows = 0;
-      int totalNz = 0;
+      int totalSrcNz = 0;
+      int srcColumns = srcs.get(0).getNumCols();
+      if (srcColumns + destStartColumn > dest.getNumCols())
+         throw new IllegalArgumentException("Number of cols in destination isn't big enough.");
+
       for (int i = 0; i < srcs.size(); i++)
       {
          DMatrixSparseCSC src = srcs.get(i);
-         if (src.getNumCols() != dest.getNumCols())
+         if (src.getNumCols() != srcColumns)
             throw new IllegalArgumentException("Number of cols do not match. " + src.getNumCols() + " != " + dest.getNumCols());
 
+
          totalRows += src.getNumRows();
-         totalNz += src.getNonZeroLength();
+         totalSrcNz += src.getNonZeroLength();
       }
 
       if (totalRows != dest.getNumRows())
          throw new IllegalArgumentException("Number of rows do not match. " + totalRows + " != " + dest.getNumCols());
 
-      dest.growMaxLength(totalNz, false);
+      dest.growMaxLength(dest.getNonZeroLength() + totalSrcNz, true);
 
-      int destValIdx = 0;
-      for (int col = 0; col < dest.getNumCols(); col++)
+      int destValIdx = dest.col_idx[destStartColumn];
+
+      for (int srcCol = 0; srcCol < srcColumns; srcCol++)
       {
          int rowOffset = 0;
-         dest.col_idx[col] = destValIdx;
+         dest.col_idx[destStartColumn + srcCol] = destValIdx;
 
          for (int srcIdx = 0; srcIdx < srcs.size(); srcIdx++)
          {
             DMatrixSparseCSC src = srcs.get(srcIdx);
 
-            for (int srcValIdx = src.col_idx[col]; srcValIdx < src.col_idx[col + 1]; srcValIdx++)
+            for (int srcValIdx = src.col_idx[srcCol]; srcValIdx < src.col_idx[srcCol + 1]; srcValIdx++)
             {
                int srcRow = src.nz_rows[srcValIdx];
                double srcVal = src.nz_values[srcValIdx];
@@ -59,6 +70,8 @@ public class SparseMatrixTools
             rowOffset += src.getNumRows();
          }
       }
-      dest.col_idx[dest.getNumCols()] = destValIdx;
+      dest.nz_length = destValIdx;
+      for (int col = srcColumns + destStartColumn; col < dest.getNumCols() + 1; col++)
+         dest.col_idx[col] = destValIdx;
    }
 }

@@ -792,7 +792,6 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
       // TODO size the bigMatrixForLagrange... and make a custom method to pack things in vertically, which is way more efficient
       SparseMatrixTools.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
-      SparseMatrixTools.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
       SparseMatrixTools.insert(AQInverseCBarTranspose, bigMatrixForLagrangeMultiplierSolution, 0, numberOfOriginalEqualityConstraints);
       SparseMatrixTools.insert(AQInverseCHatTranspose,
                                bigMatrixForLagrangeMultiplierSolution,
