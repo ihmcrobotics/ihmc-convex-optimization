@@ -33,13 +33,18 @@ public class SparseMatrixTools
       for (int i = 0; i < srcs.size(); i++)
       {
          DMatrixSparseCSC src = srcs.get(i);
+         if (src.getNumRows() == 0 || src.getNumCols() == 0)
+            continue;
+
          if (src.getNumCols() != srcColumns)
             throw new IllegalArgumentException("Number of cols do not match. " + src.getNumCols() + " != " + dest.getNumCols());
-
 
          totalRows += src.getNumRows();
          totalSrcNz += src.getNonZeroLength();
       }
+
+      if (totalRows == 0)
+         return;
 
       if (totalRows != dest.getNumRows())
          throw new IllegalArgumentException("Number of rows do not match. " + totalRows + " != " + dest.getNumCols());
@@ -56,6 +61,8 @@ public class SparseMatrixTools
          for (int srcIdx = 0; srcIdx < srcs.size(); srcIdx++)
          {
             DMatrixSparseCSC src = srcs.get(srcIdx);
+            if (src.getNumRows() == 0 || src.getNumCols() == 0)
+               continue;
 
             for (int srcValIdx = src.col_idx[srcCol]; srcValIdx < src.col_idx[srcCol + 1]; srcValIdx++)
             {

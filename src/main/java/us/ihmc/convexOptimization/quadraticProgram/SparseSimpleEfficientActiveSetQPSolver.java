@@ -763,9 +763,9 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       }
    }
 
-   private final List<DMatrixSparseCSC> variableCol = new ArrayList<>();
-   private final List<DMatrixSparseCSC> equalityCol = new ArrayList<>();
-   private final List<DMatrixSparseCSC> inequalityCol = new ArrayList<>();
+   private final List<DMatrixSparseCSC> variableColBlock = new ArrayList<>();
+   private final List<DMatrixSparseCSC> equalityColBlock = new ArrayList<>();
+   private final List<DMatrixSparseCSC> inequalityColBlock = new ArrayList<>();
 
    private void solveEqualityConstrainedSubproblemEfficiently(DMatrixRMaj xSolutionToPack,
                                                               DMatrixRMaj lagrangeEqualityConstraintMultipliersToPack,
@@ -797,59 +797,24 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       bigMatrixForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, numberOfAugmentedEqualityConstraints);
       bigVectorForLagrangeMultiplierSolution.reshape(numberOfAugmentedEqualityConstraints, 1);
 
-      variableCol.clear();
-      equalityCol.clear();
-      inequalityCol.clear();
+      variableColBlock.clear();
+      equalityColBlock.clear();
+      inequalityColBlock.clear();
 
-      variableCol.add(AQInverseATranspose);
-      variableCol.add(CBarQInverseATranspose);
-      variableCol.add(CHatQInverseATranspose);
-      SparseMatrixTools.verticallyStackMatrices(variableCol, bigMatrixForLagrangeMultiplierSolution, 0);
+      variableColBlock.add(AQInverseATranspose);
+      variableColBlock.add(CBarQInverseATranspose);
+      variableColBlock.add(CHatQInverseATranspose);
+      SparseMatrixTools.verticallyStackMatrices(variableColBlock, bigMatrixForLagrangeMultiplierSolution, 0);
 
-      equalityCol.add(AQInverseCBarTranspose);
-      equalityCol.add(CBarQInverseCBarTranspose);
-      equalityCol.add(CHatQInverseCBarTranspose);
-      SparseMatrixTools.verticallyStackMatrices(equalityCol, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints);
+      equalityColBlock.add(AQInverseCBarTranspose);
+      equalityColBlock.add(CBarQInverseCBarTranspose);
+      equalityColBlock.add(CHatQInverseCBarTranspose);
+      SparseMatrixTools.verticallyStackMatrices(equalityColBlock, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints);
 
-
-      inequalityCol.add(AQInverseCHatTranspose);
-      inequalityCol.add(CBarQInverseCHatTranspose);
-      inequalityCol.add(CHatQInverseCHatTranspose);
-      SparseMatrixTools.verticallyStackMatrices(inequalityCol, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
-
-      // TODO size the bigMatrixForLagrange... and make a custom method to pack things in vertically, which is way more efficient
-      /*
-      SparseMatrixTools.insert(AQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, 0, 0);
-      SparseMatrixTools.insert(AQInverseCBarTranspose, bigMatrixForLagrangeMultiplierSolution, 0, numberOfOriginalEqualityConstraints);
-      SparseMatrixTools.insert(AQInverseCHatTranspose,
-                               bigMatrixForLagrangeMultiplierSolution,
-                               0,
-                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
-
-      SparseMatrixTools.insert(CBarQInverseATranspose, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints, 0);
-      SparseMatrixTools.insert(CBarQInverseCBarTranspose,
-                               bigMatrixForLagrangeMultiplierSolution,
-                               numberOfOriginalEqualityConstraints,
-                               numberOfOriginalEqualityConstraints);
-      SparseMatrixTools.insert(CBarQInverseCHatTranspose,
-                               bigMatrixForLagrangeMultiplierSolution,
-                               numberOfOriginalEqualityConstraints,
-                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
-
-      SparseMatrixTools.insert(CHatQInverseATranspose,
-                               bigMatrixForLagrangeMultiplierSolution,
-                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
-                               0);
-      SparseMatrixTools.insert(CHatQInverseCBarTranspose,
-                               bigMatrixForLagrangeMultiplierSolution,
-                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
-                               numberOfOriginalEqualityConstraints);
-      SparseMatrixTools.insert(CHatQInverseCHatTranspose,
-                               bigMatrixForLagrangeMultiplierSolution,
-                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints,
-                               numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
-
-       */
+      inequalityColBlock.add(AQInverseCHatTranspose);
+      inequalityColBlock.add(CBarQInverseCHatTranspose);
+      inequalityColBlock.add(CHatQInverseCHatTranspose);
+      SparseMatrixTools.verticallyStackMatrices(inequalityColBlock, bigMatrixForLagrangeMultiplierSolution, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints);
 
       if (numberOfOriginalEqualityConstraints > 0)
       {
