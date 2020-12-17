@@ -4,7 +4,6 @@ import gnu.trove.list.array.TIntArrayList;
 import org.ejml.data.*;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.interfaces.linsol.LinearSolverSparse;
-import org.ejml.ops.ConvertDMatrixStruct;
 import org.ejml.sparse.FillReducing;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
@@ -12,7 +11,6 @@ import us.ihmc.convexOptimization.SparseMatrixTools;
 import us.ihmc.log.LogTools;
 import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
-import us.ihmc.matrixlib.NativeMatrix;
 
 /**
  * Solves a Quadratic Program using a simple active set method. Does not work for problems where
@@ -63,7 +61,7 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    protected final DMatrixRMaj variableLowerBounds = new DMatrixRMaj(0, 0);
    protected final DMatrixRMaj variableUpperBounds = new DMatrixRMaj(0, 0);
 
-   private final LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> inversionSolver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+   private InverseCostCalculator<DMatrixSparseCSC> inverseSolver = new SparseInverseCostCalculator();
    private final LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> lagrangeSolver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
    /**
     * Active inequality constraints
@@ -357,19 +355,13 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       return false;
    }
 
-   private final DMatrixSparseCSC identity = new DMatrixSparseCSC(0, 0);
 
    private void computeQInverseAndAQInverse()
    {
       int numberOfVariables = quadraticCostQMatrix.getNumRows();
       int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
 
-      identity.reshape(numberOfVariables, numberOfVariables);
-      QInverse.reshape(numberOfVariables, numberOfVariables);
-      CommonOps_DSCC.setIdentity(identity);
-
-      inversionSolver.setA(quadraticCostQMatrix);
-      inversionSolver.solveSparse(identity, QInverse);
+      inverseSolver.computeInverse(quadraticCostQMatrix, QInverse);
 
       if (numberOfEqualityConstraints > 0)
       {
@@ -917,5 +909,29 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    public void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeUpperBoundMultipliers);
+   }
+
+   public void setInverseCostCalculator(InverseCostCalculator<DMatrixSparseCSC> inverseSolver)
+   {
+      this.inverseSolver = inverseSolver;
+   }
+
+   private static class SparseInverseCostCalculator implements InverseCostCalculator<DMatrixSparseCSC>
+   {
+      private final LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> inversionSolver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+      private final DMatrixSparseCSC identity = new DMatrixSparseCSC(0, 0);
+
+      @Override
+      public void computeInverse(DMatrixSparseCSC matrix, DMatrixSparseCSC inverseMatrix)
+      {
+         int numberOfVariables = matrix.getNumRows();
+
+         identity.reshape(numberOfVariables, numberOfVariables);
+         inverseMatrix.reshape(numberOfVariables, numberOfVariables);
+         CommonOps_DSCC.setIdentity(identity);
+
+         inversionSolver.setA(matrix);
+         inversionSolver.solveSparse(identity, inverseMatrix);
+      }
    }
 }
