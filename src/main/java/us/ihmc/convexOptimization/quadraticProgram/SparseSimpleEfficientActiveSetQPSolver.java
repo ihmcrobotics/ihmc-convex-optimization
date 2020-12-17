@@ -361,6 +361,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
 
       identity.reshape(numberOfVariables, numberOfVariables);
+      QInverse.reshape(numberOfVariables, numberOfVariables);
       CommonOps_DSCC.setIdentity(identity);
 
       inversionSolver.setA(quadraticCostQMatrix);
