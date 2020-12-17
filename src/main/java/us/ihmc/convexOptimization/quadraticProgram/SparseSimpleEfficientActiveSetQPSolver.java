@@ -854,8 +854,8 @@ public class SparseSimpleEfficientActiveSetQPSolver
 
       AAndC.reshape(numberOfAugmentedEqualityConstraints, numberOfVariables);
       SparseMatrixTools.insert(linearEqualityConstraintsAMatrix, AAndC, 0, 0);
-      SparseMatrixTools.insert(CBar,AAndC, numberOfOriginalEqualityConstraints, 0);
-      SparseMatrixTools.insert(CHat,AAndC, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
+      SparseMatrixTools.insert(CBar, AAndC, numberOfOriginalEqualityConstraints, 0);
+      SparseMatrixTools.insert(CHat, AAndC, numberOfOriginalEqualityConstraints + numberOfActiveInequalityConstraints, 0);
 
       ATransposeMuAndCTransposeLambda.reshape(numberOfVariables, 1);
       CommonOps_DSCC.multTransA(AAndC, augmentedLagrangeMultipliers, ATransposeMuAndCTransposeLambda);
@@ -874,7 +874,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       for (int i = 0; i < numberOfActiveInequalityConstraints; i++)
       {
          int inequalityConstraintIndex = activeInequalityIndices.get(i);
-         CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, lagrangeEqualityConstraintMultipliersToPack, inequalityConstraintIndex, 0);
+         CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, lagrangeInequalityConstraintMultipliersToPack, inequalityConstraintIndex, 0);
       }
 
       startRow += numberOfActiveInequalityConstraints;
@@ -882,7 +882,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       for (int i = 0; i < numberOfActiveLowerBoundConstraints; i++)
       {
          int lowerBoundConstraintIndex = activeLowerBoundIndices.get(i);
-         CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, lagrangeEqualityConstraintMultipliersToPack, lowerBoundConstraintIndex, 0);
+         CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, lagrangeLowerBoundConstraintMultipliersToPack, lowerBoundConstraintIndex, 0);
       }
 
       startRow += numberOfActiveLowerBoundConstraints;
@@ -891,7 +891,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       {
          int upperBoundConstraintIndex = activeUpperBoundIndices.get(i);
 
-         CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, lagrangeEqualityConstraintMultipliersToPack, upperBoundConstraintIndex, 0);
+         CommonOps_DDRM.extract(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, lagrangeUpperBoundConstraintMultipliersToPack, upperBoundConstraintIndex, 0);
       }
    }
 
