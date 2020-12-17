@@ -1,8 +1,11 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.RandomMatrices_DDRM;
+import org.ejml.ops.ConvertDMatrixStruct;
+import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import us.ihmc.commons.RandomNumbers;
@@ -16,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SparseSimpleEfficientActiveSetQPSolverTest
 {
    private static final boolean VERBOSE = false;
+   private static final double zeroEpsilon = 1e-12;
 
    public SparseSimpleEfficientActiveSetQPSolver createSolverToTest()
    {
@@ -30,7 +34,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -48,7 +52,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) = x^2 - 10x + 25
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(-10.0);
       quadraticCostScalar = 25.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -69,7 +73,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(-10.0, -6.0);
       quadraticCostScalar = 34.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -91,12 +95,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 1.0
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixSparseCSC(2, 2);
+      costQuadraticMatrix.set(0, 0, 2.0);
+      costQuadraticMatrix.set(1, 1, 2.0);
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = new DMatrixSparseCSC(1, 2);
+      linearEqualityConstraintsAMatrix.set(0, 0, 1.0);
+      linearEqualityConstraintsAMatrix.set(0, 1, 1.0);
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
@@ -117,12 +125,18 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = new DMatrixSparseCSC(2, 2);
+      costQuadraticMatrix.set(0, 0, 2.0);
+      costQuadraticMatrix.set(1, 1, 2.0);
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
+      linearEqualityConstraintsAMatrix = new DMatrixSparseCSC(2, 2);
+      linearEqualityConstraintsAMatrix.set(0, 0, 1.0);
+      linearEqualityConstraintsAMatrix.set(0, 1, 1.0);
+      linearEqualityConstraintsAMatrix.set(1, 0, 3.0);
+      linearEqualityConstraintsAMatrix.set(1, 1, -3.0);
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0, 0.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
@@ -155,12 +169,13 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x subject to x <= 1
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = new DMatrixSparseCSC(1, 1);
+      costQuadraticMatrix.set(0, 0, 2.0);
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -180,12 +195,13 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x >= 1 (-x <= -1)
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
+      costQuadraticMatrix.set(0, 0, 2.0);
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{-1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -203,12 +219,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) = x^2 - 10x + 25 subject to x <= 3.0
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(-10.0);
       quadraticCostScalar = 25.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -231,12 +247,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize (x-5) * (x-5) + (y-3) * (y-3) = 1/2 * (2x^2 + 2y^2) - 10x -6y + 34 subject to x <= 7 y <= 1
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(-10.0, -6.0);
       quadraticCostScalar = 34.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}, {0.0, 1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}, {0.0, 1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(7.0, 1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -261,16 +277,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 1.0, x <= y - 1 (x - y <= -1.0), but with y as inactive
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-1.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -295,16 +311,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, 3x - 3y = 0.0, x <= 2, x <= 10, y <= 3
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0}, {3.0, -3.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0, 0.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(2.0, 10.0, 3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -343,7 +359,8 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^T * x
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = new DMatrixSparseCSC(1, 1);
+      costQuadraticMatrix.set(0, 0, 2.0);
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -373,7 +390,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x >= 1
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -401,7 +418,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^T * x subject to x <= -1
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -429,7 +446,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^T * x subject to 1 + 1e-12 <= x <= 1 - 1e-12 (Should give valid solution given a little epsilon to allow for roundoff)
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -457,7 +474,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^T * x subject to -1 + 1e-12 <= x <= -1 - 1e-12 (Should give valid solution given a little epsilon to allow for roundoff)
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -485,7 +502,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^T * x subject to 1 + 1e-7 <= x <= 1 - 1e-7 (Should not give valid solution since this is too much to blame on roundoff)
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0}});
       costLinearVector = MatrixTools.createVector(0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -514,18 +531,18 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
-      DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
-      solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, 1.0, -1.0}});
+      DMatrixRMaj linearInequalityConstraintsDVector = MatrixTools.createVector(-8.0);
+      solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
       solver.setVariableBounds(getLowerBounds(), getUpperBounds());
 
@@ -569,18 +586,18 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, 3 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
-      linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
-      solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, 1.0, -1.0}});
+      linearInequalityConstraintsDVector = MatrixTools.createVector(-8.0);
+      solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
       solver.setVariableBounds(MatrixTools.createVector(3.0, 6.0, 11.0), getUpperBounds());
 
@@ -622,16 +639,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, 1.0, -1.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -682,16 +699,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8  (Remove -5 <= x <= 5, 6 <= y <= 10, 11 <= z)
       solver.clear();
 
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, 1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -728,12 +745,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, (Remove y - z <= -8)
       solver.clear();
 
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
@@ -769,7 +786,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 (Remove subject to x + y = 2.0)
       solver.clear();
 
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -803,7 +820,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       assertEquals(0.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0 (Added without clearing)
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
@@ -837,7 +854,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       assertEquals(2.0, objectiveCost, 1e-7);
 
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8  (Added without clearing)
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, 1.0, -1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -929,16 +946,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Minimize x^2 + y^2 subject to x + y = 2.0, y >= 0.5, y >= 3.0, y >= x-3  (-y <= -0.5, -y <= -3.0, x - y <= 3
       solver.clear();
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, -1.0}, {0.0, -1.0}, {1.0, -1.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, -1.0}, {0.0, -1.0}, {1.0, -1.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-0.5, -3.0, 3.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -986,7 +1003,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       // Try with other solve method:
       solver.clear();
-      DMatrixRMaj quadraticCostMatrix64F = new DMatrixRMaj(costQuadraticMatrix);
+      DMatrixSparseCSC quadraticCostMatrix64F = new DMatrixSparseCSC(costQuadraticMatrix);
       DMatrixRMaj linearCostVector64F = new DMatrixRMaj(costLinearVector.getNumRows(), 1);
       linearCostVector64F.set(costLinearVector);
 
@@ -1020,7 +1037,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       solver.setQuadraticCostFunction(quadraticCostMatrix64F, linearCostVector64F, quadraticCostScalar);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix64F = new DMatrixRMaj(linearInequalityConstraintsCMatrix);
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix64F = new DMatrixSparseCSC(linearInequalityConstraintsCMatrix);
       DMatrixRMaj linearInqualityConstraintsDVector64F = new DMatrixRMaj(linearInqualityConstraintsDVector.getNumRows(), 1);
       linearInqualityConstraintsDVector64F.set(linearInqualityConstraintsDVector);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix64F, linearInqualityConstraintsDVector64F);
@@ -1049,12 +1066,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
 
       // Minimize x^2 + y^2 subject to 3 <= x <= 5, 2 <= y <= 4
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}, {-1.0, 0.0}, {0.0, 1.0}, {0.0, -1.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}, {-1.0, 0.0}, {0.0, 1.0}, {0.0, -1.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(5.0, -3.0, 4.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1077,12 +1094,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2)
       // Equality solution will violate both constraints, but optimal only has the first constraint active.
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1116,12 +1133,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1145,12 +1162,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
       solver.clear();
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       costLinearVector = MatrixTools.createVector(0.0, 0.0);
       quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-10.0, 1.0}, {-1.0, -1.0}, {1.0, -10.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{-10.0, 1.0}, {-1.0, -1.0}, {1.0, -10.0}});
       linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1180,12 +1197,12 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 subject to x + y >= 2 (-x -y <= -2), y <= 10x - 2 (-10x + y <= -2), x <= 10y - 2 (x - 10y <= -2),
       // Equality solution will violate all three constraints, but optimal only has the first constraint active.
       // However, if you set all three constraints active, there is no solution.
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{-1.0, -1.0}, {-10.0, 1.0}, {1.0, -10.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-2.0, -2.0, -2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1216,16 +1233,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       solver.setMaxNumberOfIterations(maxNumberOfIterations);
 
       // Minimize x^2 + y^2 subject to x + y = 5, x + y <= 2
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(5.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, 1.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(2.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1263,28 +1280,30 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       DMatrixRMaj lagrangeInequalityMultipliers = new DMatrixRMaj(numberOfInequalityConstraints, 1);
       double[] solutionWithSmallPerturbation = new double[numberOfVariables];
 
-      DMatrixRMaj augmentedLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 0);
+      DMatrixSparseCSC augmentedLinearEqualityConstraintsAMatrix = new DMatrixSparseCSC(0, 0);
       DMatrixRMaj augmentedLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 0);
 
       for (int testNumber = 0; testNumber < numberOfTests; testNumber++)
       {
          solver.clear();
 
-         DMatrixRMaj costQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
+         DMatrixRMaj denseQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
          DMatrixRMaj identity = CommonOps_DDRM.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
          CommonOps_DDRM.scale(numberOfVariables, identity);
-         CommonOps_DDRM.addEquals(costQuadraticMatrix, identity);
+         CommonOps_DDRM.addEquals(denseQuadraticMatrix, identity);
+         DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(denseQuadraticMatrix);
+
 
          DMatrixRMaj costLinearVector = nextDMatrixRMaj(random, numberOfVariables, 1);
          double quadraticCostScalar = RandomNumbers.nextDouble(random, 30.0);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-         DMatrixRMaj linearEqualityConstraintsAMatrix = nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables);
+         DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables));
          DMatrixRMaj linearEqualityConstraintsBVector = nextDMatrixRMaj(random, numberOfEqualityConstraints, 1);
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-         DMatrixRMaj linearInequalityConstraintsCMatrix = nextDMatrixRMaj(random, numberOfInequalityConstraints, numberOfVariables);
+         DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(nextDMatrixRMaj(random, numberOfInequalityConstraints, numberOfVariables));
          DMatrixRMaj linearInequalityConstraintsDVector = nextDMatrixRMaj(random, numberOfInequalityConstraints, 1);
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
@@ -1424,7 +1443,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 1);
       DMatrixRMaj solutionWithSmallPerturbation = new DMatrixRMaj(numberOfVariables, 1);
 
-      DMatrixRMaj augmentedLinearEqualityConstraintsAMatrix = new DMatrixRMaj(0, 1);
+      DMatrixSparseCSC augmentedLinearEqualityConstraintsAMatrix = new DMatrixSparseCSC(0, 1);
       DMatrixRMaj augmentedLinearEqualityConstraintsBVector = new DMatrixRMaj(0, 1);
 
       int numberOfNaNSolutions = 0;
@@ -1433,21 +1452,22 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
          //         System.out.println("testNumber = " + testNumber);
          solver.clear();
 
-         DMatrixRMaj costQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
+         DMatrixRMaj denseQuadraticMatrix = nextDMatrixRMaj(random, numberOfVariables, numberOfVariables);
          DMatrixRMaj identity = CommonOps_DDRM.identity(numberOfVariables, numberOfVariables); // Add n*I to make sure it is positive definite...
          CommonOps_DDRM.scale(numberOfVariables, identity);
-         CommonOps_DDRM.addEquals(costQuadraticMatrix, identity);
+         CommonOps_DDRM.addEquals(denseQuadraticMatrix, identity);
+         DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(denseQuadraticMatrix);
 
          DMatrixRMaj costLinearVector = nextDMatrixRMaj(random, numberOfVariables, 1);
          double quadraticCostScalar = RandomNumbers.nextDouble(random, 30.0);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-         DMatrixRMaj linearEqualityConstraintsAMatrix = nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables);
+         DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(nextDMatrixRMaj(random, numberOfEqualityConstraints, numberOfVariables));
          DMatrixRMaj linearEqualityConstraintsBVector = nextDMatrixRMaj(random, numberOfEqualityConstraints, 1);
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-         DMatrixRMaj linearInequalityConstraintsCMatrix = nextDMatrixRMaj(random, numberOfInequalityConstraints, numberOfVariables);
+         DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(nextDMatrixRMaj(random, numberOfInequalityConstraints, numberOfVariables));
          DMatrixRMaj linearInequalityConstraintsDVector = nextDMatrixRMaj(random, numberOfInequalityConstraints, 1);
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
 
@@ -1665,7 +1685,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       ActualDatasetFrom20160319 dataset = new ActualDatasetFrom20160319();
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
       solver.clear();
-      solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
+      solver.setQuadraticCostFunction(createSparseMatrix(dataset.getCostQuadraticMatrix()), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
       DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
@@ -1684,7 +1704,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       ActualDatasetFromKiwi20170712 dataset = new ActualDatasetFromKiwi20170712();
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
       solver.clear();
-      solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
+      solver.setQuadraticCostFunction(createSparseMatrix(dataset.getCostQuadraticMatrix()), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
       DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
@@ -1703,7 +1723,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       ActualDatasetFromKiwi20171013 dataset = new ActualDatasetFromKiwi20171013();
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
       solver.clear();
-      solver.setQuadraticCostFunction(dataset.getCostQuadraticMatrix(), dataset.getCostLinearVector(), 0.0);
+      solver.setQuadraticCostFunction(createSparseMatrix(dataset.getCostQuadraticMatrix()), dataset.getCostLinearVector(), 0.0);
       solver.setVariableBounds(dataset.getVariableLowerBounds(), dataset.getVariableUpperBounds());
       DMatrixRMaj solution = new DMatrixRMaj(dataset.getProblemSize(), 1);
       solver.solve(solution);
@@ -1724,16 +1744,16 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       // Minimize x^2 + y^2 + z^2 subject to x + y = 2.0, y - z <= -8, -5 <= x <= 5, 6 <= y <= 10, 11 <= z
       solver.clear();
 
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 2.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0, 0.0, 0.0);
       double quadraticCostScalar = 0.0;
       solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
 
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 1.0, 0.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 1.0, 0.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(2.0);
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{0.0, 1.0, -1.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{0.0, 1.0, -1.0}});
       DMatrixRMaj linearInqualityConstraintsDVector = MatrixTools.createVector(-8.0);
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInqualityConstraintsDVector);
 
@@ -1805,7 +1825,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
    {
       SparseSimpleEfficientActiveSetQPSolver solver = createSolverToTest();
 
-      DMatrixRMaj costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}});
+      DMatrixSparseCSC costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}});
       DMatrixRMaj costLinearVector = MatrixTools.createVector(0.0);
       double quadraticCostScalar = 0.0;
 
@@ -1818,7 +1838,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       {
       }
 
-      costQuadraticMatrix = new DMatrixRMaj(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
+      costQuadraticMatrix = createSparseMatrix(new double[][] {{2.0, 0.0}, {0.0, 2.0}});
       try
       {
          solver.setQuadraticCostFunction(costQuadraticMatrix, costLinearVector, quadraticCostScalar);
@@ -1830,7 +1850,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       try
       {
-         DMatrixRMaj costQuadraticMatrix64F = new DMatrixRMaj(2, 2);
+         DMatrixSparseCSC costQuadraticMatrix64F = new DMatrixSparseCSC(2, 2);
          DMatrixRMaj costLinearVector64F = new DMatrixRMaj(1, 2);
 
          solver.setQuadraticCostFunction(costQuadraticMatrix64F, costLinearVector64F, quadraticCostScalar);
@@ -1874,7 +1894,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
       // Equality Constraints
-      DMatrixRMaj linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
+      DMatrixSparseCSC linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}});
       DMatrixRMaj linearEqualityConstraintsBVector = MatrixTools.createVector(1.0, 2.0);
 
       try
@@ -1886,7 +1906,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       {
       }
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0}});
       linearEqualityConstraintsBVector = MatrixTools.createVector(1.0);
       try
       {
@@ -1899,7 +1919,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       try
       {
-         DMatrixRMaj linearEqualityConstraintsAMatrix64F = new DMatrixRMaj(2, 2);
+         DMatrixSparseCSC linearEqualityConstraintsAMatrix64F = new DMatrixSparseCSC(2, 2);
          DMatrixRMaj linearEqualityConstraintsBVector64F = new DMatrixRMaj(1, 2);
 
          solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix64F, linearEqualityConstraintsBVector64F);
@@ -1909,11 +1929,11 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       {
       }
 
-      linearEqualityConstraintsAMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
+      linearEqualityConstraintsAMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}});
       solver.setLinearEqualityConstraints(linearEqualityConstraintsAMatrix, linearEqualityConstraintsBVector);
 
       // Inequality Constraints
-      DMatrixRMaj linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
+      DMatrixSparseCSC linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}});
       DMatrixRMaj linearInequalityConstraintsDVector = MatrixTools.createVector(1.0, 2.0);
 
       try
@@ -1925,7 +1945,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       {
       }
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0}});
       linearInequalityConstraintsDVector = MatrixTools.createVector(1.0);
       try
       {
@@ -1938,7 +1958,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
 
       try
       {
-         DMatrixRMaj linearInequalityConstraintsCMatrix64F = new DMatrixRMaj(2, 2);
+         DMatrixSparseCSC linearInequalityConstraintsCMatrix64F = createSparseMatrix(new DMatrixRMaj(2, 2));
          DMatrixRMaj linearInequalityConstraintsDVector64F = new DMatrixRMaj(1, 2);
 
          solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix64F, linearInequalityConstraintsDVector64F);
@@ -1948,11 +1968,11 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       {
       }
 
-      linearInequalityConstraintsCMatrix = new DMatrixRMaj(new double[][] {{1.0, 0.0}});
+      linearInequalityConstraintsCMatrix = createSparseMatrix(new double[][] {{1.0, 0.0}});
       solver.setLinearInequalityConstraints(linearInequalityConstraintsCMatrix, linearInequalityConstraintsDVector);
    }
 
-   private void verifyEqualityConstraintsHold(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+   private void verifyEqualityConstraintsHold(int numberOfEqualityConstraints, DMatrixSparseCSC linearEqualityConstraintsAMatrix,
                                               DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       double maxAbsoluteError = getMaxEqualityConstraintError(numberOfEqualityConstraints,
@@ -1962,7 +1982,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       assertEquals(0.0, maxAbsoluteError, 1e-5);
    }
 
-   private void verifyInequalityConstraintsHold(int numberOfEqualityConstraints, DMatrixRMaj linearInequalityConstraintsCMatrix,
+   private void verifyInequalityConstraintsHold(int numberOfEqualityConstraints, DMatrixSparseCSC linearInequalityConstraintsCMatrix,
                                                 DMatrixRMaj linearInequalityConstraintsDVector, DMatrixRMaj solutionMatrix)
    {
       double maxSignedError = getMaxInequalityConstraintError(numberOfEqualityConstraints,
@@ -1972,7 +1992,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       assertTrue(maxSignedError < 1e-10);
    }
 
-   private void verifyEqualityConstraintsDoNotHold(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+   private void verifyEqualityConstraintsDoNotHold(int numberOfEqualityConstraints, DMatrixSparseCSC linearEqualityConstraintsAMatrix,
                                                    DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       double maxAbsoluteError = getMaxEqualityConstraintError(numberOfEqualityConstraints,
@@ -1982,7 +2002,7 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       assertTrue(maxAbsoluteError > 1e-5);
    }
 
-   private void verifyInequalityConstraintsDoNotHold(int numberOfInequalityConstraints, DMatrixRMaj linearInequalityConstraintsCMatrix,
+   private void verifyInequalityConstraintsDoNotHold(int numberOfInequalityConstraints, DMatrixSparseCSC linearInequalityConstraintsCMatrix,
                                                      DMatrixRMaj linearInequalityConstraintsDVector, DMatrixRMaj solutionMatrix)
    {
       double maxError = getMaxInequalityConstraintError(numberOfInequalityConstraints,
@@ -2006,27 +2026,27 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
       }
    }
 
-   private double getMaxEqualityConstraintError(int numberOfEqualityConstraints, DMatrixRMaj linearEqualityConstraintsAMatrix,
+   private double getMaxEqualityConstraintError(int numberOfEqualityConstraints, DMatrixSparseCSC linearEqualityConstraintsAMatrix,
                                                 DMatrixRMaj linearEqualityConstraintsBVector, DMatrixRMaj solutionMatrix)
    {
       DMatrixRMaj checkMatrix = new DMatrixRMaj(numberOfEqualityConstraints, 1);
-      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, solutionMatrix, checkMatrix);
+      CommonOps_DSCC.mult(linearEqualityConstraintsAMatrix, solutionMatrix, checkMatrix);
       CommonOps_DDRM.subtractEquals(checkMatrix, linearEqualityConstraintsBVector);
 
       return getMaxAbsoluteDataEntry(checkMatrix);
    }
 
-   private double getMaxInequalityConstraintError(int numberOfInequalityConstraints, DMatrixRMaj linearInequalityConstraintsCMatrix,
+   private double getMaxInequalityConstraintError(int numberOfInequalityConstraints, DMatrixSparseCSC linearInequalityConstraintsCMatrix,
                                                   DMatrixRMaj linearInequalityConstraintsDVector, DMatrixRMaj solutionMatrix)
    {
       DMatrixRMaj checkMatrix = new DMatrixRMaj(numberOfInequalityConstraints, 1);
-      CommonOps_DDRM.mult(linearInequalityConstraintsCMatrix, solutionMatrix, checkMatrix);
+      CommonOps_DSCC.mult(linearInequalityConstraintsCMatrix, solutionMatrix, checkMatrix);
       CommonOps_DDRM.subtractEquals(checkMatrix, linearInequalityConstraintsDVector);
 
       return getMaxSignedDataEntry(checkMatrix);
    }
 
-   private DMatrixRMaj projectOntoEqualityConstraints(DMatrixRMaj solutionMatrix, DMatrixRMaj linearEqualityConstraintsAMatrix,
+   private DMatrixRMaj projectOntoEqualityConstraints(DMatrixRMaj solutionMatrix, DMatrixSparseCSC linearEqualityConstraintsAMatrix,
                                                          DMatrixRMaj linearEqualityConstraintsBVector)
    {
       int numberOfVariables = solutionMatrix.getNumRows();
@@ -2038,14 +2058,14 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
          throw new RuntimeException();
 
       DMatrixRMaj AZMinusB = new DMatrixRMaj(numberOfConstraints, 1);
-      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, solutionMatrix, AZMinusB);
+      CommonOps_DSCC.mult(linearEqualityConstraintsAMatrix, solutionMatrix, AZMinusB);
       CommonOps_DDRM.subtractEquals(AZMinusB, linearEqualityConstraintsBVector);
 
       DMatrixRMaj AATransposeInverse = new DMatrixRMaj(numberOfConstraints, numberOfConstraints);
       DMatrixRMaj linearEqualityConstraintsAMatrixTranspose = new DMatrixRMaj(linearEqualityConstraintsAMatrix);
       CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrixTranspose);
 
-      CommonOps_DDRM.mult(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose, AATransposeInverse);
+      CommonOps_DSCC.mult(linearEqualityConstraintsAMatrix, linearEqualityConstraintsAMatrixTranspose, AATransposeInverse);
       CommonOps_DDRM.invert(AATransposeInverse);
 
       DMatrixRMaj ATransposeAATransposeInverse = new DMatrixRMaj(numberOfVariables, numberOfConstraints);
@@ -2118,4 +2138,18 @@ public class SparseSimpleEfficientActiveSetQPSolverTest
    {
       return RandomMatrices_DDRM.rectangle(numberOfRows, numberOfColumns, boundaryOne, boundaryTwo, random);
    }
+
+   private static DMatrixSparseCSC createSparseMatrix(double[][] array)
+   {
+      DMatrixRMaj denseMatrix = new DMatrixRMaj(array);
+      return createSparseMatrix(denseMatrix);
+   }
+
+   private static DMatrixSparseCSC createSparseMatrix(DMatrixRMaj denseMatrix)
+   {
+      DMatrixSparseCSC sparseMatrix = new DMatrixSparseCSC(denseMatrix.getNumRows(), denseMatrix.getNumCols());
+      ConvertDMatrixStruct.convert(denseMatrix, sparseMatrix, zeroEpsilon);
+      return sparseMatrix;
+   }
+
 }

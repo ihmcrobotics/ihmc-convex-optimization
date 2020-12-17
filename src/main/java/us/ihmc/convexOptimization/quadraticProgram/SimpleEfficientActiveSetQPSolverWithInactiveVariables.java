@@ -8,7 +8,7 @@ import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeMatrix;
 
 public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends SimpleEfficientActiveSetQPSolver
-      implements ActiveSetQPSolverWithInactiveVariablesInterface
+      implements ActiveSetQPSolverWithInactiveVariablesInterface<DMatrixRMaj>
 {
    private final NativeMatrix originalQuadraticCostQMatrix = new NativeMatrix(0, 0);
    private final NativeMatrix originalQuadraticCostQVector = new NativeMatrix(0, 0);

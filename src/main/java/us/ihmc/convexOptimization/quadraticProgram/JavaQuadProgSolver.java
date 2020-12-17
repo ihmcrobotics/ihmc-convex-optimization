@@ -32,7 +32,7 @@ import us.ihmc.matrixlib.NativeCommonOps;
  *
  * @author Robert Griffin
  */
-public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
+public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver<DMatrixRMaj>
 {
    private enum QuadProgStep
    {

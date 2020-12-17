@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 
 /**
@@ -13,7 +14,7 @@ import org.ejml.data.DMatrixRMaj;
  * increasing computation time.
  * </p>
  */
-public interface ActiveSetQPSolverWithInactiveVariablesInterface extends ActiveSetQPSolver
+public interface ActiveSetQPSolverWithInactiveVariablesInterface<T extends DMatrix> extends ActiveSetQPSolver<T>
 {
    /**
     * Sets a N-by-1 vector filled with either 1s or 0s to indicate respectively the active and inactive

@@ -1,8 +1,9 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 
-public abstract class AbstractSimpleActiveSetQPSolver implements ActiveSetQPSolver
+public abstract class AbstractSimpleActiveSetQPSolver<T extends DMatrix> implements ActiveSetQPSolver<T>
 {
    protected final DMatrixRMaj quadraticCostQMatrix = new DMatrixRMaj(0, 0);
    protected final DMatrixRMaj quadraticCostQVector = new DMatrixRMaj(0, 0);

@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 
 /**
@@ -42,7 +43,7 @@ import org.ejml.data.DMatrixRMaj;
  * </ul>
  * </p>
  */
-public interface ActiveSetQPSolver
+public interface ActiveSetQPSolver<T extends DMatrix>
 {
    /**
     * Threshold used for triggering changes to the active-set. Internal usage is subject to the
@@ -149,7 +150,7 @@ public interface ActiveSetQPSolver
     * @param f is the N-by-1 gradient vector.
     * @see ActiveSetQPSolver
     */
-   default void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f)
+   default void setQuadraticCostFunction(T H, DMatrixRMaj f)
    {
       setQuadraticCostFunction(H, f, 0.0);
    }
@@ -169,7 +170,7 @@ public interface ActiveSetQPSolver
     * @param c is a scalar constant, that is typically equal to zero.
     * @see ActiveSetQPSolver
     */
-   void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f, double c);
+   void setQuadraticCostFunction(T H, DMatrixRMaj f, double c);
 
    /**
     * Configures the linear equality constraints:
@@ -188,7 +189,7 @@ public interface ActiveSetQPSolver
     * @param beq is a M<sub>eq</sub>-by-1 vector. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLinearEqualityConstraints(DMatrixRMaj Aeq, DMatrixRMaj beq);
+   void setLinearEqualityConstraints(T Aeq, DMatrixRMaj beq);
 
    /**
     * Configures the linear inequality constraints:
@@ -207,7 +208,7 @@ public interface ActiveSetQPSolver
     * @param bin is a M<sub>in</sub>-by-1 vector. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLinearInequalityConstraints(DMatrixRMaj Ain, DMatrixRMaj bin);
+   void setLinearInequalityConstraints(T Ain, DMatrixRMaj bin);
 
    /**
     * With the problem previously formulated, solves the objective function for {@code x}:
@@ -248,9 +249,9 @@ public interface ActiveSetQPSolver
     *                been reached before finding a solution to the problem. Modified.
     * @return the number of iterations it took to find the solution. An iteration is defined as a
     *         change in the active-set.
-    * @see #setQuadraticCostFunction(DMatrixRMaj, DMatrixRMaj)
-    * @see #setLinearInequalityConstraints(DMatrixRMaj, DMatrixRMaj)
-    * @see #setLinearEqualityConstraints(DMatrixRMaj, DMatrixRMaj)
+    * @see #setQuadraticCostFunction(T, DMatrixRMaj)
+    * @see #setLinearInequalityConstraints(T, DMatrixRMaj)
+    * @see #setLinearEqualityConstraints(T, DMatrixRMaj)
     * @see #setLowerBounds(DMatrixRMaj)
     * @see #setUpperBounds(DMatrixRMaj)
     * @see ActiveSetQPSolver

@@ -1,10 +1,7 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
 import gnu.trove.list.array.TIntArrayList;
-import org.ejml.data.DGrowArray;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
-import org.ejml.data.IGrowArray;
+import org.ejml.data.*;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.interfaces.linsol.LinearSolverSparse;
 import org.ejml.ops.ConvertDMatrixStruct;
@@ -27,7 +24,7 @@ import us.ihmc.matrixlib.NativeMatrix;
  *
  * @author JerryPratt
  */
-public class SparseSimpleEfficientActiveSetQPSolver
+public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver<DMatrixSparseCSC>
 {
    private static final double zeroEpsilon = 1e-12;
    private static final double violationFractionToAdd = 0.8;
@@ -131,16 +128,19 @@ public class SparseSimpleEfficientActiveSetQPSolver
    private final IGrowArray gw = new IGrowArray();
    private final DGrowArray gx = new DGrowArray();
 
+   @Override
    public void setConvergenceThreshold(double convergenceThreshold)
    {
       this.convergenceThreshold = convergenceThreshold;
    }
 
+   @Override
    public void setMaxNumberOfIterations(int maxNumberOfIterations)
    {
       this.maxNumberOfIterations = maxNumberOfIterations;
    }
 
+   @Override
    public void clear()
    {
       quadraticCostQMatrix.reshape(0, 0);
@@ -160,12 +160,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       upperBoundViolations.reshape(0, 0);
    }
 
-   public void setVariableBounds(DMatrixRMaj xMin, DMatrixRMaj xMax)
-   {
-      setLowerBounds(xMin);
-      setUpperBounds(xMax);
-   }
-
+   @Override
    public void setLowerBounds(DMatrixRMaj variableLowerBounds)
    {
       if (variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows())
@@ -174,6 +169,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       this.variableLowerBounds.set(variableLowerBounds);
    }
 
+   @Override
    public void setUpperBounds(DMatrixRMaj variableUpperBounds)
    {
       if (variableUpperBounds.getNumRows() != quadraticCostQMatrix.getNumRows())
@@ -182,12 +178,14 @@ public class SparseSimpleEfficientActiveSetQPSolver
       this.variableUpperBounds.set(variableUpperBounds);
    }
 
-   public void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f)
+   @Override
+   public void setQuadraticCostFunction(DMatrixSparseCSC H, DMatrixRMaj f)
    {
       setQuadraticCostFunction(H, f, 0.0);
    }
 
-   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
+   @Override
+   public void setQuadraticCostFunction(DMatrixSparseCSC costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -196,7 +194,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       if (costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols())
          throw new RuntimeException("costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols()");
 
-      ConvertDMatrixStruct.convert(costQuadraticMatrix, this.costQuadraticMatrix, zeroEpsilon);
+      this.costQuadraticMatrix.set(costQuadraticMatrix);
       CommonOps_DSCC.transpose(this.costQuadraticMatrix, costQuadraticMatrixTranspose, gw);
       CommonOps_DSCC.add(0.5, this.costQuadraticMatrix, 0.5, costQuadraticMatrixTranspose, quadraticCostQMatrix, gw, gx);
       denseQuadraticCostQMatrix.set(quadraticCostQMatrix);
@@ -205,6 +203,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
       this.quadraticCostScalar = quadraticCostScalar;
    }
 
+   @Override
    public double getObjectiveCost(DMatrixRMaj x)
    {
       NativeCommonOps.multQuad(x, denseQuadraticCostQMatrix, computedObjectiveFunctionValue);
@@ -214,7 +213,8 @@ public class SparseSimpleEfficientActiveSetQPSolver
       return computedObjectiveFunctionValue.get(0, 0) + quadraticCostScalar;
    }
 
-   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
+   @Override
+   public void setLinearEqualityConstraints(DMatrixSparseCSC linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
    {
       if (linearEqualityConstraintsBVector.getNumCols() != 1)
          throw new RuntimeException("linearEqualityConstraintsBVector.getNumCols() != 1");
@@ -224,10 +224,11 @@ public class SparseSimpleEfficientActiveSetQPSolver
          throw new RuntimeException("linearEqualityConstraintsAMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       this.linearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
-      ConvertDMatrixStruct.convert(linearEqualityConstraintsAMatrix, this.linearEqualityConstraintsAMatrix, zeroEpsilon);
+      this.linearEqualityConstraintsAMatrix.set(linearEqualityConstraintsAMatrix);
    }
 
-   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
+   @Override
+   public void setLinearInequalityConstraints(DMatrixSparseCSC linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
    {
       if (linearInequalityConstraintDVector.getNumCols() != 1)
          throw new RuntimeException("linearInequalityConstraintDVector.getNumCols() != 1");
@@ -237,14 +238,16 @@ public class SparseSimpleEfficientActiveSetQPSolver
          throw new RuntimeException("linearInequalityConstraintCMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       linearInequalityConstraintsDVectorO.set(linearInequalityConstraintDVector);
-      ConvertDMatrixStruct.convert(linearInequalityConstraintCMatrix, this.linearInequalityConstraintsCMatrixO, zeroEpsilon);
+      linearInequalityConstraintsCMatrixO.set(linearInequalityConstraintCMatrix);
    }
 
+   @Override
    public void setUseWarmStart(boolean useWarmStart)
    {
       this.useWarmStart = useWarmStart;
    }
 
+   @Override
    public void resetActiveSet()
    {
       CBar.reshape(0, 0);
@@ -262,6 +265,7 @@ public class SparseSimpleEfficientActiveSetQPSolver
    private final DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 0);
    private final DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 0);
 
+   @Override
    public int solve(DMatrixRMaj solutionToPack)
    {
       if (!useWarmStart || problemSizeChanged())

@@ -7,7 +7,7 @@ import us.ihmc.commons.MathTools;
 import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
 
-public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver implements ActiveSetQPSolverWithInactiveVariablesInterface
+public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver implements ActiveSetQPSolverWithInactiveVariablesInterface<DMatrixRMaj>
 {
    private final DMatrixRMaj originalQuadraticCostQMatrix = new DMatrixRMaj(0, 0);
    private final DMatrixRMaj originalQuadraticCostQVector = new DMatrixRMaj(0, 0);

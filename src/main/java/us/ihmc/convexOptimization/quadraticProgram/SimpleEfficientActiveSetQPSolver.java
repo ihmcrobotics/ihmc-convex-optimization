@@ -1,6 +1,7 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
 import org.ejml.data.DMatrixRMaj;
+import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 import gnu.trove.list.array.TIntArrayList;
@@ -17,7 +18,7 @@ import us.ihmc.matrixlib.NativeMatrix;
  *
  * @author JerryPratt
  */
-public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
+public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver<DMatrixRMaj>
 {
    private static final double violationFractionToAdd = 0.8;
    private static final double violationFractionToRemove = 0.95;
