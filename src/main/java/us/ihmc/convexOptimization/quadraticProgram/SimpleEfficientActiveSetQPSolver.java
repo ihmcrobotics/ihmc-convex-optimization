@@ -365,14 +365,13 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver<DMatr
    {
       if (CBar.getNumRows() > 0)
       {
-
-         AQInverseCBarTranspose.multTransB(AQInverse, CBar);
-
          CBarQInverseATranspose.mult(CBar, QInverseATranspose);
+
+         AQInverseCBarTranspose.transpose(CBarQInverseATranspose);
 
          CBarQInverse.mult(CBar, QInverse);
 
-         QInverseCBarTranspose.multTransB(QInverse, CBar);
+         QInverseCBarTranspose.transpose(CBarQInverse);
 
          CBarQInverseCBarTranspose.mult(CBar, QInverseCBarTranspose);
       }
@@ -390,20 +389,20 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver<DMatr
    {
       if (CHat.getNumRows() > 0)
       {
-         AQInverseCHatTranspose.multTransB(AQInverse, CHat);
-
          CHatQInverseATranspose.mult(CHat, QInverseATranspose);
+
+         AQInverseCHatTranspose.transpose(CHatQInverseATranspose);
 
          CHatQInverse.mult(CHat, QInverse);
 
-         QInverseCHatTranspose.multTransB(QInverse, CHat);
+         QInverseCHatTranspose.transpose(CHatQInverse);
 
          CHatQInverseCHatTranspose.mult(CHat, QInverseCHatTranspose);
 
          if (CBar.getNumRows() > 0)
          {
             CBarQInverseCHatTranspose.mult(CBar, QInverseCHatTranspose);
-            CHatQInverseCBarTranspose.mult(CHat, QInverseCBarTranspose);
+            CHatQInverseCBarTranspose.transpose(CBarQInverseCHatTranspose);
          }
          else
          {
