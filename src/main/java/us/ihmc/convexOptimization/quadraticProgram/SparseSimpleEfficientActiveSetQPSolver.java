@@ -383,13 +383,11 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    {
       if (CBar.getNumRows() > 0)
       {
-         CommonOps_DSCC.multTransB(AQInverse, CBar, AQInverseCBarTranspose, gw, gx);
-
          CommonOps_DSCC.mult(CBar, QInverseATranspose, CBarQInverseATranspose, gw, gx);
+         CommonOps_DSCC.transpose(CBarQInverseATranspose, AQInverseCBarTranspose, gw);
 
          CommonOps_DSCC.mult(CBar, QInverse, CBarQInverse, gw, gx);
-
-         CommonOps_DSCC.multTransB(QInverse, CBar, QInverseCBarTranspose, gw, gx);
+         CommonOps_DSCC.transpose(CBarQInverse, QInverseCBarTranspose, gw);
 
          CommonOps_DSCC.mult(CBar, QInverseCBarTranspose, CBarQInverseCBarTranspose, gw, gx);
       }
@@ -407,20 +405,18 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    {
       if (CHat.getNumRows() > 0)
       {
-         CommonOps_DSCC.multTransB(AQInverse, CHat, AQInverseCHatTranspose, gw, gx);
-
          CommonOps_DSCC.mult(CHat, QInverseATranspose, CHatQInverseATranspose, gw, gx);
+         CommonOps_DSCC.transpose(CHatQInverseATranspose, AQInverseCHatTranspose, gw);
 
          CommonOps_DSCC.mult(CHat, QInverse, CHatQInverse, gw, gx);
-
-         CommonOps_DSCC.multTransB(QInverse, CHat, QInverseCHatTranspose, gw, gx);
+         CommonOps_DSCC.transpose(CHatQInverse, QInverseCHatTranspose, gw);
 
          CommonOps_DSCC.mult(CHat, QInverseCHatTranspose, CHatQInverseCHatTranspose, gw, gx);
 
          if (CBar.getNumRows() > 0)
          {
             CommonOps_DSCC.mult(CBar, QInverseCHatTranspose, CBarQInverseCHatTranspose, gw, gx);
-            CommonOps_DSCC.mult(CHat, QInverseCBarTranspose, CHatQInverseCBarTranspose, gw, gx);
+            CommonOps_DSCC.transpose(CBarQInverseCHatTranspose, CHatQInverseCBarTranspose, gw);
          }
          else
          {
