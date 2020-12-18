@@ -17,6 +17,7 @@ ihmc {
 mainDependencies {
    api("org.ejml:ejml-core:0.39")
    api("org.ejml:ejml-ddense:0.39")
+   api("org.ejml:ejml-dsparse:0.39")
    api("net.sf.trove4j:trove4j:3.0.3")
 
    api("org.ojalgo:ojalgo:40.0.0")
