@@ -1,14 +1,9 @@
 package us.ihmc.convexOptimization;
 
-import org.ejml.MatrixDimensionException;
-import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.sparse.csc.CommonOps_DSCC;
-import us.ihmc.matrixlib.NativeMatrix;
 
 import java.util.List;
-
-import static org.ejml.UtilEjml.stringShapes;
 
 public class SparseMatrixTools
 {

@@ -27,12 +27,7 @@ import java.util.List;
  */
 public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver<DMatrixSparseCSC>
 {
-   private static final double violationFractionToAdd = 0.8;
-   private static final double violationFractionToRemove = 0.95;
-   //private static final double violationFractionToAdd = 1.0;
-   //private static final double violationFractionToRemove = 1.0;
    private double convergenceThreshold = 1e-10;
-   //private double convergenceThresholdForLagrangeMultipliers = 0.0;
    private double convergenceThresholdForLagrangeMultipliers = 1e-10;
    private int maxNumberOfIterations = 10;
 
@@ -504,8 +499,8 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
          upperBoundViolations.reshape(numberOfUpperBoundConstraints, 1);
       }
 
-      double maxConstraintViolation = Math.max(maxInequalityViolation, Math.max(maxLowerBoundViolation, maxUpperBoundViolation));
-      double minViolationToAdd = (1.0 - violationFractionToAdd) * maxConstraintViolation + convergenceThreshold;
+//      double maxConstraintViolation = Math.max(maxInequalityViolation, Math.max(maxLowerBoundViolation, maxUpperBoundViolation));
+      double minViolationToAdd = convergenceThreshold;
 
       // check inequality constraints
       inequalityIndicesToAddToActiveSet.reset();
@@ -572,8 +567,7 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       if (numberOfActiveUpperBounds != 0)
          minLagrangeUpperBoundMultiplier = CommonOps_DDRM.elementMin(lagrangeUpperBoundConstraintMultipliersToPack);
 
-      double minLagrangeMultiplier = Math.min(minLagrangeInequalityMultiplier, Math.min(minLagrangeLowerBoundMultiplier, minLagrangeUpperBoundMultiplier));
-      double maxLagrangeMultiplierToRemove = -(1.0 - violationFractionToRemove) * minLagrangeMultiplier - convergenceThresholdForLagrangeMultipliers;
+      double maxLagrangeMultiplierToRemove = -convergenceThresholdForLagrangeMultipliers;
 
       inequalityIndicesToRemoveFromActiveSet.reset();
       if (minLagrangeInequalityMultiplier < maxLagrangeMultiplierToRemove)
@@ -908,7 +902,7 @@ public class SparseSimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
    private static class SparseInverseCostCalculator implements InverseCostCalculator<DMatrixSparseCSC>
    {
-      private final LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> inversionSolver = LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+      private final LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> inversionSolver = LinearSolverFactory_DSCC.cholesky(FillReducing.NONE);
       private final DMatrixSparseCSC identity = new DMatrixSparseCSC(0, 0);
 
       @Override
