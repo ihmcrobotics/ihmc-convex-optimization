@@ -102,6 +102,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private final NativeMatrix lowerBoundViolations = new NativeMatrix(0, 0);
    private final NativeMatrix upperBoundViolations = new NativeMatrix(0, 0);
 
+   private InverseCostCalculator<NativeMatrix> inverseSolver = new DefaultInverseCostCalculator();
+
    private boolean useWarmStart = false;
 
    private int previousNumberOfVariables = 0;
@@ -344,7 +346,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       int numberOfVariables = quadraticCostQMatrix.getNumRows();
       int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
 
-      QInverse.invert(quadraticCostQMatrix);
+      inverseSolver.computeInverse(quadraticCostQMatrix, QInverse);
 
       if (numberOfEqualityConstraints > 0)
       {
@@ -872,5 +874,19 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    public void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       lagrangeUpperBoundMultipliers.get(multipliersMatrixToPack);
+   }
+
+   public void setInverseCostCalculator(InverseCostCalculator inverseSolver)
+   {
+      this.inverseSolver = inverseSolver;
+   }
+
+   private static class DefaultInverseCostCalculator implements InverseCostCalculator<NativeMatrix>
+   {
+      @Override
+      public void computeInverse(NativeMatrix matrix, NativeMatrix inverseMatrix)
+      {
+         inverseMatrix.invert(matrix);
+      }
    }
 }
