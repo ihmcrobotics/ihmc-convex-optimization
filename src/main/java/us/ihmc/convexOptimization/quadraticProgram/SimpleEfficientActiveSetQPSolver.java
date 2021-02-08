@@ -102,7 +102,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private final NativeMatrix lowerBoundViolations = new NativeMatrix(0, 0);
    private final NativeMatrix upperBoundViolations = new NativeMatrix(0, 0);
 
-   private InverseCostCalculator<NativeMatrix> inverseSolver = new DefaultInverseCostCalculator();
+   private InverseMatrixCalculator<NativeMatrix> inverseSolver = new DefaultInverseMatrixCalculator();
 
    private boolean useWarmStart = false;
 
@@ -876,17 +876,17 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       lagrangeUpperBoundMultipliers.get(multipliersMatrixToPack);
    }
 
-   public void setInverseCostCalculator(InverseCostCalculator inverseSolver)
+   public void setInverseHessianCalculator(InverseMatrixCalculator<NativeMatrix> inverseSolver)
    {
       this.inverseSolver = inverseSolver;
    }
 
-   private static class DefaultInverseCostCalculator implements InverseCostCalculator<NativeMatrix>
+   private static class DefaultInverseMatrixCalculator implements InverseMatrixCalculator<NativeMatrix>
    {
       @Override
-      public void computeInverse(NativeMatrix matrix, NativeMatrix inverseMatrix)
+      public void computeInverse(NativeMatrix matrixToInvert, NativeMatrix inverseMatrixToPack)
       {
-         inverseMatrix.invert(matrix);
+         inverseMatrixToPack.invert(matrixToInvert);
       }
    }
 }
