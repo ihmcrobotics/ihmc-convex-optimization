@@ -102,6 +102,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private final NativeMatrix lowerBoundViolations = new NativeMatrix(0, 0);
    private final NativeMatrix upperBoundViolations = new NativeMatrix(0, 0);
 
+   private InverseMatrixCalculator<NativeMatrix> inverseSolver = new DefaultInverseMatrixCalculator();
+
    private boolean useWarmStart = false;
 
    private int previousNumberOfVariables = 0;
@@ -344,7 +346,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       int numberOfVariables = quadraticCostQMatrix.getNumRows();
       int numberOfEqualityConstraints = linearEqualityConstraintsAMatrix.getNumRows();
 
-      QInverse.invert(quadraticCostQMatrix);
+      inverseSolver.computeInverse(quadraticCostQMatrix, QInverse);
 
       if (numberOfEqualityConstraints > 0)
       {
@@ -364,14 +366,11 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    {
       if (CBar.getNumRows() > 0)
       {
-
-         AQInverseCBarTranspose.multTransB(AQInverse, CBar);
-
          CBarQInverseATranspose.mult(CBar, QInverseATranspose);
+         AQInverseCBarTranspose.transpose(CBarQInverseATranspose);
 
          CBarQInverse.mult(CBar, QInverse);
-
-         QInverseCBarTranspose.multTransB(QInverse, CBar);
+         QInverseCBarTranspose.transpose(CBarQInverse);
 
          CBarQInverseCBarTranspose.mult(CBar, QInverseCBarTranspose);
       }
@@ -389,20 +388,18 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    {
       if (CHat.getNumRows() > 0)
       {
-         AQInverseCHatTranspose.multTransB(AQInverse, CHat);
-
          CHatQInverseATranspose.mult(CHat, QInverseATranspose);
+         AQInverseCHatTranspose.transpose(CHatQInverseATranspose);
 
          CHatQInverse.mult(CHat, QInverse);
-
-         QInverseCHatTranspose.multTransB(QInverse, CHat);
+         QInverseCHatTranspose.transpose(CHatQInverse);
 
          CHatQInverseCHatTranspose.mult(CHat, QInverseCHatTranspose);
 
          if (CBar.getNumRows() > 0)
          {
             CBarQInverseCHatTranspose.mult(CBar, QInverseCHatTranspose);
-            CHatQInverseCBarTranspose.mult(CHat, QInverseCBarTranspose);
+            CHatQInverseCBarTranspose.transpose(CBarQInverseCHatTranspose);
          }
          else
          {
@@ -877,5 +874,19 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    public void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       lagrangeUpperBoundMultipliers.get(multipliersMatrixToPack);
+   }
+
+   public void setInverseHessianCalculator(InverseMatrixCalculator<NativeMatrix> inverseSolver)
+   {
+      this.inverseSolver = inverseSolver;
+   }
+
+   private static class DefaultInverseMatrixCalculator implements InverseMatrixCalculator<NativeMatrix>
+   {
+      @Override
+      public void computeInverse(NativeMatrix matrixToInvert, NativeMatrix inverseMatrixToPack)
+      {
+         inverseMatrixToPack.invert(matrixToInvert);
+      }
    }
 }
