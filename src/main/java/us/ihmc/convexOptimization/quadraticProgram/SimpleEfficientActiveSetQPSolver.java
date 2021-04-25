@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import gnu.trove.list.TIntList;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -145,6 +146,42 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    public void setResetActiveSetOnSizeChange(boolean resetActiveSetOnSizeChange)
    {
       this.resetActiveSetOnSizeChange = resetActiveSetOnSizeChange;
+   }
+
+   public void setActiveInequalityIndices(TIntList activeInequalityIndices)
+   {
+      this.activeInequalityIndices.reset();
+      for (int i = 0; i < activeInequalityIndices.size(); i++)
+         this.activeInequalityIndices.add(activeInequalityIndices.get(i));
+   }
+
+   public void setActiveLowerBoundIndices(TIntList activeLowerBoundIndices)
+   {
+      this.activeLowerBoundIndices.reset();
+      for (int i = 0; i < activeLowerBoundIndices.size(); i++)
+         this.activeLowerBoundIndices.add(activeLowerBoundIndices.get(i));
+   }
+
+   public void setActiveUpperBoundIndices(TIntList activeUpperBoundIndices)
+   {
+      this.activeUpperBoundIndices.reset();
+      for (int i = 0; i < activeUpperBoundIndices.size(); i++)
+         this.activeUpperBoundIndices.add(activeUpperBoundIndices.get(i));
+   }
+
+   public TIntList getActiveInequalityIndices()
+   {
+      return activeInequalityIndices;
+   }
+
+   public TIntList getActiveLowerBoundIndices()
+   {
+      return activeLowerBoundIndices;
+   }
+
+   public TIntList getActiveUpperBoundIndices()
+   {
+      return activeUpperBoundIndices;
    }
 
    @Override
