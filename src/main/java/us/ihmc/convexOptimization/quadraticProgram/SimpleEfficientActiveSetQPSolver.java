@@ -4,8 +4,12 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 import gnu.trove.list.array.TIntArrayList;
+import us.ihmc.convexOptimization.IntermediateSolutionListener;
 import us.ihmc.log.LogTools;
 import us.ihmc.matrixlib.NativeMatrix;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Solves a Quadratic Program using a simple active set method. Does not work for problems where
@@ -27,6 +31,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    //private double convergenceThresholdForLagrangeMultipliers = 0.0;
    private double convergenceThresholdForLagrangeMultipliers = 1e-10;
    private int maxNumberOfIterations = 10;
+   private boolean reportFailedConvergenceAsNaN = true;
+   private boolean resetActiveSetOnSizeChange = true;
 
    protected double quadraticCostScalar;
 
@@ -112,6 +118,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private int previousNumberOfLowerBoundConstraints = 0;
    private int previousNumberOfUpperBoundConstraints = 0;
 
+   private final List<IntermediateSolutionListener> solutionListeners = new ArrayList<>();
+
    @Override
    public void setConvergenceThreshold(double convergenceThreshold)
    {
@@ -122,6 +130,21 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    public void setMaxNumberOfIterations(int maxNumberOfIterations)
    {
       this.maxNumberOfIterations = maxNumberOfIterations;
+   }
+
+   public void addIntermediateSolutionListener(IntermediateSolutionListener solutionListener)
+   {
+      this.solutionListeners.add(solutionListener);
+   }
+
+   public void setReportFailedConvergenceAsNaN(boolean reportFailedConvergenceAsNaN)
+   {
+      this.reportFailedConvergenceAsNaN = reportFailedConvergenceAsNaN;
+   }
+
+   public void setResetActiveSetOnSizeChange(boolean resetActiveSetOnSizeChange)
+   {
+      this.resetActiveSetOnSizeChange = resetActiveSetOnSizeChange;
    }
 
    @Override
@@ -250,7 +273,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    @Override
    public int solve(DMatrixRMaj solutionToPack)
    {
-      if (!useWarmStart || problemSizeChanged())
+      if (!useWarmStart || (resetActiveSetOnSizeChange && problemSizeChanged()))
          resetActiveSet();
       else
          addActiveSetConstraintsAsEqualityConstraints();
@@ -305,9 +328,16 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       }
 
       // No solution found. Pack NaN in all variables
-      solutionToPack.reshape(numberOfVariables, 1);
-      for (int i = 0; i < numberOfVariables; i++)
-         solutionToPack.set(i, 0, Double.NaN);
+      if (reportFailedConvergenceAsNaN)
+      {
+         solutionToPack.reshape(numberOfVariables, 1);
+         for (int i = 0; i < numberOfVariables; i++)
+            solutionToPack.set(i, 0, Double.NaN);
+      }
+      else
+      {
+         nativexSolutionMatrix.get(solutionToPack);
+      }
 
       return numberOfIterations;
    }
@@ -760,6 +790,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       if (numberOfAugmentedEqualityConstraints == 0)
       {
          xSolutionToPack.mult(-1.0, QInverse, quadraticCostQVector);
+         reportSolution(xSolutionToPack);
          return;
       }
 
@@ -821,6 +852,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       tempVector.add(quadraticCostQVector, ATransposeMuAndCTransposeLambda);
 
       xSolutionToPack.mult(-1.0, QInverse, tempVector);
+      reportSolution(xSolutionToPack);
 
       int startRow = 0;
       int numberOfRows = numberOfOriginalEqualityConstraints;
@@ -850,6 +882,12 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
          lagrangeUpperBoundConstraintMultipliersToPack.insert(augmentedLagrangeMultipliers, startRow + i, startRow + i + 1, 0, 1, upperBoundConstraintIndex, 0);
       }
+   }
+
+   private void reportSolution(NativeMatrix solution)
+   {
+      for (int i = 0; i < solutionListeners.size(); i++)
+         solutionListeners.get(i).reportSolution(solution, activeInequalityIndices, activeLowerBoundIndices, activeUpperBoundIndices);
    }
 
    @Override
