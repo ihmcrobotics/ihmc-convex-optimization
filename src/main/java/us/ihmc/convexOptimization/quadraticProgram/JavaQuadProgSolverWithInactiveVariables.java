@@ -188,11 +188,12 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public int solve(DMatrixRMaj solutionToPack)
+   public int solve(DMatrix solutionToPack)
    {
       removeInactiveVariables();
 
-      solutionToPack.reshape(originalQuadraticCostQMatrix.numRows, 1);
+      if (solutionToPack.getNumRows() != originalQuadraticCostQMatrix.numRows || solutionToPack.getNumCols() != 1)
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
 
       int numberOfIterations = super.solve(activeVariableSolution);
 
@@ -282,11 +283,12 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
       }
    }
 
-   private void copyActiveVariableSolutionToAllVariables(DMatrixRMaj solutionToPack, DMatrixRMaj activeVariableSolution)
+   private void copyActiveVariableSolutionToAllVariables(DMatrix solutionToPack, DMatrixRMaj activeVariableSolution)
    {
       if (MatrixTools.containsNaN(activeVariableSolution))
       {
-         CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+         for (int i = 0; i < solutionToPack.getNumRows(); i++)
+            solutionToPack.set(i, 0, Double.NaN);
          return;
       }
 

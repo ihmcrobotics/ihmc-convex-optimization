@@ -309,7 +309,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private final NativeMatrix lagrangeUpperBoundMultipliers = new NativeMatrix(0, 0);
 
    @Override
-   public int solve(DMatrixRMaj solutionToPack)
+   public int solve(DMatrix solutionToPack)
    {
       if (!useWarmStart || (resetActiveSetOnSizeChange && problemSizeChanged()))
          resetActiveSet();
@@ -345,7 +345,7 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       //      System.out.println(numberOfInequalityConstraints + ", " + numberOfLowerBoundConstraints + ", " + numberOfUpperBoundConstraints);
       if (numberOfInequalityConstraints == 0 && numberOfLowerBoundConstraints == 0 && numberOfUpperBoundConstraints == 0)
       {
-         nativexSolutionMatrix.get(solutionToPack);
+         solutionToPack.set(nativexSolutionMatrix);
          return numberOfIterations;
       }
 
@@ -360,7 +360,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
          if (!activeSetWasModified)
          {
-            nativexSolutionMatrix.get(solutionToPack);
+            solutionToPack.set(nativexSolutionMatrix);
+
             return numberOfIterations;
          }
       }
@@ -368,13 +369,14 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       // No solution found. Pack NaN in all variables
       if (reportFailedConvergenceAsNaN)
       {
-         solutionToPack.reshape(numberOfVariables, 1);
+         if (solutionToPack.getNumRows() != numberOfVariables)
+            throw new IllegalArgumentException("Bad number of rows.");
          for (int i = 0; i < numberOfVariables; i++)
             solutionToPack.set(i, 0, Double.NaN);
       }
       else
       {
-         nativexSolutionMatrix.get(solutionToPack);
+         solutionToPack.set(nativexSolutionMatrix);
       }
 
       return numberOfIterations;

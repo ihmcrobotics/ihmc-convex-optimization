@@ -256,7 +256,7 @@ public interface ActiveSetQPSolver
     * @see #setUpperBounds(DMatrix)
     * @see ActiveSetQPSolver
     */
-   int solve(DMatrixRMaj xToPack);
+   int solve(DMatrix xToPack);
 
    /**
     * Calculates the cost from the objective function given value for {@code x}:
