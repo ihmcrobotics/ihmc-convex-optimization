@@ -1,5 +1,8 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.MatrixDimensionException;
+import org.ejml.data.DMatrix;
+import org.ejml.data.DMatrix1Row;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
@@ -144,7 +147,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public void setLowerBounds(DMatrixRMaj variableLowerBounds)
+   public void setLowerBounds(DMatrix variableLowerBounds)
    {
       int numberOfLowerBounds = variableLowerBounds.getNumRows();
       if (numberOfLowerBounds != quadraticCostQMatrix.getNumRows())
@@ -158,7 +161,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public void setUpperBounds(DMatrixRMaj variableUpperBounds)
+   public void setUpperBounds(DMatrix variableUpperBounds)
    {
       int numberOfUpperBounds = variableUpperBounds.getNumRows();
       if (numberOfUpperBounds != quadraticCostQMatrix.getNumRows())
@@ -172,7 +175,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrix costQuadraticMatrix, DMatrix costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -196,7 +199,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    }
 
    @Override
-   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrix linearEqualityConstraintsAMatrix, DMatrix linearEqualityConstraintsBVector)
    {
       int numberOfEqualityConstraints = linearEqualityConstraintsBVector.getNumRows();
 
@@ -208,14 +211,14 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          throw new RuntimeException("linearEqualityConstraintsAMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       this.linearEqualityConstraintsAMatrix.reshape(quadraticCostQMatrix.getNumCols(), numberOfEqualityConstraints);
-      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, this.linearEqualityConstraintsAMatrix);
+      standardTranspose(linearEqualityConstraintsAMatrix, this.linearEqualityConstraintsAMatrix);
       CommonOps_DDRM.scale(-1.0, this.linearEqualityConstraintsAMatrix);
 
       this.linearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
    }
 
    @Override
-   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrix linearInequalityConstraintCMatrix, DMatrix linearInequalityConstraintDVector)
    {
       int numberOfInequalityConstraints = linearInequalityConstraintDVector.getNumRows();
 
@@ -227,7 +230,7 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
          throw new RuntimeException("linearInequalityConstraintCMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       linearInequalityConstraintsCMatrixO.reshape(quadraticCostQMatrix.getNumCols(), numberOfInequalityConstraints);
-      CommonOps_DDRM.transpose(linearInequalityConstraintCMatrix, linearInequalityConstraintsCMatrixO);
+      standardTranspose(linearInequalityConstraintCMatrix, linearInequalityConstraintsCMatrixO);
       CommonOps_DDRM.scale(-1.0, linearInequalityConstraintsCMatrixO);
 
       linearInequalityConstraintsDVectorO.set(linearInequalityConstraintDVector);
@@ -1080,5 +1083,24 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
    public void getLagrangeUpperBoundsMultipliers(DMatrixRMaj multipliersMatrixToPack)
    {
       multipliersMatrixToPack.set(lagrangeUpperBoundMultipliers);
+   }
+
+   protected static void standardTranspose(DMatrix A, DMatrix1Row A_tran)
+   {
+      if( A_tran == null ) {
+         A_tran = new DMatrixRMaj(A.getNumCols(),A.getNumRows());
+      } else {
+         if( A.getNumRows() != A_tran.numCols || A.getNumCols() != A_tran.numRows ) {
+            throw new MatrixDimensionException("Incompatible matrix dimensions");
+         }
+      }
+
+      for( int row = 0; row < A.getNumRows(); row++ )
+      {
+         for (int col = 0; col < A.getNumCols(); col++)
+         {
+            A_tran.set(col, row, A.get(row, col));
+         }
+      }
    }
 }
