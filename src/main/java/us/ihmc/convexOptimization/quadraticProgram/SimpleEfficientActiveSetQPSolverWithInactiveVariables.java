@@ -264,6 +264,8 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    {
       removeInactiveVariables();
 
+      activeVariableSolution.reshape(costQuadraticMatrix.getNumRows(), 1);
+
       if (solutionToPack.getNumRows() != originalQuadraticCostQMatrix.getNumRows() || solutionToPack.getNumCols() != 1)
          throw new IllegalArgumentException("Invalid matrix dimensions.");
 
