@@ -6,8 +6,10 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 import gnu.trove.list.array.TIntArrayList;
+import us.ihmc.commons.MathTools;
 import us.ihmc.convexOptimization.IntermediateSolutionListener;
 import us.ihmc.log.LogTools;
+import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeMatrix;
 
 import java.util.ArrayList;
@@ -91,6 +93,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    private final NativeMatrix ATransposeMuAndCTransposeLambda = new NativeMatrix(0, 0);
 
    private final NativeMatrix bigMatrixForLagrangeMultiplierSolution = new NativeMatrix(0, 0);
+   private final NativeMatrix lagrangeSolution = new NativeMatrix(0, 0);
+   private final NativeMatrix bigMatrixInverse = new NativeMatrix(0, 0);
    private final NativeMatrix bigVectorForLagrangeMultiplierSolution = new NativeMatrix(0, 0);
 
    private final NativeMatrix tempVector = new NativeMatrix(0, 0);
@@ -880,8 +884,8 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
 
       bigVectorForLagrangeMultiplierSolution.scale(-1.0, bigVectorForLagrangeMultiplierSolution);
 
-      augmentedLagrangeMultipliers.solveCheck(bigMatrixForLagrangeMultiplierSolution, bigVectorForLagrangeMultiplierSolution);
-
+      augmentedLagrangeMultipliers.solve(bigMatrixForLagrangeMultiplierSolution, bigVectorForLagrangeMultiplierSolution);
+      
       AAndC.reshape(numberOfAugmentedEqualityConstraints, numberOfVariables);
       AAndC.insert(linearEqualityConstraintsAMatrix, 0, 0);
       AAndC.insert(CBar, numberOfOriginalEqualityConstraints, 0);
