@@ -1102,6 +1102,12 @@ public class JavaQuadProgSolver extends AbstractSimpleActiveSetQPSolver
 
    protected static void standardTranspose(DMatrix A, DMatrix1Row A_tran)
    {
+      if (A instanceof DMatrixRMaj && A_tran instanceof DMatrixRMaj)
+      {
+         CommonOps_DDRM.transpose((DMatrixRMaj) A, (DMatrixRMaj) A_tran);
+         return;
+      }
+
       if( A_tran == null ) {
          A_tran = new DMatrixRMaj(A.getNumCols(),A.getNumRows());
       } else {
