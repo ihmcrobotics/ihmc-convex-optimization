@@ -132,6 +132,11 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
       this.convergenceThreshold = convergenceThreshold;
    }
 
+   public void setConvergenceThresholdForLagrangeMultipliers(double convergenceThresholdForLagrangeMultipliers)
+   {
+      this.convergenceThresholdForLagrangeMultipliers = convergenceThresholdForLagrangeMultipliers;
+   }
+
    @Override
    public void setMaxNumberOfIterations(int maxNumberOfIterations)
    {
