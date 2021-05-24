@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -95,11 +96,12 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
       }
    }
 
-   private void copyActiveVariableSolutionToAllVariables(DMatrixRMaj solutionToPack, DMatrixRMaj activeVariableSolution)
+   private void copyActiveVariableSolutionToAllVariables(DMatrix solutionToPack, DMatrixRMaj activeVariableSolution)
    {
       if (MatrixTools.containsNaN(activeVariableSolution))
       {
-         CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+         for (int i = 0; i < solutionToPack.getNumRows(); i++)
+            solutionToPack.set(i, 0, Double.NaN);
          return;
       }
 
@@ -118,7 +120,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setLowerBounds(DMatrixRMaj variableLowerBounds)
+   public void setLowerBounds(DMatrix variableLowerBounds)
    {
       if (variableLowerBounds.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -127,7 +129,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setUpperBounds(DMatrixRMaj variableUpperBounds)
+   public void setUpperBounds(DMatrix variableUpperBounds)
    {
       if (variableUpperBounds.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableUpperBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -136,7 +138,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrix costQuadraticMatrix, DMatrix costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -169,7 +171,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrix linearEqualityConstraintsAMatrix, DMatrix linearEqualityConstraintsBVector)
    {
       if (linearEqualityConstraintsBVector.getNumCols() != 1)
          throw new RuntimeException("linearEqualityConstraintsBVector.getNumCols() != 1");
@@ -183,7 +185,7 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrix linearInequalityConstraintCMatrix, DMatrix linearInequalityConstraintDVector)
    {
       if (linearInequalityConstraintDVector.getNumCols() != 1)
          throw new RuntimeException("linearInequalityConstraintDVector.getNumCols() != 1");
@@ -258,11 +260,14 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public int solve(DMatrixRMaj solutionToPack)
+   public int solve(DMatrix solutionToPack)
    {
       removeInactiveVariables();
 
-      solutionToPack.reshape(originalQuadraticCostQMatrix.getNumRows(), 1);
+      activeVariableSolution.reshape(costQuadraticMatrix.getNumRows(), 1);
+
+      if (solutionToPack.getNumRows() != originalQuadraticCostQMatrix.getNumRows() || solutionToPack.getNumCols() != 1)
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
 
       int numberOfIterations = super.solve(activeVariableSolution);
 

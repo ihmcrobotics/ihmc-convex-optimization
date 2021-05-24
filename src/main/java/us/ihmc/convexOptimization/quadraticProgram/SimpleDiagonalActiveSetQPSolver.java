@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
@@ -121,7 +122,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setVariableBounds(DMatrixRMaj variableLowerBounds, DMatrixRMaj variableUpperBounds)
+   public void setVariableBounds(DMatrix variableLowerBounds, DMatrix variableUpperBounds)
    {
       if (variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableLowerBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -133,7 +134,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrix costQuadraticMatrix, DMatrix costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -157,7 +158,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrix linearEqualityConstraintsAMatrix, DMatrix linearEqualityConstraintsBVector)
    {
       if (linearEqualityConstraintsBVector.getNumCols() != 1)
          throw new RuntimeException("linearEqualityConstraintsBVector.getNumCols() != 1");
@@ -171,7 +172,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    }
 
    @Override
-   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrix linearInequalityConstraintCMatrix, DMatrix linearInequalityConstraintDVector)
    {
       if (linearInequalityConstraintDVector.getNumCols() != 1)
          throw new RuntimeException("linearInequalityConstraintDVector.getNumCols() != 1");
@@ -208,8 +209,9 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
    private final DMatrixRMaj lagrangeLowerBoundMultipliers = new DMatrixRMaj(0, 0);
    private final DMatrixRMaj lagrangeUpperBoundMultipliers = new DMatrixRMaj(0, 0);
 
+   private final DMatrixRMaj internalSolution = new DMatrixRMaj(0, 0);
    @Override
-   public int solve(DMatrixRMaj solutionToPack)
+   public int solve(DMatrix solutionToPack)
    {
       if (!useWarmStart || problemSizeChanged())
          resetActiveSet();
@@ -222,7 +224,10 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
       int numberOfLowerBoundConstraints = variableLowerBounds.getNumRows();
       int numberOfUpperBoundConstraints = variableUpperBounds.getNumRows();
 
-      solutionToPack.reshape(numberOfVariables, 1);
+      if (solutionToPack.getNumRows() != numberOfVariables || solutionToPack.getNumCols() != 1)
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
+      internalSolution.reshape(numberOfVariables, 1);
+
       lagrangeEqualityConstraintMultipliers.reshape(numberOfEqualityConstraints, 1);
       lagrangeEqualityConstraintMultipliers.zero();
       lagrangeInequalityConstraintMultipliers.reshape(numberOfInequalityConstraints, 1);
@@ -234,7 +239,7 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
 
       computeQInverseAndAQInverse();
 
-      solveEqualityConstrainedSubproblemEfficiently(solutionToPack,
+      solveEqualityConstrainedSubproblemEfficiently(internalSolution,
                                                     lagrangeEqualityConstraintMultipliers,
                                                     lagrangeInequalityConstraintMultipliers,
                                                     lagrangeLowerBoundMultipliers,
@@ -242,13 +247,16 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
 
       //      System.out.println(numberOfInequalityConstraints + ", " + numberOfLowerBoundConstraints + ", " + numberOfUpperBoundConstraints);
       if (numberOfInequalityConstraints == 0 && numberOfLowerBoundConstraints == 0 && numberOfUpperBoundConstraints == 0)
+      {
+         solutionToPack.set(internalSolution);
          return numberOfIterations;
+      }
 
       // Test the inequality constraints:
 
       for (int i = 0; i < maxNumberOfIterations; i++)
       {
-         boolean activeSetWasModified = modifyActiveSetAndTryAgain(solutionToPack,
+         boolean activeSetWasModified = modifyActiveSetAndTryAgain(internalSolution,
                                                                    lagrangeEqualityConstraintMultipliers,
                                                                    lagrangeInequalityConstraintMultipliers,
                                                                    lagrangeLowerBoundMultipliers,
@@ -256,7 +264,10 @@ public class SimpleDiagonalActiveSetQPSolver extends SimpleEfficientActiveSetQPS
          numberOfIterations++;
 
          if (!activeSetWasModified)
+         {
+            solutionToPack.set(internalSolution);
             return numberOfIterations;
+         }
       }
 
       for (int i = 0; i < numberOfVariables; i++)

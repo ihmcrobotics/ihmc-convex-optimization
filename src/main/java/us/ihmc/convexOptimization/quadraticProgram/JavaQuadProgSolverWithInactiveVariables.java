@@ -1,5 +1,8 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.MatrixDimensionException;
+import org.ejml.data.DMatrix;
+import org.ejml.data.DMatrix1Row;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 
@@ -68,7 +71,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public void setLowerBounds(DMatrixRMaj variableLowerBounds)
+   public void setLowerBounds(DMatrix variableLowerBounds)
    {
       int numberOfLowerBounds = variableLowerBounds.getNumRows();
 
@@ -83,7 +86,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public void setUpperBounds(DMatrixRMaj variableUpperBounds)
+   public void setUpperBounds(DMatrix variableUpperBounds)
    {
       int numberOfUpperBounds = variableUpperBounds.getNumRows();
       if (numberOfUpperBounds != originalQuadraticCostQMatrix.getNumRows())
@@ -97,7 +100,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public void setQuadraticCostFunction(DMatrixRMaj costQuadraticMatrix, DMatrixRMaj costLinearVector, double quadraticCostScalar)
+   public void setQuadraticCostFunction(DMatrix costQuadraticMatrix, DMatrix costLinearVector, double quadraticCostScalar)
    {
       if (costLinearVector.getNumCols() != 1)
          throw new RuntimeException("costLinearVector.getNumCols() != 1");
@@ -123,7 +126,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public void setLinearEqualityConstraints(DMatrixRMaj linearEqualityConstraintsAMatrix, DMatrixRMaj linearEqualityConstraintsBVector)
+   public void setLinearEqualityConstraints(DMatrix linearEqualityConstraintsAMatrix, DMatrix linearEqualityConstraintsBVector)
    {
       int numberOfEqualityConstraints = linearEqualityConstraintsBVector.getNumRows();
 
@@ -135,14 +138,14 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
          throw new RuntimeException("linearEqualityConstraintsAMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       originalLinearEqualityConstraintsAMatrix.reshape(linearEqualityConstraintsAMatrix.getNumCols(), numberOfEqualityConstraints);
-      CommonOps_DDRM.transpose(linearEqualityConstraintsAMatrix, originalLinearEqualityConstraintsAMatrix);
+      standardTranspose(linearEqualityConstraintsAMatrix, originalLinearEqualityConstraintsAMatrix);
       CommonOps_DDRM.scale(-1.0, originalLinearEqualityConstraintsAMatrix);
 
       originalLinearEqualityConstraintsBVector.set(linearEqualityConstraintsBVector);
    }
 
    @Override
-   public void setLinearInequalityConstraints(DMatrixRMaj linearInequalityConstraintCMatrix, DMatrixRMaj linearInequalityConstraintDVector)
+   public void setLinearInequalityConstraints(DMatrix linearInequalityConstraintCMatrix, DMatrix linearInequalityConstraintDVector)
    {
       int numberOfInequalityConstraints = linearInequalityConstraintDVector.getNumRows();
 
@@ -154,7 +157,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
          throw new RuntimeException("linearInequalityConstraintCMatrix.getNumCols() != quadraticCostQMatrix.getNumCols()");
 
       originalLinearInequalityConstraintsCMatrixO.reshape(linearInequalityConstraintCMatrix.getNumCols(), numberOfInequalityConstraints);
-      CommonOps_DDRM.transpose(linearInequalityConstraintCMatrix, originalLinearInequalityConstraintsCMatrixO);
+      standardTranspose(linearInequalityConstraintCMatrix, originalLinearInequalityConstraintsCMatrixO);
       CommonOps_DDRM.scale(-1.0, originalLinearInequalityConstraintsCMatrixO);
 
       originalLinearInequalityConstraintsDVectorO.set(linearInequalityConstraintDVector);
@@ -185,11 +188,12 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    }
 
    @Override
-   public int solve(DMatrixRMaj solutionToPack)
+   public int solve(DMatrix solutionToPack)
    {
       removeInactiveVariables();
 
-      solutionToPack.reshape(originalQuadraticCostQMatrix.numRows, 1);
+      if (solutionToPack.getNumRows() != originalQuadraticCostQMatrix.numRows || solutionToPack.getNumCols() != 1)
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
 
       int numberOfIterations = super.solve(activeVariableSolution);
 
@@ -279,11 +283,12 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
       }
    }
 
-   private void copyActiveVariableSolutionToAllVariables(DMatrixRMaj solutionToPack, DMatrixRMaj activeVariableSolution)
+   private void copyActiveVariableSolutionToAllVariables(DMatrix solutionToPack, DMatrixRMaj activeVariableSolution)
    {
       if (MatrixTools.containsNaN(activeVariableSolution))
       {
-         CommonOps_DDRM.fill(solutionToPack, Double.NaN);
+         for (int i = 0; i < solutionToPack.getNumRows(); i++)
+            solutionToPack.set(i, 0, Double.NaN);
          return;
       }
 
