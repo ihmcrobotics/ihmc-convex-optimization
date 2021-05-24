@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 
 /**
@@ -99,7 +100,7 @@ public interface ActiveSetQPSolver
     * @param xMin the lower bound for the problem's variables. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLowerBounds(DMatrixRMaj xMin);
+   void setLowerBounds(DMatrix xMin);
 
    /**
     * Sets the N-by-1 vector used to enforce an upper bound on the problem's variables:
@@ -113,7 +114,7 @@ public interface ActiveSetQPSolver
     * @param xMax the upper bound for the problem's variables. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setUpperBounds(DMatrixRMaj xMax);
+   void setUpperBounds(DMatrix xMax);
 
    /**
     * Sets the N-by-1 vectors used to enforce a lower and upper bounds on the problem's variables:
@@ -129,7 +130,7 @@ public interface ActiveSetQPSolver
     * @param xMax the upper bound for the problem's variables. Not modified.
     * @see ActiveSetQPSolver
     */
-   default void setVariableBounds(DMatrixRMaj xMin, DMatrixRMaj xMax)
+   default void setVariableBounds(DMatrix xMin, DMatrix xMax)
    {
       setLowerBounds(xMin);
       setUpperBounds(xMax);
@@ -149,7 +150,7 @@ public interface ActiveSetQPSolver
     * @param f is the N-by-1 gradient vector.
     * @see ActiveSetQPSolver
     */
-   default void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f)
+   default void setQuadraticCostFunction(DMatrix H, DMatrix f)
    {
       setQuadraticCostFunction(H, f, 0.0);
    }
@@ -169,7 +170,7 @@ public interface ActiveSetQPSolver
     * @param c is a scalar constant, that is typically equal to zero.
     * @see ActiveSetQPSolver
     */
-   void setQuadraticCostFunction(DMatrixRMaj H, DMatrixRMaj f, double c);
+   void setQuadraticCostFunction(DMatrix H, DMatrix f, double c);
 
    /**
     * Configures the linear equality constraints:
@@ -188,7 +189,7 @@ public interface ActiveSetQPSolver
     * @param beq is a M<sub>eq</sub>-by-1 vector. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLinearEqualityConstraints(DMatrixRMaj Aeq, DMatrixRMaj beq);
+   void setLinearEqualityConstraints(DMatrix Aeq, DMatrix beq);
 
    /**
     * Configures the linear inequality constraints:
@@ -207,7 +208,7 @@ public interface ActiveSetQPSolver
     * @param bin is a M<sub>in</sub>-by-1 vector. Not modified.
     * @see ActiveSetQPSolver
     */
-   void setLinearInequalityConstraints(DMatrixRMaj Ain, DMatrixRMaj bin);
+   void setLinearInequalityConstraints(DMatrix Ain, DMatrix bin);
 
    /**
     * With the problem previously formulated, solves the objective function for {@code x}:
@@ -248,14 +249,14 @@ public interface ActiveSetQPSolver
     *                been reached before finding a solution to the problem. Modified.
     * @return the number of iterations it took to find the solution. An iteration is defined as a
     *         change in the active-set.
-    * @see #setQuadraticCostFunction(DMatrixRMaj, DMatrixRMaj)
-    * @see #setLinearInequalityConstraints(DMatrixRMaj, DMatrixRMaj)
-    * @see #setLinearEqualityConstraints(DMatrixRMaj, DMatrixRMaj)
-    * @see #setLowerBounds(DMatrixRMaj)
-    * @see #setUpperBounds(DMatrixRMaj)
+    * @see #setQuadraticCostFunction(DMatrix, DMatrix)
+    * @see #setLinearInequalityConstraints(DMatrix, DMatrix)
+    * @see #setLinearEqualityConstraints(DMatrix, DMatrix)
+    * @see #setLowerBounds(DMatrix)
+    * @see #setUpperBounds(DMatrix)
     * @see ActiveSetQPSolver
     */
-   int solve(DMatrixRMaj xToPack);
+   int solve(DMatrix xToPack);
 
    /**
     * Calculates the cost from the objective function given value for {@code x}:
