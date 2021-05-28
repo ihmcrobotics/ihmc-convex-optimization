@@ -1454,6 +1454,7 @@ public abstract class AbstractSimpleActiveSetQPSolverTest
          DMatrixRMaj variableUpperBounds = nextDMatrixRMaj(random, numberOfVariables, 1, 0.01, 5.0);
          solver.setVariableBounds(variableLowerBounds, variableUpperBounds);
 
+         solution.reshape(numberOfVariables, 1);
          int numberOfIterations = solver.solve(solution);
          solver.getLagrangeEqualityConstraintMultipliers(lagrangeEqualityMultipliers);
          solver.getLagrangeInequalityConstraintMultipliers(lagrangeInequalityMultipliers);
