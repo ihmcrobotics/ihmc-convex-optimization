@@ -195,6 +195,7 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
       if (solutionToPack.getNumRows() != originalQuadraticCostQMatrix.numRows || solutionToPack.getNumCols() != 1)
          throw new IllegalArgumentException("Invalid matrix dimensions.");
 
+      activeVariableSolution.reshape(quadraticCostQMatrix.numRows, 1);
       int numberOfIterations = super.solve(activeVariableSolution);
 
       copyActiveVariableSolutionToAllVariables(solutionToPack, activeVariableSolution);
