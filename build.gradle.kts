@@ -23,8 +23,8 @@ mainDependencies {
    api("com.github.vincentfk:joptimizer:3.3.0")
 
    api("us.ihmc:ihmc-commons:0.30.4")
-   api("us.ihmc:euclid:0.16.2")
-   api("us.ihmc:euclid-frame:0.16.2")
+   api("us.ihmc:euclid:0.17.0")
+   api("us.ihmc:euclid-frame:0.17.0")
    api("us.ihmc:ihmc-matrix-library:0.18.5")
    api("us.ihmc:ihmc-native-library-loader:1.3.1")
    api("us.ihmc:ihmc-optimizer-wrappers:0.0.32")
