@@ -22,7 +22,7 @@ mainDependencies {
    api("org.ojalgo:ojalgo:40.0.0")
    api("com.github.vincentfk:joptimizer:3.3.0")
 
-   api("us.ihmc:ihmc-commons:0.30.4")
+   api("us.ihmc:ihmc-commons:0.30.5")
    api("us.ihmc:euclid:0.17.0")
    api("us.ihmc:euclid-frame:0.17.0")
    api("us.ihmc:ihmc-matrix-library:0.18.5")
