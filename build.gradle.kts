@@ -6,7 +6,7 @@ plugins {
 
 ihmc {
    group = "us.ihmc"
-   version = "0.17.9"
+   version = "0.17.10"
    vcsUrl = "https://github.com/ihmcrobotics/ihmc-convex-optimization"
    openSource = true
 
@@ -19,8 +19,11 @@ mainDependencies {
    api("org.ejml:ejml-ddense:0.39")
    api("net.sf.trove4j:trove4j:3.0.3")
 
-   api("org.ojalgo:ojalgo:40.0.0")
+   api("org.ojalgo:ojalgo:49.2.1")
    api("com.github.vincentfk:joptimizer:3.3.0")
+   {
+      exclude(group = "log4j", module = "log4j")
+   }
 
    api("us.ihmc:ihmc-commons:0.30.5")
    api("us.ihmc:euclid:0.17.0")
