@@ -1,6 +1,6 @@
 package us.ihmc.convexOptimization.linearProgram;
 
-class SolverStatistics
+public class SolverStatistics
 {
    private double solveTime;
    private int iterations;
