@@ -16,7 +16,8 @@ public class DictionaryFormLinearProgramSolver
    static final boolean debug = false;
 
    static final int maxVariables = 200;
-   static final int maxIterations = 50000;
+   static final int maxCrissCrossIterations = 50000;
+   static final int maxSimplexIterations = 1000;
    static final int nullMatrixIndex = -1;
    static final double epsilon = 1e-6;
    static final double zeroCutoff = 1e-10;
@@ -82,7 +83,7 @@ public class DictionaryFormLinearProgramSolver
 
       while (true)
       {
-         if (maxIterations > 0 && statistics.getAndIncrementIterations() > maxIterations)
+         if (statistics.getAndIncrementIterations() > maxSimplexIterations)
          {
             statistics.setFoundSolution(false);
             break;
@@ -258,7 +259,7 @@ public class DictionaryFormLinearProgramSolver
 
       while (true)
       {
-         if (maxIterations > 0 && crissCrossStatistics.getAndIncrementIterations() > maxIterations)
+         if (crissCrossStatistics.getAndIncrementIterations() > maxCrissCrossIterations)
          {
             crissCrossStatistics.setFoundSolution(false);
             break;

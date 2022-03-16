@@ -21,6 +21,11 @@ public class LinearProgramSolver
     * <p>
     * Returns true if an optimal solution is computed or false otherwise.
     */
+   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB, DMatrixRMaj solutionToPack)
+   {
+      return solve(costVectorC, constraintMatrixA, constraintVectorB, solutionToPack, SolverMethod.SIMPLEX);
+   }
+
    public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
    {
       if (costVectorC.getNumCols() != 1 || constraintVectorB.getNumCols() != 1)

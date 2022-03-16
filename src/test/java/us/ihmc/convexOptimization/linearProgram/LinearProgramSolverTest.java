@@ -74,7 +74,7 @@ public class LinearProgramSolverTest
    @Test
    public void testEllipsoidBasedMaxAndEqualityConstraints()
    {
-      int tests = 400;
+      int tests = 100;
       int costVectorsPerProblem = 10;
       LinearProgramSolver customSolver = new LinearProgramSolver();
 

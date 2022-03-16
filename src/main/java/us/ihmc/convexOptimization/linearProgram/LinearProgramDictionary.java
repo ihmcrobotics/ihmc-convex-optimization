@@ -111,15 +111,15 @@ public class LinearProgramDictionary
       }
    }
 
-   public void dropPhaseIVariables()
+   public boolean dropPhaseIVariables()
    {
       // pivot out auxiliary indices if in basis
       for (int i = 0; i < auxiliaryIndices.size(); i++)
       {
          if (basisIndices.contains(auxiliaryIndices.get(i)))
          {
-            int pivotColumn = findLargestMagnitudeNonAuxiliaryObjectiveColumn();
             int pivotRow = basisIndices.indexOf(auxiliaryIndices.get(i));
+            int pivotColumn = findLargestMagnitudeNonAuxiliaryRowEntry(pivotRow);
             performPivot(pivotRow, pivotColumn);
          }
       }
@@ -150,9 +150,12 @@ public class LinearProgramDictionary
          }
       }
       basisIndices.remove(auxObjectiveLexicalIndex);
+
+      return true;
    }
 
-   private int findLargestMagnitudeNonAuxiliaryObjectiveColumn()
+   // Avoid pivoting on really small entries by just taking largest magnitude
+   private int findLargestMagnitudeNonAuxiliaryRowEntry(int row)
    {
       double largestMagnitudeValue = 0.0;
       int column = nullMatrixIndex;
@@ -165,7 +168,7 @@ public class LinearProgramDictionary
             continue;
          }
 
-         double value = Math.abs(dictionary.get(0, j));
+         double value = Math.abs(dictionary.get(row, j));
          if (value > largestMagnitudeValue)
          {
             largestMagnitudeValue = value;
