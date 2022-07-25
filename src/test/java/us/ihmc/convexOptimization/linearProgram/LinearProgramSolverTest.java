@@ -170,6 +170,29 @@ public class LinearProgramSolverTest
    }
 
    @Test
+   public void testLPWithEqualityConstraint()
+   {
+      LinearProgramSolver customSolver = new LinearProgramSolver();
+      Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> constraintSet = generateRandomEllipsoidBasedConstraintSetSeparated();
+
+      DMatrixRMaj A = constraintSet.getLeft().getLeft();
+      DMatrixRMaj b = constraintSet.getLeft().getRight();
+      DMatrixRMaj C = constraintSet.getRight().getLeft();
+      DMatrixRMaj d = constraintSet.getRight().getRight();
+
+      DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
+      DMatrixRMaj solutionToPack = new DMatrixRMaj(0);
+
+      //SOLVE USING EQUALITY PASS IN CONSTRUCTOR SIMPLEX SOLUTION //
+      boolean foundSolution = customSolver.solve(costVector, A, b, C, d, solutionToPack);
+
+      //SOLVE WITH APACHE //
+      // ** this is where I need help **
+      // How to pass A, b, C, d into apache solution without pre-packing as A' b'
+      double[] apacheCommonsSolution = solveWithApacheCommons(A, b, costVector, Relationship.LEQ/* Doesn't accept equality contraint matrix */);
+
+   }
+   @Test
    public void testRandomLPs()
    {
       int tests = 200;
@@ -306,6 +329,84 @@ public class LinearProgramSolverTest
       MatrixTools.setMatrixBlock(b, bin.getNumRows() + beq.getNumRows(), 0, beq, 0, 0, beq.getNumRows(), beq.getNumCols(), -1.0);
 
       return Pair.of(A, b);
+   }
+
+   /**
+    * Generates inequality constraints and equality constraints,
+    * returns as separated matrices Ax <= b & Cx = d
+    */
+   private static Pair< Pair<DMatrixRMaj, DMatrixRMaj> , Pair<DMatrixRMaj, DMatrixRMaj> > generateRandomEllipsoidBasedConstraintSetSeparated()
+   {
+      int dimensionality = 2 + random.nextInt(30);
+      int inequalityConstraints = 1 + random.nextInt(30);
+
+      double radiusSquared = 1.0 + 100.0 * random.nextDouble();
+      double[] alphas = new double[dimensionality];
+      for (int j = 0; j < alphas.length; j++)
+      {
+         alphas[j] = 1.0 + 30.0 * random.nextDouble();
+      }
+
+      DMatrixRMaj Ain = new DMatrixRMaj(inequalityConstraints, dimensionality);
+      DMatrixRMaj bin = new DMatrixRMaj(inequalityConstraints, 1);
+
+      for (int i = 0; i < inequalityConstraints; i++)
+      {
+         // compute initial point on curve
+         double[] initialPoint = generatePointOnEllipsoid(dimensionality, radiusSquared, alphas);
+
+         // compute gradient at this point
+         double[] gradient = new double[dimensionality];
+         for (int j = 0; j < dimensionality; j++)
+         {
+            gradient[j] = alphas[j] * initialPoint[j];
+         }
+
+         double bValue = 0.0;
+         for (int k = 0; k < dimensionality; k++)
+         {
+            bValue += gradient[k] * initialPoint[k];
+         }
+
+         for (int j = 0; j < dimensionality; j++)
+         {
+            Ain.set(i, j, gradient[j]);
+         }
+
+         bin.set(i, 0, bValue);
+      }
+
+
+      int equalityConstraints = 1 + random.nextInt(dimensionality - 1);
+      DMatrixRMaj Aeq = new DMatrixRMaj(equalityConstraints, dimensionality);
+      DMatrixRMaj beq = new DMatrixRMaj(equalityConstraints, 1);
+
+      double[] interiorPoint = generatePointOnEllipsoid(dimensionality, radiusSquared, alphas);
+      double scale = 0.9 * random.nextDouble();
+      for (int i = 0; i < interiorPoint.length; i++)
+      {
+         interiorPoint[i] = scale * interiorPoint[i];
+      }
+
+      for (int i = 0; i < equalityConstraints; i++)
+      {
+         double normDotPoint = 0.0;
+         double[] normal = generateRandomVectorForPlaneNormal(dimensionality);
+
+         for (int j = 0; j < dimensionality; j++)
+         {
+            normDotPoint += normal[j] * interiorPoint[j];
+         }
+
+         beq.set(i, 0, normDotPoint);
+
+         for (int j = 0; j < dimensionality; j++)
+         {
+            Aeq.set(i, j, normal[j]);
+         }
+      }
+
+      return Pair.of(Pair.of(Ain, bin), Pair.of(Aeq, beq));
    }
 
    private static double[] generatePointOnEllipsoid(int dimensionality, double radiusSquared, double[] alphas)
