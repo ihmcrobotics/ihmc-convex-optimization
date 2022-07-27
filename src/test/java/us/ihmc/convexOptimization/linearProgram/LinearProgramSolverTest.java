@@ -8,6 +8,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.ojalgo.optimisation.Optimisation;
 import us.ihmc.commons.MathTools;
 import us.ihmc.euclid.tools.EuclidCoreRandomTools;
 import us.ihmc.euclid.tools.EuclidCoreTools;
@@ -172,30 +173,51 @@ public class LinearProgramSolverTest
    @Test
    public void testLPWithEqualityConstraint()
    {
-      LinearProgramSolver customSolver = new LinearProgramSolver();
-      Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> constraintSet = generateRandomEllipsoidBasedConstraintSetSeparated();
+      int tests = 100;
+      for(int run = 0; run < tests; run++)
+      {
+         LinearProgramSolver customSolver = new LinearProgramSolver();
+         Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> constraintSet = generateRandomEllipsoidBasedConstraintSetSeparated();
 
-      DMatrixRMaj A = constraintSet.getLeft().getLeft();
-      DMatrixRMaj b = constraintSet.getLeft().getRight();
-      DMatrixRMaj C = constraintSet.getRight().getLeft();
-      DMatrixRMaj d = constraintSet.getRight().getRight();
+         DMatrixRMaj A = constraintSet.getLeft().getLeft();
+         DMatrixRMaj b = constraintSet.getLeft().getRight();
+         DMatrixRMaj C = constraintSet.getRight().getLeft();
+         DMatrixRMaj d = constraintSet.getRight().getRight();
 
-      DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
-      DMatrixRMaj solutionToPack = new DMatrixRMaj(0);
+         DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
+         DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
+         DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
 
-      //SOLVE USING EQUALITY PASS IN CONSTRUCTOR SIMPLEX SOLUTION //
-      boolean foundSolution = customSolver.solve(costVector, A, b, C, d, solutionToPack);
+         //SOLVE USING SIMPLEX SOLUTION //
+         boolean foundSimplexSolution = customSolver.solve(costVector, A, b, C, d, simplexSolution, SolverMethod.SIMPLEX);
 
-      //SOLVE WITH APACHE //
-      // Pack augmented matrices
-      Pair<DMatrixRMaj, DMatrixRMaj> augmentedMatrices = packAugmentedMatrices(costVector, A, b, C, d);
-      DMatrixRMaj augmentedA = augmentedMatrices.getLeft();
-      DMatrixRMaj augmentedB = augmentedMatrices.getRight();
-      double[] apacheCommonsSolution = solveWithApacheCommons(augmentedA, augmentedB, costVector, Relationship.LEQ);
+         //SOLVE USING CRISS-CROSS SOLUTION
+         boolean foundCrissCrossSolution = customSolver.solve(costVector, A, b, C, d, crissCrossSolution, SolverMethod.CRISS_CROSS);
 
-      System.out.println(solutionToPack);
-      System.out.println("====================");
-      System.out.println(apacheCommonsSolution[2]);
+         //SOLVE WITH APACHE //
+         // Pack augmented matrices
+         Pair<DMatrixRMaj, DMatrixRMaj> augmentedMatrices = packAugmentedMatrices(costVector, A, b, C, d);
+         DMatrixRMaj augmentedA = augmentedMatrices.getLeft();
+         DMatrixRMaj augmentedB = augmentedMatrices.getRight();
+         double[] apacheCommonsSolution = solveWithApacheCommons(augmentedA, augmentedB, costVector, Relationship.LEQ);
+
+         if (apacheCommonsSolution == null)
+         {
+            Assertions.assertFalse(foundSimplexSolution);
+            Assertions.assertFalse(foundCrissCrossSolution);
+         }
+         else
+         {
+            Assertions.assertTrue(foundSimplexSolution);
+            Assertions.assertTrue(foundCrissCrossSolution);
+
+            for (int k = 0; k < apacheCommonsSolution.length; k++)
+            {
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
+            }
+         }
+      }
    }
 
    @Test

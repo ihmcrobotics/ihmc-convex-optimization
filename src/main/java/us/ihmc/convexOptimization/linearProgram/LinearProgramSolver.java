@@ -33,7 +33,7 @@ public class LinearProgramSolver
    }
 
    public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB,
-                        DMatrixRMaj constraintMatrixC, DMatrixRMaj constraintVectorD, DMatrixRMaj solutionToPack)
+                        DMatrixRMaj constraintMatrixC, DMatrixRMaj constraintVectorD, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
    {
       if (costVectorC.getNumCols() != 1 || constraintVectorB.getNumCols() != 1 || constraintVectorD.getNumCols() != 1)
          throw new IllegalArgumentException("Invalid matrix dimensions.");
@@ -93,7 +93,7 @@ public class LinearProgramSolver
       }
       augmentedInequalityVector = constraintVectorB;
 
-      return solve(costVectorC, augmentedInequalityMatrix, augmentedInequalityVector, solutionToPack);
+      return solve(costVectorC, augmentedInequalityMatrix, augmentedInequalityVector, solutionToPack, solverMethod);
    }
 
    public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
