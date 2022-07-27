@@ -179,23 +179,23 @@ public class LinearProgramSolverTest
          LinearProgramSolver customSolver = new LinearProgramSolver();
          Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> constraintSet = generateRandomEllipsoidBasedConstraintSetSeparated();
 
-         DMatrixRMaj A = constraintSet.getLeft().getLeft();
-         DMatrixRMaj b = constraintSet.getLeft().getRight();
-         DMatrixRMaj C = constraintSet.getRight().getLeft();
-         DMatrixRMaj d = constraintSet.getRight().getRight();
+         DMatrixRMaj inequalityMatrixA = constraintSet.getLeft().getLeft();
+         DMatrixRMaj inequalityVectorB = constraintSet.getLeft().getRight();
+         DMatrixRMaj equalityMatrixC = constraintSet.getRight().getLeft();
+         DMatrixRMaj equalityVectorD = constraintSet.getRight().getRight();
 
-         DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
+         DMatrixRMaj costVector = generateRandomCostVector(inequalityMatrixA.getNumCols());
          DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
          DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
 
          // SOLVE USING SIMPLEX SOLUTION //
-         boolean foundSimplexSolution = customSolver.solve(costVector, A, b, C, d, simplexSolution, SolverMethod.SIMPLEX);
-
+         boolean foundSimplexSolution = customSolver.solve(costVector, inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, simplexSolution, SolverMethod.SIMPLEX);
+         
          // SOLVE USING CRISS-CROSS SOLUTION //
-         boolean foundCrissCrossSolution = customSolver.solve(costVector, A, b, C, d, crissCrossSolution, SolverMethod.CRISS_CROSS);
+         boolean foundCrissCrossSolution = customSolver.solve(costVector, inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, crissCrossSolution, SolverMethod.CRISS_CROSS);
 
          // SOLVE WITH APACHE //
-         double[] apacheCommonsSolution = solveWithApacheCommonsWithEqualityConstraints(A, b, C, d, costVector, Relationship.LEQ);
+         double[] apacheCommonsSolution = solveWithApacheCommonsWithEqualityConstraints(inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, costVector, Relationship.LEQ);
 
          if (apacheCommonsSolution == null)
          {

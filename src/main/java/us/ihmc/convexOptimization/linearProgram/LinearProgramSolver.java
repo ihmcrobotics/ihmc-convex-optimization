@@ -27,89 +27,68 @@ public class LinearProgramSolver
     * <p>
     * Returns true if an optimal solution is computed or false otherwise.
     */
-   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB, DMatrixRMaj solutionToPack)
+   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj inequalityConstraintMatrixA, DMatrixRMaj inequalityConstraintVectorB, DMatrixRMaj solutionToPack)
    {
-      return solve(costVectorC, constraintMatrixA, constraintVectorB, solutionToPack, SolverMethod.SIMPLEX);
+      return solve(costVectorC, inequalityConstraintMatrixA, inequalityConstraintVectorB, solutionToPack, SolverMethod.SIMPLEX);
    }
 
-   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB,
-                        DMatrixRMaj constraintMatrixC, DMatrixRMaj constraintVectorD, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
+   /**
+    * Solves a standard form linear program
+    * with Equality Constraints
+    *
+    * <p>
+    * max c<sup>T</sup>x, Ax <= b, Cx == d, x >= 0.
+    * </p>
+    * <p>
+    * Returns true if an optimal solution is computed or false otherwise.
+    */
+   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj inequalityConstraintMatrixA, DMatrixRMaj inequalityConstraintVectorB,
+                        DMatrixRMaj equalityConstraintMatrixC, DMatrixRMaj equalityConstraintVectorD, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
    {
-      if (costVectorC.getNumCols() != 1 || constraintVectorB.getNumCols() != 1 || constraintVectorD.getNumCols() != 1)
+      if (costVectorC.getNumCols() != 1 || inequalityConstraintVectorB.getNumCols() != 1 || equalityConstraintVectorD.getNumCols() != 1)
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixA.getNumCols() != costVectorC.getNumRows())
+      if (inequalityConstraintMatrixA.getNumCols() != costVectorC.getNumRows())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if ( constraintMatrixA.getNumRows() != constraintVectorB.getNumRows() )
+      if ( inequalityConstraintMatrixA.getNumRows() != inequalityConstraintVectorB.getNumRows() )
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if ( constraintMatrixC.getNumRows() != constraintVectorD.getNumRows() )
+      if ( equalityConstraintMatrixC.getNumRows() != equalityConstraintVectorD.getNumRows() )
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if( constraintMatrixA.getNumCols() != constraintMatrixC.getNumCols() )
+      if( inequalityConstraintMatrixA.getNumCols() != equalityConstraintMatrixC.getNumCols() )
          throw new IllegalArgumentException("Invalid matrix dimensions.");
 
-      /**  Pack new Matrices A' and b' */
+      /* Pack new Matrices A' and b' */
+      int constraints = inequalityConstraintMatrixA.getNumRows() + (2 * equalityConstraintMatrixC.getNumRows());
+      int dimensionality = inequalityConstraintMatrixA.getNumCols();
+      DMatrixRMaj A = new DMatrixRMaj(constraints, dimensionality);
 
-      int  rowsToAdd = 2 * constraintMatrixC.getNumRows();
-      int rowsBeforeAdding = constraintMatrixA.getNumRows();
-      constraintMatrixA.reshape(rowsBeforeAdding + rowsToAdd, constraintMatrixA.getNumCols(), true);
-      // Add C rows to matrix A
-      int currRow = rowsBeforeAdding;
-      for(int row = 0; row < constraintMatrixC.getNumRows(); row++)
-      {
-         for(int col = 0; col < constraintMatrixC.getNumCols(); col++)
-         {
-            constraintMatrixA.set(currRow, col, constraintMatrixC.get(row, col));
-         }
-         currRow++;
-      }
+      MatrixTools.setMatrixBlock(A, 0, 0, inequalityConstraintMatrixA, 0, 0, inequalityConstraintMatrixA.getNumRows(), inequalityConstraintMatrixA.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(A, inequalityConstraintMatrixA.getNumRows(), 0, equalityConstraintMatrixC, 0, 0, equalityConstraintMatrixC.getNumRows(), equalityConstraintMatrixC.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(A, inequalityConstraintMatrixA.getNumRows() + equalityConstraintMatrixC.getNumRows(), 0, equalityConstraintMatrixC, 0, 0, equalityConstraintMatrixC.getNumRows(), equalityConstraintMatrixC.getNumCols(), -1.0);
+      augmentedInequalityMatrix = A;
 
-      // Add -C rows to matrix A
-      for(int row = 0; row < constraintMatrixC.getNumRows(); row++)
-      {
-         for(int col = 0; col < constraintMatrixC.getNumCols(); col++)
-         {
-            constraintMatrixA.set(currRow, col, -1 * constraintMatrixC.get(row, col));
-         }
-         currRow++;
-      }
-      augmentedInequalityMatrix = constraintMatrixA;
-
-      //Pack b'
-      int BRowsBeforeAdding = constraintVectorB.getNumRows();
-      int BRowsAfterAdding = BRowsBeforeAdding + ( 2 * constraintVectorD.getNumRows() );
-      constraintVectorB.reshape(BRowsAfterAdding, 1, true);
-
-      //Add D
-      int BCurrRow = BRowsBeforeAdding;
-      for(int i = 0; i < constraintVectorD.getNumRows(); i++)
-      {
-         constraintVectorB.set(BCurrRow, 0, constraintVectorD.get(i, 0) );
-         BCurrRow++;
-      }
-      //Add -D
-      for(int i = 0; i < constraintVectorD.getNumRows(); i++)
-      {
-         constraintVectorB.set(BCurrRow, 0, -1 * constraintVectorD.get(i, 0) );
-         BCurrRow++;
-      }
-      augmentedInequalityVector = constraintVectorB;
+      DMatrixRMaj b = new DMatrixRMaj(constraints, 1);
+      MatrixTools.setMatrixBlock(b, 0, 0, inequalityConstraintVectorB, 0, 0, inequalityConstraintVectorB.getNumRows(), inequalityConstraintVectorB.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(b, inequalityConstraintVectorB.getNumRows(), 0, equalityConstraintVectorD, 0, 0, equalityConstraintVectorD.getNumRows(), equalityConstraintVectorD.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(b, inequalityConstraintVectorB.getNumRows() + equalityConstraintVectorD.getNumRows(), 0, equalityConstraintVectorD, 0, 0, equalityConstraintVectorD.getNumRows(), equalityConstraintVectorD.getNumCols(), -1.0);
+      augmentedInequalityVector = b;
 
       return solve(costVectorC, augmentedInequalityMatrix, augmentedInequalityVector, solutionToPack, solverMethod);
    }
 
-   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
+   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj inequalityConstraintMatrixA, DMatrixRMaj inequalityConstraintVectorB, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
    {
-      if (costVectorC.getNumCols() != 1 || constraintVectorB.getNumCols() != 1)
+      if (costVectorC.getNumCols() != 1 || inequalityConstraintVectorB.getNumCols() != 1)
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixA.getNumCols() != costVectorC.getNumRows())
+      if (inequalityConstraintMatrixA.getNumCols() != costVectorC.getNumRows())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixA.getNumRows() != constraintVectorB.getNumRows())
+      if (inequalityConstraintMatrixA.getNumRows() != inequalityConstraintVectorB.getNumRows())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
 
-      startingDictionary.reshape(1 + constraintMatrixA.getNumRows(), 1 + constraintMatrixA.getNumCols());
+      startingDictionary.reshape(1 + inequalityConstraintMatrixA.getNumRows(), 1 + inequalityConstraintMatrixA.getNumCols());
       Arrays.fill(startingDictionary.getData(), 0.0);
 
-      MatrixTools.setMatrixBlock(startingDictionary, 1, 0, constraintVectorB, 0, 0, constraintVectorB.getNumRows(), 1, 1.0);
-      MatrixTools.setMatrixBlock(startingDictionary, 1, 1, constraintMatrixA, 0, 0, constraintMatrixA.getNumRows(), constraintMatrixA.getNumCols(), -1.0);
+      MatrixTools.setMatrixBlock(startingDictionary, 1, 0, inequalityConstraintVectorB, 0, 0, inequalityConstraintVectorB.getNumRows(), 1, 1.0);
+      MatrixTools.setMatrixBlock(startingDictionary, 1, 1, inequalityConstraintMatrixA, 0, 0, inequalityConstraintMatrixA.getNumRows(), inequalityConstraintMatrixA.getNumCols(), -1.0);
 
       for (int i = 0; i < costVectorC.getNumRows(); i++)
       {
