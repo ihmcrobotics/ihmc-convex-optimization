@@ -188,18 +188,14 @@ public class LinearProgramSolverTest
          DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
          DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
 
-         //SOLVE USING SIMPLEX SOLUTION //
+         // SOLVE USING SIMPLEX SOLUTION //
          boolean foundSimplexSolution = customSolver.solve(costVector, A, b, C, d, simplexSolution, SolverMethod.SIMPLEX);
 
-         //SOLVE USING CRISS-CROSS SOLUTION
+         // SOLVE USING CRISS-CROSS SOLUTION //
          boolean foundCrissCrossSolution = customSolver.solve(costVector, A, b, C, d, crissCrossSolution, SolverMethod.CRISS_CROSS);
 
-         //SOLVE WITH APACHE //
-         // Pack augmented matrices
-         Pair<DMatrixRMaj, DMatrixRMaj> augmentedMatrices = packAugmentedMatrices(costVector, A, b, C, d);
-         DMatrixRMaj augmentedA = augmentedMatrices.getLeft();
-         DMatrixRMaj augmentedB = augmentedMatrices.getRight();
-         double[] apacheCommonsSolution = solveWithApacheCommons(augmentedA, augmentedB, costVector, Relationship.LEQ);
+         // SOLVE WITH APACHE //
+         double[] apacheCommonsSolution = solveWithApacheCommonsWithEqualityConstraints(A, b, C, d, costVector, Relationship.LEQ);
 
          if (apacheCommonsSolution == null)
          {
@@ -566,64 +562,57 @@ public class LinearProgramSolverTest
       }
    }
 
-   private static Pair<DMatrixRMaj, DMatrixRMaj> packAugmentedMatrices(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB,
-                                                                       DMatrixRMaj constraintMatrixC, DMatrixRMaj constraintVectorD)
+   private static double[] solveWithApacheCommonsWithEqualityConstraints(DMatrixRMaj inequalityMatrixA, DMatrixRMaj inequalityVectorB,
+                                                                         DMatrixRMaj equalityMatrixC, DMatrixRMaj equalityVectorD,
+                                                                         DMatrixRMaj costVector, Relationship constraintRelationship)
    {
-      if (costVectorC.getNumCols() != 1 || constraintVectorB.getNumCols() != 1 || constraintVectorD.getNumCols() != 1)
-         throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixA.getNumCols() != costVectorC.getNumRows())
-         throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixA.getNumRows() != constraintVectorB.getNumRows())
-         throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixC.getNumRows() != constraintVectorD.getNumRows())
-         throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if (constraintMatrixA.getNumCols() != constraintMatrixC.getNumCols())
-         throw new IllegalArgumentException("Invalid matrix dimensions.");
+      SimplexSolver apacheSolver = new SimplexSolver();
 
-      /**  Pack new Matrices A' and b' */
+      double[] directionToMaximize = Arrays.copyOf(costVector.getData(), costVector.getNumRows());
+      LinearObjectiveFunction objectiveFunction = new LinearObjectiveFunction(directionToMaximize, 0.0);
 
-      int rowsToAdd = 2 * constraintMatrixC.getNumRows();
-      int rowsBeforeAdding = constraintMatrixA.getNumRows();
-      constraintMatrixA.reshape(rowsBeforeAdding + rowsToAdd, constraintMatrixA.getNumCols(), true);
-      // Add C rows to matrix A
-      int currRow = rowsBeforeAdding;
-      for (int row = 0; row < constraintMatrixC.getNumRows(); row++)
+      List<LinearConstraint> constraintList = new ArrayList<>();
+
+      /* Adding inequality constraints */
+      for (int i = 0; i < inequalityMatrixA.getNumRows(); i++)
       {
-         for (int col = 0; col < constraintMatrixC.getNumCols(); col++)
+         double[] constraint = new double[inequalityMatrixA.getNumCols()];
+         for (int j = 0; j < inequalityMatrixA.getNumCols(); j++)
          {
-            constraintMatrixA.set(currRow, col, constraintMatrixC.get(row, col));
+            constraint[j] = inequalityMatrixA.get(i, j);
          }
-         currRow++;
+
+         constraintList.add(new LinearConstraint(constraint, constraintRelationship, inequalityVectorB.get(i)));
       }
 
-      // Add -C rows to matrix A
-      for (int row = 0; row < constraintMatrixC.getNumRows(); row++)
+      /* Adding equality constraints */
+      for (int i = 0; i < equalityMatrixC.getNumRows(); i++)
       {
-         for (int col = 0; col < constraintMatrixC.getNumCols(); col++)
+         double[] constraint = new double[equalityMatrixC.getNumCols()];
+         for (int j = 0; j < equalityMatrixC.getNumCols(); j++)
          {
-            constraintMatrixA.set(currRow, col, -1 * constraintMatrixC.get(row, col));
+            constraint[j] = equalityMatrixC.get(i, j);
          }
-         currRow++;
+
+         constraintList.add(new LinearConstraint(constraint, Relationship.EQ, equalityVectorD.get(i)));
       }
 
-      //Pack b'
-      int BRowsBeforeAdding = constraintVectorB.getNumRows();
-      int BRowsAfterAdding = BRowsBeforeAdding + (2 * constraintVectorD.getNumRows());
-      constraintVectorB.reshape(BRowsAfterAdding, 1, true);
+      /* Adding non-negative constraint */
+      for (int i = 0; i < inequalityMatrixA.getNumCols(); i++)
+      {
+         double[] nonNegativeConstraint = new double[inequalityMatrixA.getNumCols()];
+         nonNegativeConstraint[i] = 1.0;
+         constraintList.add(new LinearConstraint(nonNegativeConstraint, Relationship.GEQ, 0.0));
+      }
 
-      //Add D
-      int BCurrRow = BRowsBeforeAdding;
-      for (int i = 0; i < constraintVectorD.getNumRows(); i++)
+      try
       {
-         constraintVectorB.set(BCurrRow, 0, constraintVectorD.get(i, 0));
-         BCurrRow++;
+         return apacheSolver.optimize(new MaxIter(1000), objectiveFunction, new LinearConstraintSet(constraintList), GoalType.MAXIMIZE).getPoint();
       }
-      //Add -D
-      for (int i = 0; i < constraintVectorD.getNumRows(); i++)
+      catch (Exception e)
       {
-         constraintVectorB.set(BCurrRow, 0, -1 * constraintVectorD.get(i, 0));
-         BCurrRow++;
+         return null;
       }
-      return Pair.of(constraintMatrixA, constraintVectorB);
    }
+
 }
