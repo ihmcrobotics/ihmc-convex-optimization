@@ -187,11 +187,17 @@ public class LinearProgramSolverTest
       boolean foundSolution = customSolver.solve(costVector, A, b, C, d, solutionToPack);
 
       //SOLVE WITH APACHE //
-      // ** this is where I need help **
-      // How to pass A, b, C, d into apache solution without pre-packing as A' b'
-      double[] apacheCommonsSolution = solveWithApacheCommons(A, b, costVector, Relationship.LEQ/* Doesn't accept equality contraint matrix */);
+      // Pack augmented matrices
+      Pair<DMatrixRMaj, DMatrixRMaj> augmentedMatrices = packAugmentedMatrices(costVector, A, b, C, d);
+      DMatrixRMaj augmentedA = augmentedMatrices.getLeft();
+      DMatrixRMaj augmentedB = augmentedMatrices.getRight();
+      double[] apacheCommonsSolution = solveWithApacheCommons(augmentedA, augmentedB, costVector, Relationship.LEQ);
 
+      System.out.println(solutionToPack);
+      System.out.println("====================");
+      System.out.println(apacheCommonsSolution[2]);
    }
+
    @Test
    public void testRandomLPs()
    {
@@ -216,7 +222,11 @@ public class LinearProgramSolverTest
 
             // SOLVER WITH CUSTOM IMPL USING CRISS CROSS //
             DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
-            boolean foundCrissCrossSolution = customSolver.solve(costVector, constraintPlanes.getLeft(), constraintPlanes.getRight(), crissCrossSolution, SolverMethod.CRISS_CROSS);
+            boolean foundCrissCrossSolution = customSolver.solve(costVector,
+                                                                 constraintPlanes.getLeft(),
+                                                                 constraintPlanes.getRight(),
+                                                                 crissCrossSolution,
+                                                                 SolverMethod.CRISS_CROSS);
 
             if (apacheCommonsSolution == null)
             {
@@ -335,7 +345,7 @@ public class LinearProgramSolverTest
     * Generates inequality constraints and equality constraints,
     * returns as separated matrices Ax <= b & Cx = d
     */
-   private static Pair< Pair<DMatrixRMaj, DMatrixRMaj> , Pair<DMatrixRMaj, DMatrixRMaj> > generateRandomEllipsoidBasedConstraintSetSeparated()
+   private static Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> generateRandomEllipsoidBasedConstraintSetSeparated()
    {
       int dimensionality = 2 + random.nextInt(30);
       int inequalityConstraints = 1 + random.nextInt(30);
@@ -375,7 +385,6 @@ public class LinearProgramSolverTest
 
          bin.set(i, 0, bValue);
       }
-
 
       int equalityConstraints = 1 + random.nextInt(dimensionality - 1);
       DMatrixRMaj Aeq = new DMatrixRMaj(equalityConstraints, dimensionality);
@@ -474,7 +483,6 @@ public class LinearProgramSolverTest
       }
 
       return Pair.of(A, b);
-
    }
 
    private static DMatrixRMaj generateRandomCostVector(int dimensionality)
@@ -534,5 +542,66 @@ public class LinearProgramSolverTest
       {
          return null;
       }
+   }
+
+   private static Pair<DMatrixRMaj, DMatrixRMaj> packAugmentedMatrices(DMatrixRMaj costVectorC, DMatrixRMaj constraintMatrixA, DMatrixRMaj constraintVectorB,
+                                                                       DMatrixRMaj constraintMatrixC, DMatrixRMaj constraintVectorD)
+   {
+      if (costVectorC.getNumCols() != 1 || constraintVectorB.getNumCols() != 1 || constraintVectorD.getNumCols() != 1)
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
+      if (constraintMatrixA.getNumCols() != costVectorC.getNumRows())
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
+      if (constraintMatrixA.getNumRows() != constraintVectorB.getNumRows())
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
+      if (constraintMatrixC.getNumRows() != constraintVectorD.getNumRows())
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
+      if (constraintMatrixA.getNumCols() != constraintMatrixC.getNumCols())
+         throw new IllegalArgumentException("Invalid matrix dimensions.");
+
+      /**  Pack new Matrices A' and b' */
+
+      int rowsToAdd = 2 * constraintMatrixC.getNumRows();
+      int rowsBeforeAdding = constraintMatrixA.getNumRows();
+      constraintMatrixA.reshape(rowsBeforeAdding + rowsToAdd, constraintMatrixA.getNumCols(), true);
+      // Add C rows to matrix A
+      int currRow = rowsBeforeAdding;
+      for (int row = 0; row < constraintMatrixC.getNumRows(); row++)
+      {
+         for (int col = 0; col < constraintMatrixC.getNumCols(); col++)
+         {
+            constraintMatrixA.set(currRow, col, constraintMatrixC.get(row, col));
+         }
+         currRow++;
+      }
+
+      // Add -C rows to matrix A
+      for (int row = 0; row < constraintMatrixC.getNumRows(); row++)
+      {
+         for (int col = 0; col < constraintMatrixC.getNumCols(); col++)
+         {
+            constraintMatrixA.set(currRow, col, -1 * constraintMatrixC.get(row, col));
+         }
+         currRow++;
+      }
+
+      //Pack b'
+      int BRowsBeforeAdding = constraintVectorB.getNumRows();
+      int BRowsAfterAdding = BRowsBeforeAdding + (2 * constraintVectorD.getNumRows());
+      constraintVectorB.reshape(BRowsAfterAdding, 1, true);
+
+      //Add D
+      int BCurrRow = BRowsBeforeAdding;
+      for (int i = 0; i < constraintVectorD.getNumRows(); i++)
+      {
+         constraintVectorB.set(BCurrRow, 0, constraintVectorD.get(i, 0));
+         BCurrRow++;
+      }
+      //Add -D
+      for (int i = 0; i < constraintVectorD.getNumRows(); i++)
+      {
+         constraintVectorB.set(BCurrRow, 0, -1 * constraintVectorD.get(i, 0));
+         BCurrRow++;
+      }
+      return Pair.of(constraintMatrixA, constraintVectorB);
    }
 }
