@@ -15,8 +15,8 @@ public class LinearProgramSolver
 {
    private final DMatrixRMaj startingDictionary = new DMatrixRMaj(maxVariables, maxVariables);
    private final DictionaryFormLinearProgramSolver dictionaryFormSolver = new DictionaryFormLinearProgramSolver();
-   private DMatrixRMaj augmentedInequalityMatrix = new DMatrixRMaj(0);
-   private DMatrixRMaj augmentedInequalityVector = new DMatrixRMaj(0);
+   private final DMatrixRMaj augmentedInequalityMatrix = new DMatrixRMaj(maxVariables, maxVariables);
+   private final DMatrixRMaj augmentedInequalityVector = new DMatrixRMaj(maxVariables, maxVariables);
 
    /**
     * Solves a standard form linear program
@@ -33,8 +33,7 @@ public class LinearProgramSolver
    }
 
    /**
-    * Solves a standard form linear program
-    * with Equality Constraints
+    * Solves the following linear program
     *
     * <p>
     * max c<sup>T</sup>x, Ax <= b, Cx == d, x >= 0.
@@ -42,43 +41,44 @@ public class LinearProgramSolver
     * <p>
     * Returns true if an optimal solution is computed or false otherwise.
     */
-   public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj inequalityConstraintMatrixA, DMatrixRMaj inequalityConstraintVectorB,
-                        DMatrixRMaj equalityConstraintMatrixC, DMatrixRMaj equalityConstraintVectorD, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
+   public boolean solve(DMatrixRMaj costVectorC,
+                        DMatrixRMaj inequalityConstraintMatrixA,
+                        DMatrixRMaj inequalityConstraintVectorB,
+                        DMatrixRMaj equalityConstraintMatrixC,
+                        DMatrixRMaj equalityConstraintVectorD,
+                        DMatrixRMaj solutionToPack,
+                        SolverMethod solverMethod)
    {
       if (costVectorC.getNumCols() != 1 || inequalityConstraintVectorB.getNumCols() != 1 || equalityConstraintVectorD.getNumCols() != 1)
          throw new IllegalArgumentException("Invalid matrix dimensions.");
       if (inequalityConstraintMatrixA.getNumCols() != costVectorC.getNumRows())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if ( inequalityConstraintMatrixA.getNumRows() != inequalityConstraintVectorB.getNumRows() )
+      if (inequalityConstraintMatrixA.getNumRows() != inequalityConstraintVectorB.getNumRows())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if ( equalityConstraintMatrixC.getNumRows() != equalityConstraintVectorD.getNumRows() )
+      if (equalityConstraintMatrixC.getNumRows() != equalityConstraintVectorD.getNumRows())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
-      if( inequalityConstraintMatrixA.getNumCols() != equalityConstraintMatrixC.getNumCols() )
+      if (inequalityConstraintMatrixA.getNumCols() != equalityConstraintMatrixC.getNumCols())
          throw new IllegalArgumentException("Invalid matrix dimensions.");
 
-      /* Pack new Matrices A' and b' */
+      /* Pack augmented inequality matrices */
       int constraints = inequalityConstraintMatrixA.getNumRows() + (2 * equalityConstraintMatrixC.getNumRows());
       int dimensionality = inequalityConstraintMatrixA.getNumCols();
-      DMatrixRMaj A = new DMatrixRMaj(constraints, dimensionality);
+      augmentedInequalityMatrix.reshape(constraints, dimensionality);
 
-      MatrixTools.setMatrixBlock(A, 0, 0, inequalityConstraintMatrixA, 0, 0, inequalityConstraintMatrixA.getNumRows(), inequalityConstraintMatrixA.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(A, inequalityConstraintMatrixA.getNumRows(), 0, equalityConstraintMatrixC, 0, 0, equalityConstraintMatrixC.getNumRows(), equalityConstraintMatrixC.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(A, inequalityConstraintMatrixA.getNumRows() + equalityConstraintMatrixC.getNumRows(), 0, equalityConstraintMatrixC, 0, 0, equalityConstraintMatrixC.getNumRows(), equalityConstraintMatrixC.getNumCols(), -1.0);
-      augmentedInequalityMatrix = A;
+      MatrixTools.setMatrixBlock(augmentedInequalityMatrix, 0, 0, inequalityConstraintMatrixA, 0, 0, inequalityConstraintMatrixA.getNumRows(), inequalityConstraintMatrixA.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(augmentedInequalityMatrix, inequalityConstraintMatrixA.getNumRows(), 0, equalityConstraintMatrixC, 0, 0, equalityConstraintMatrixC.getNumRows(), equalityConstraintMatrixC.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(augmentedInequalityMatrix, inequalityConstraintMatrixA.getNumRows() + equalityConstraintMatrixC.getNumRows(), 0, equalityConstraintMatrixC, 0, 0, equalityConstraintMatrixC.getNumRows(), equalityConstraintMatrixC.getNumCols(), -1.0);
 
-      DMatrixRMaj b = new DMatrixRMaj(constraints, 1);
-      MatrixTools.setMatrixBlock(b, 0, 0, inequalityConstraintVectorB, 0, 0, inequalityConstraintVectorB.getNumRows(), inequalityConstraintVectorB.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(b, inequalityConstraintVectorB.getNumRows(), 0, equalityConstraintVectorD, 0, 0, equalityConstraintVectorD.getNumRows(), equalityConstraintVectorD.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(b, inequalityConstraintVectorB.getNumRows() + equalityConstraintVectorD.getNumRows(), 0, equalityConstraintVectorD, 0, 0, equalityConstraintVectorD.getNumRows(), equalityConstraintVectorD.getNumCols(), -1.0);
-      augmentedInequalityVector = b;
+      augmentedInequalityVector.reshape(constraints, 1);
+      MatrixTools.setMatrixBlock(augmentedInequalityVector, 0, 0, inequalityConstraintVectorB, 0, 0, inequalityConstraintVectorB.getNumRows(), inequalityConstraintVectorB.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(augmentedInequalityVector, inequalityConstraintVectorB.getNumRows(), 0, equalityConstraintVectorD, 0, 0, equalityConstraintVectorD.getNumRows(), equalityConstraintVectorD.getNumCols(), 1.0);
+      MatrixTools.setMatrixBlock(augmentedInequalityVector, inequalityConstraintVectorB.getNumRows() + equalityConstraintVectorD.getNumRows(), 0, equalityConstraintVectorD, 0, 0, equalityConstraintVectorD.getNumRows(), equalityConstraintVectorD.getNumCols(), -1.0);
 
       return solve(costVectorC, augmentedInequalityMatrix, augmentedInequalityVector, solutionToPack, solverMethod);
    }
 
    /**
-    * Solves a standard form linear program
-    * Using the selected SolverMethod [Simplex, or CrissCross]
-    * Defaults to solving Simplex if an invalid Method is supplied/
+    * Solves a standard form linear program using the selected SolverMethod (Simplex or Criss-Cross)
     *
     * <p>
     * max c<sup>T</sup>x, Ax <= b, x >= 0.

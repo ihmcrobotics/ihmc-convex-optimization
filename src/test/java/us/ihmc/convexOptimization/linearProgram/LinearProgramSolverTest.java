@@ -1,6 +1,5 @@
 package us.ihmc.convexOptimization.linearProgram;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.optim.MaxIter;
 import org.apache.commons.math3.optim.linear.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
@@ -8,7 +7,6 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.ojalgo.optimisation.Optimisation;
 import us.ihmc.commons.MathTools;
 import us.ihmc.euclid.tools.EuclidCoreRandomTools;
 import us.ihmc.euclid.tools.EuclidCoreTools;
@@ -24,195 +22,109 @@ public class LinearProgramSolverTest
    private static final Random random = new Random(349034);
    private static final double epsilon = 1e-5;
 
+   private static class ConstraintSet
+   {
+      private final DMatrixRMaj inequalityMatrix = new DMatrixRMaj(0);
+      private final DMatrixRMaj inequalityVector = new DMatrixRMaj(0);
+      private final DMatrixRMaj equalityMatrix = new DMatrixRMaj(0);
+      private final DMatrixRMaj equalityVector = new DMatrixRMaj(0);
+   }
+
    @Test
-   public void testEllipsoidBasedMaxConstraint()
+   public void testOnlyInequalityConstraints_MaxBounded()
    {
       int tests = 400;
       int costVectorsPerProblem = 10;
-      LinearProgramSolver customSolver = new LinearProgramSolver();
 
       for (int i = 0; i < tests; i++)
       {
-         Pair<DMatrixRMaj, DMatrixRMaj> constraintSet = generateRandomEllipsoidBasedConstraintSet(false);
-         DMatrixRMaj A = constraintSet.getLeft();
-         DMatrixRMaj b = constraintSet.getRight();
-
-         for (int j = 0; j < costVectorsPerProblem; j++)
-         {
-            DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
-
-            // SOLVE WITH APACHE //
-            double[] apacheCommonsSolution = solveWithApacheCommons(A, b, costVector, Relationship.LEQ);
-
-            // SOLVER WITH CUSTOM IMPL USING SIMPLEX //
-            DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
-            boolean foundSimplexSolution = customSolver.solve(costVector, A, b, simplexSolution, SolverMethod.SIMPLEX);
-
-            // SOLVER WITH CUSTOM IMPL USING CRISS CROSS //
-            DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
-            boolean foundCrissCrossSolution = customSolver.solve(costVector, A, b, crissCrossSolution, SolverMethod.CRISS_CROSS);
-
-            if (apacheCommonsSolution == null)
-            {
-               Assertions.assertFalse(foundSimplexSolution);
-               Assertions.assertFalse(foundCrissCrossSolution);
-            }
-            else
-            {
-               Assertions.assertTrue(foundSimplexSolution);
-               Assertions.assertTrue(foundCrissCrossSolution);
-
-               for (int k = 0; k < apacheCommonsSolution.length; k++)
-               {
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
-               }
-            }
-         }
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(false, false);
+         runTest(constraintSet, costVectorsPerProblem);
       }
    }
 
    @Test
-   public void testEllipsoidBasedMaxAndEqualityConstraints()
-   {
-      int tests = 100;
-      int costVectorsPerProblem = 10;
-      LinearProgramSolver customSolver = new LinearProgramSolver();
-
-      for (int i = 0; i < tests; i++)
-      {
-         Pair<DMatrixRMaj, DMatrixRMaj> constraintPlanes = generateRandomEllipsoidBasedConstraintSet(true);
-         DMatrixRMaj A = constraintPlanes.getLeft();
-         DMatrixRMaj b = constraintPlanes.getRight();
-
-         for (int j = 0; j < costVectorsPerProblem; j++)
-         {
-            DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
-
-            // SOLVE WITH APACHE //
-            double[] apacheCommonsSolution = solveWithApacheCommons(A, b, costVector, Relationship.LEQ);
-
-            // SOLVER WITH CUSTOM IMPL USING SIMPLEX //
-            DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
-            boolean foundSimplexSolution = customSolver.solve(costVector, A, b, simplexSolution, SolverMethod.SIMPLEX);
-
-            // SOLVER WITH CUSTOM IMPL USING CRISS CROSS //
-            DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
-            boolean foundCrissCrossSolution = customSolver.solve(costVector, A, b, crissCrossSolution, SolverMethod.CRISS_CROSS);
-
-            if (apacheCommonsSolution == null)
-            {
-               Assertions.assertFalse(foundSimplexSolution);
-               Assertions.assertFalse(foundCrissCrossSolution);
-            }
-            else
-            {
-               Assertions.assertTrue(foundSimplexSolution);
-               Assertions.assertTrue(foundCrissCrossSolution);
-
-               for (int k = 0; k < apacheCommonsSolution.length; k++)
-               {
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
-               }
-            }
-         }
-      }
-   }
-
-   @Test
-   public void testEllipsoidBasedMinConstraint()
+   public void testOnlyInequalityConstraints_MinBounded()
    {
       int tests = 400;
       int costVectorsPerProblem = 10;
-      LinearProgramSolver customSolver = new LinearProgramSolver();
 
       for (int i = 0; i < tests; i++)
       {
-         Pair<DMatrixRMaj, DMatrixRMaj> constraintPlanes = generateRandomEllipsoidBasedConstraintSet(false);
-         DMatrixRMaj A = constraintPlanes.getLeft();
-         DMatrixRMaj b = constraintPlanes.getRight();
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(false, false);
+         DMatrixRMaj A = constraintSet.inequalityMatrix;
+         DMatrixRMaj b = constraintSet.inequalityVector;
          CommonOps_DDRM.scale(-1.0, A);
          CommonOps_DDRM.scale(-1.0, b);
 
-         for (int j = 0; j < costVectorsPerProblem; j++)
-         {
-            DMatrixRMaj costVector = generateRandomCostVector(A.getNumCols());
-
-            // SOLVE WITH APACHE //
-            double[] apacheCommonsSolution = solveWithApacheCommons(A, b, costVector, Relationship.LEQ);
-
-            // SOLVER WITH CUSTOM IMPL USING SIMPLEX //
-            DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
-            boolean foundSimplexSolution = customSolver.solve(costVector, A, b, simplexSolution, SolverMethod.SIMPLEX);
-
-            // SOLVER WITH CUSTOM IMPL USING CRISS CROSS //
-            DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
-            boolean foundCrissCrossSolution = customSolver.solve(costVector, A, b, crissCrossSolution, SolverMethod.CRISS_CROSS);
-
-            if (apacheCommonsSolution == null)
-            {
-               Assertions.assertFalse(foundSimplexSolution);
-               Assertions.assertFalse(foundCrissCrossSolution);
-            }
-            else
-            {
-               Assertions.assertTrue(foundSimplexSolution);
-               Assertions.assertTrue(foundCrissCrossSolution);
-
-               for (int k = 0; k < apacheCommonsSolution.length; k++)
-               {
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
-               }
-            }
-         }
+         runTest(constraintSet, costVectorsPerProblem);
       }
    }
 
    @Test
-   public void testLPWithEqualityConstraint()
+   public void testWithEqualityConstraintsInInequalityMatrix()
    {
       int tests = 100;
-      for (int run = 0; run < tests; run++)
+      int costVectorsPerProblem = 10;
+
+      for (int i = 0; i < tests; i++)
       {
-         LinearProgramSolver customSolver = new LinearProgramSolver();
-         Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> constraintSet = generateRandomEllipsoidBasedConstraintSetSeparated();
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(true, true);
+         runTest(constraintSet, costVectorsPerProblem);
+      }
+   }
 
-         DMatrixRMaj inequalityMatrixA = constraintSet.getLeft().getLeft();
-         DMatrixRMaj inequalityVectorB = constraintSet.getLeft().getRight();
-         DMatrixRMaj equalityMatrixC = constraintSet.getRight().getLeft();
-         DMatrixRMaj equalityVectorD = constraintSet.getRight().getRight();
+   @Test
+   public void testWithEqualityConstraintsGivenExplicitly()
+   {
+      int tests = 100;
+      int costVectorsPerProblem = 10;
 
-         DMatrixRMaj costVector = generateRandomCostVector(inequalityMatrixA.getNumCols());
+      for (int i = 0; i < tests; i++)
+      {
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(true, false);
+         runTest(constraintSet, costVectorsPerProblem);
+      }
+   }
+
+   @Test
+   public void testRandomLPs()
+   {
+      int tests = 200;
+      int costVectorsPerProblem = 10;
+
+      for (int i = 0; i < tests; i++)
+      {
+         ConstraintSet constraintSet = generateRandomConstraints();
+         runTest(constraintSet, costVectorsPerProblem);
+      }
+   }
+
+   private static void runTest(ConstraintSet constraintSet, int numberOfTests)
+   {
+      LinearProgramSolver customSolver = new LinearProgramSolver();
+
+      for (int i = 0; i < numberOfTests; i++)
+      {
+         DMatrixRMaj costVector = generateRandomCostVector(constraintSet.inequalityMatrix.getNumCols());
+
+         // SOLVE WITH APACHE //
+         double[] apacheCommonsSolution = solveWithApacheCommons(constraintSet, costVector, Relationship.LEQ);
+
          DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
          DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
 
-         // SOLVE USING SIMPLEX SOLUTION //
-         boolean foundSimplexSolution = customSolver.solve(costVector,
-                                                           inequalityMatrixA,
-                                                           inequalityVectorB,
-                                                           equalityMatrixC,
-                                                           equalityVectorD,
-                                                           simplexSolution,
-                                                           SolverMethod.SIMPLEX);
-
-         // SOLVE USING CRISS-CROSS SOLUTION //
-         boolean foundCrissCrossSolution = customSolver.solve(costVector,
-                                                              inequalityMatrixA,
-                                                              inequalityVectorB,
-                                                              equalityMatrixC,
-                                                              equalityVectorD,
-                                                              crissCrossSolution,
-                                                              SolverMethod.CRISS_CROSS);
-
-         // SOLVE WITH APACHE //
-         double[] apacheCommonsSolution = solveWithApacheCommonsWithEqualityConstraints(inequalityMatrixA,
-                                                                                        inequalityVectorB,
-                                                                                        equalityMatrixC,
-                                                                                        equalityVectorD,
-                                                                                        costVector,
-                                                                                        Relationship.LEQ);
+         boolean foundSimplexSolution, foundCrissCrossSolution;
+         if (constraintSet.equalityMatrix.getNumRows() > 0)
+         {
+            foundSimplexSolution = customSolver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, constraintSet.equalityMatrix, constraintSet.equalityVector, simplexSolution, SolverMethod.SIMPLEX);
+            foundCrissCrossSolution = customSolver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, constraintSet.equalityMatrix, constraintSet.equalityVector, crissCrossSolution, SolverMethod.CRISS_CROSS);
+         }
+         else
+         {
+            foundSimplexSolution = customSolver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, simplexSolution, SolverMethod.SIMPLEX);
+            foundCrissCrossSolution = customSolver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, crissCrossSolution, SolverMethod.CRISS_CROSS);
+         }
 
          if (apacheCommonsSolution == null)
          {
@@ -233,67 +145,14 @@ public class LinearProgramSolverTest
       }
    }
 
-   @Test
-   public void testRandomLPs()
-   {
-      int tests = 200;
-      int costVectorsPerProblem = 10;
-      LinearProgramSolver customSolver = new LinearProgramSolver();
-
-      for (int i = 0; i < tests; i++)
-      {
-         Pair<DMatrixRMaj, DMatrixRMaj> constraintPlanes = generateRandomConstraints();
-
-         for (int j = 0; j < costVectorsPerProblem; j++)
-         {
-            DMatrixRMaj costVector = generateRandomCostVector(constraintPlanes.getLeft().getNumCols());
-
-            // SOLVE WITH APACHE //
-            double[] apacheCommonsSolution = solveWithApacheCommons(constraintPlanes.getLeft(), constraintPlanes.getRight(), costVector, Relationship.LEQ);
-
-            // SOLVER WITH CUSTOM IMPL USING SIMPLEX //
-            DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
-            boolean foundSimplexSolution = customSolver.solve(costVector,
-                                                              constraintPlanes.getLeft(),
-                                                              constraintPlanes.getRight(),
-                                                              simplexSolution,
-                                                              SolverMethod.SIMPLEX);
-
-            // SOLVER WITH CUSTOM IMPL USING CRISS CROSS //
-            DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
-            boolean foundCrissCrossSolution = customSolver.solve(costVector,
-                                                                 constraintPlanes.getLeft(),
-                                                                 constraintPlanes.getRight(),
-                                                                 crissCrossSolution,
-                                                                 SolverMethod.CRISS_CROSS);
-
-            if (apacheCommonsSolution == null)
-            {
-               Assertions.assertFalse(foundSimplexSolution);
-               Assertions.assertFalse(foundCrissCrossSolution);
-            }
-            else
-            {
-               Assertions.assertTrue(foundSimplexSolution);
-               Assertions.assertTrue(foundCrissCrossSolution);
-
-               for (int k = 0; k < apacheCommonsSolution.length; k++)
-               {
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
-                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
-               }
-            }
-         }
-      }
-   }
-
    /**
     * Sets inequality matrices to be planes that are tangent to an ellipsoid. Sets equality matrices to converge at a point interior to the ellipsoid.
     */
-   private static Pair<DMatrixRMaj, DMatrixRMaj> generateRandomEllipsoidBasedConstraintSet(boolean includeEqualityConstraints)
+   private static ConstraintSet generateRandomEllipsoidBasedConstraintSet(boolean includeEqualityConstraints, boolean useEqualityConstraintsAsInequalityConstraints)
    {
       int dimensionality = 2 + random.nextInt(30);
       int inequalityConstraints = 1 + random.nextInt(30);
+      int equalityConstraints = includeEqualityConstraints ? 1 + random.nextInt(dimensionality - 1) : 0;
 
       double radiusSquared = 1.0 + 100.0 * random.nextDouble();
       double[] alphas = new double[dimensionality];
@@ -302,104 +161,44 @@ public class LinearProgramSolverTest
          alphas[j] = 1.0 + 30.0 * random.nextDouble();
       }
 
-      DMatrixRMaj Ain = new DMatrixRMaj(inequalityConstraints, dimensionality);
-      DMatrixRMaj bin = new DMatrixRMaj(inequalityConstraints, 1);
+      ConstraintSet constraintSet = new ConstraintSet();
+      addInequalityConstraints(radiusSquared, alphas, constraintSet, inequalityConstraints, dimensionality);
 
-      for (int i = 0; i < inequalityConstraints; i++)
+      if (includeEqualityConstraints)
       {
-         // compute initial point on curve
-         double[] initialPoint = generatePointOnEllipsoid(dimensionality, radiusSquared, alphas);
-
-         // compute gradient at this point
-         double[] gradient = new double[dimensionality];
-         for (int j = 0; j < dimensionality; j++)
+         if (useEqualityConstraintsAsInequalityConstraints)
          {
-            gradient[j] = alphas[j] * initialPoint[j];
+            DMatrixRMaj Aeq = new DMatrixRMaj(0);
+            DMatrixRMaj beq = new DMatrixRMaj(0);
+            addEqualityConstraints(radiusSquared, alphas, Aeq, beq, equalityConstraints, dimensionality);
+
+            int constraints = inequalityConstraints + 2 * equalityConstraints;
+            DMatrixRMaj A = constraintSet.inequalityMatrix;
+            DMatrixRMaj b = constraintSet.inequalityVector;
+            A.reshape(constraints, dimensionality, true);
+            b.reshape(constraints, 1, true);
+
+            MatrixTools.setMatrixBlock(A, inequalityConstraints,                    0, Aeq, 0, 0, Aeq.getNumRows(), Aeq.getNumCols(), 1.0);
+            MatrixTools.setMatrixBlock(A, inequalityConstraints + Aeq.getNumRows(), 0, Aeq, 0, 0, Aeq.getNumRows(), Aeq.getNumCols(), -1.0);
+
+            MatrixTools.setMatrixBlock(b, inequalityConstraints,                    0, beq, 0, 0, beq.getNumRows(), beq.getNumCols(), 1.0);
+            MatrixTools.setMatrixBlock(b, inequalityConstraints + beq.getNumRows(), 0, beq, 0, 0, beq.getNumRows(), beq.getNumCols(), -1.0);
          }
-
-         double bValue = 0.0;
-         for (int k = 0; k < dimensionality; k++)
+         else
          {
-            bValue += gradient[k] * initialPoint[k];
-         }
-
-         for (int j = 0; j < dimensionality; j++)
-         {
-            Ain.set(i, j, gradient[j]);
-         }
-
-         bin.set(i, 0, bValue);
-      }
-
-      if (!includeEqualityConstraints)
-      {
-         return Pair.of(Ain, bin);
-      }
-
-      int equalityConstraints = 1 + random.nextInt(dimensionality - 1);
-      DMatrixRMaj Aeq = new DMatrixRMaj(equalityConstraints, dimensionality);
-      DMatrixRMaj beq = new DMatrixRMaj(equalityConstraints, 1);
-
-      double[] interiorPoint = generatePointOnEllipsoid(dimensionality, radiusSquared, alphas);
-      double scale = 0.9 * random.nextDouble();
-      for (int i = 0; i < interiorPoint.length; i++)
-      {
-         interiorPoint[i] = scale * interiorPoint[i];
-      }
-
-      for (int i = 0; i < equalityConstraints; i++)
-      {
-         double normDotPoint = 0.0;
-         double[] normal = generateRandomVectorForPlaneNormal(dimensionality);
-
-         for (int j = 0; j < dimensionality; j++)
-         {
-            normDotPoint += normal[j] * interiorPoint[j];
-         }
-
-         beq.set(i, 0, normDotPoint);
-
-         for (int j = 0; j < dimensionality; j++)
-         {
-            Aeq.set(i, j, normal[j]);
+            addEqualityConstraints(radiusSquared, alphas, constraintSet.equalityMatrix, constraintSet.equalityVector, equalityConstraints, dimensionality);
          }
       }
 
-      int constraints = inequalityConstraints + 2 * equalityConstraints;
-      DMatrixRMaj A = new DMatrixRMaj(constraints, dimensionality);
-      DMatrixRMaj b = new DMatrixRMaj(constraints, 1);
-
-      MatrixTools.setMatrixBlock(A, 0, 0, Ain, 0, 0, Ain.getNumRows(), Ain.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(A, Ain.getNumRows(), 0, Aeq, 0, 0, Aeq.getNumRows(), Aeq.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(A, Ain.getNumRows() + Aeq.getNumRows(), 0, Aeq, 0, 0, Aeq.getNumRows(), Aeq.getNumCols(), -1.0);
-
-      MatrixTools.setMatrixBlock(b, 0, 0, bin, 0, 0, bin.getNumRows(), bin.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(b, bin.getNumRows(), 0, beq, 0, 0, beq.getNumRows(), beq.getNumCols(), 1.0);
-      MatrixTools.setMatrixBlock(b, bin.getNumRows() + beq.getNumRows(), 0, beq, 0, 0, beq.getNumRows(), beq.getNumCols(), -1.0);
-
-      return Pair.of(A, b);
+      return constraintSet;
    }
 
-   /**
-    * Generates inequality constraints and equality constraints,
-    * returns as separated matrices Ax <= b & Cx = d
-    */
-   private static Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> generateRandomEllipsoidBasedConstraintSetSeparated()
+   private static void addInequalityConstraints(double radiusSquared, double[] alphas, ConstraintSet constraintSet, int numberOfInequalityConstraints, int dimensionality)
    {
-      int dimensionality = 2 + random.nextInt(30);
-      int inequalityConstraints = 1 + random.nextInt(30);
+      constraintSet.inequalityMatrix.reshape(numberOfInequalityConstraints, dimensionality);
+      constraintSet.inequalityVector.reshape(numberOfInequalityConstraints, 1);
 
-      double radiusSquared = 1.0 + 100.0 * random.nextDouble();
-      double[] alphas = new double[dimensionality];
-      for (int j = 0; j < alphas.length; j++)
-      {
-         alphas[j] = 1.0 + 30.0 * random.nextDouble();
-      }
-
-      DMatrixRMaj Ain = new DMatrixRMaj(inequalityConstraints, dimensionality);
-      DMatrixRMaj bin = new DMatrixRMaj(inequalityConstraints, 1);
-
-      for (int i = 0; i < inequalityConstraints; i++)
+      for (int i = 0; i < numberOfInequalityConstraints; i++)
       {
          // compute initial point on curve
          double[] initialPoint = generatePointOnEllipsoid(dimensionality, radiusSquared, alphas);
@@ -419,15 +218,17 @@ public class LinearProgramSolverTest
 
          for (int j = 0; j < dimensionality; j++)
          {
-            Ain.set(i, j, gradient[j]);
+            constraintSet.inequalityMatrix.set(i, j, gradient[j]);
          }
 
-         bin.set(i, 0, bValue);
+         constraintSet.inequalityVector.set(i, 0, bValue);
       }
+   }
 
-      int equalityConstraints = 1 + random.nextInt(dimensionality - 1);
-      DMatrixRMaj Aeq = new DMatrixRMaj(equalityConstraints, dimensionality);
-      DMatrixRMaj beq = new DMatrixRMaj(equalityConstraints, 1);
+   private static void addEqualityConstraints(double radiusSquared, double[] alphas, DMatrixRMaj Aeq, DMatrixRMaj beq, int numberOfEqualityConstraints, int dimensionality)
+   {
+      Aeq.reshape(numberOfEqualityConstraints, dimensionality);
+      beq.reshape(numberOfEqualityConstraints, 1);
 
       double[] interiorPoint = generatePointOnEllipsoid(dimensionality, radiusSquared, alphas);
       double scale = 0.9 * random.nextDouble();
@@ -436,7 +237,7 @@ public class LinearProgramSolverTest
          interiorPoint[i] = scale * interiorPoint[i];
       }
 
-      for (int i = 0; i < equalityConstraints; i++)
+      for (int i = 0; i < numberOfEqualityConstraints; i++)
       {
          double normDotPoint = 0.0;
          double[] normal = generateRandomVectorForPlaneNormal(dimensionality);
@@ -453,8 +254,6 @@ public class LinearProgramSolverTest
             Aeq.set(i, j, normal[j]);
          }
       }
-
-      return Pair.of(Pair.of(Ain, bin), Pair.of(Aeq, beq));
    }
 
    private static double[] generatePointOnEllipsoid(int dimensionality, double radiusSquared, double[] alphas)
@@ -500,28 +299,29 @@ public class LinearProgramSolverTest
    }
 
    /**
-    * Sets A and b matrices to be planes that are tangent to an ellipsoid
+    * Sets A and b matrices to random constraint set
     */
-   private static Pair<DMatrixRMaj, DMatrixRMaj> generateRandomConstraints()
+   private static ConstraintSet generateRandomConstraints()
    {
       int dimensionality = 2 + random.nextInt(40);
       int constraints = 1 + random.nextInt(40);
 
       double minMaxConstraint = 10.0;
-      DMatrixRMaj A = new DMatrixRMaj(constraints, dimensionality);
-      DMatrixRMaj b = new DMatrixRMaj(constraints, 1);
+      ConstraintSet constraintSet = new ConstraintSet();
+      constraintSet.inequalityMatrix.reshape(constraints, dimensionality);
+      constraintSet.inequalityVector.reshape(constraints, 1);
 
       for (int i = 0; i < constraints; i++)
       {
-         b.set(i, EuclidCoreRandomTools.nextDouble(random, minMaxConstraint));
+         constraintSet.inequalityVector.set(i, EuclidCoreRandomTools.nextDouble(random, minMaxConstraint));
 
          for (int j = 0; j < dimensionality; j++)
          {
-            A.set(i, j, EuclidCoreRandomTools.nextDouble(random, minMaxConstraint));
+            constraintSet.inequalityMatrix.set(i, j, EuclidCoreRandomTools.nextDouble(random, minMaxConstraint));
          }
       }
 
-      return Pair.of(A, b);
+      return constraintSet;
    }
 
    private static DMatrixRMaj generateRandomCostVector(int dimensionality)
@@ -547,86 +347,46 @@ public class LinearProgramSolverTest
       return c;
    }
 
-   private static double[] solveWithApacheCommons(DMatrixRMaj A, DMatrixRMaj b, DMatrixRMaj c, Relationship constraintRelationship)
+   private static double[] solveWithApacheCommons(ConstraintSet constraintSet, DMatrixRMaj c, Relationship constraintRelationship)
    {
       SimplexSolver apacheSolver = new SimplexSolver();
 
       double[] directionToMaximize = Arrays.copyOf(c.getData(), c.getNumRows());
       LinearObjectiveFunction objectiveFunction = new LinearObjectiveFunction(directionToMaximize, 0.0);
 
+      DMatrixRMaj inequalityMatrix = constraintSet.inequalityMatrix;
+      DMatrixRMaj inequalityVector = constraintSet.inequalityVector;
+      DMatrixRMaj equalityMatrix = constraintSet.equalityMatrix;
+      DMatrixRMaj equalityVector = constraintSet.equalityVector;
+
       List<LinearConstraint> constraintList = new ArrayList<>();
-      for (int i = 0; i < A.getNumRows(); i++)
+      for (int i = 0; i < inequalityMatrix.getNumRows(); i++)
       {
-         double[] constraint = new double[A.getNumCols()];
-         for (int j = 0; j < A.getNumCols(); j++)
+         double[] constraint = new double[inequalityMatrix.getNumCols()];
+         for (int j = 0; j < inequalityMatrix.getNumCols(); j++)
          {
-            constraint[j] = A.get(i, j);
+            constraint[j] = inequalityMatrix.get(i, j);
          }
 
-         constraintList.add(new LinearConstraint(constraint, constraintRelationship, b.get(i)));
+         constraintList.add(new LinearConstraint(constraint, constraintRelationship, inequalityVector.get(i)));
       }
 
-      for (int i = 0; i < A.getNumCols(); i++)
+      for (int i = 0; i < inequalityMatrix.getNumCols(); i++)
       {
-         double[] nonNegativeConstraint = new double[A.getNumCols()];
+         double[] nonNegativeConstraint = new double[inequalityMatrix.getNumCols()];
          nonNegativeConstraint[i] = 1.0;
          constraintList.add(new LinearConstraint(nonNegativeConstraint, Relationship.GEQ, 0.0));
       }
 
-      try
+      for (int i = 0; i < equalityMatrix.getNumRows(); i++)
       {
-         return apacheSolver.optimize(new MaxIter(1000), objectiveFunction, new LinearConstraintSet(constraintList), GoalType.MAXIMIZE).getPoint();
-      }
-      catch (Exception e)
-      {
-         return null;
-      }
-   }
-
-   private static double[] solveWithApacheCommonsWithEqualityConstraints(DMatrixRMaj inequalityMatrixA,
-                                                                         DMatrixRMaj inequalityVectorB,
-                                                                         DMatrixRMaj equalityMatrixC,
-                                                                         DMatrixRMaj equalityVectorD,
-                                                                         DMatrixRMaj costVector,
-                                                                         Relationship constraintRelationship)
-   {
-      SimplexSolver apacheSolver = new SimplexSolver();
-
-      double[] directionToMaximize = Arrays.copyOf(costVector.getData(), costVector.getNumRows());
-      LinearObjectiveFunction objectiveFunction = new LinearObjectiveFunction(directionToMaximize, 0.0);
-
-      List<LinearConstraint> constraintList = new ArrayList<>();
-
-      /* Adding inequality constraints */
-      for (int i = 0; i < inequalityMatrixA.getNumRows(); i++)
-      {
-         double[] constraint = new double[inequalityMatrixA.getNumCols()];
-         for (int j = 0; j < inequalityMatrixA.getNumCols(); j++)
+         double[] constraint = new double[equalityMatrix.getNumCols()];
+         for (int j = 0; j < equalityMatrix.getNumCols(); j++)
          {
-            constraint[j] = inequalityMatrixA.get(i, j);
+            constraint[j] = equalityMatrix.get(i, j);
          }
 
-         constraintList.add(new LinearConstraint(constraint, constraintRelationship, inequalityVectorB.get(i)));
-      }
-
-      /* Adding equality constraints */
-      for (int i = 0; i < equalityMatrixC.getNumRows(); i++)
-      {
-         double[] constraint = new double[equalityMatrixC.getNumCols()];
-         for (int j = 0; j < equalityMatrixC.getNumCols(); j++)
-         {
-            constraint[j] = equalityMatrixC.get(i, j);
-         }
-
-         constraintList.add(new LinearConstraint(constraint, Relationship.EQ, equalityVectorD.get(i)));
-      }
-
-      /* Adding non-negative constraint */
-      for (int i = 0; i < inequalityMatrixA.getNumCols(); i++)
-      {
-         double[] nonNegativeConstraint = new double[inequalityMatrixA.getNumCols()];
-         nonNegativeConstraint[i] = 1.0;
-         constraintList.add(new LinearConstraint(nonNegativeConstraint, Relationship.GEQ, 0.0));
+         constraintList.add(new LinearConstraint(constraint, Relationship.EQ, equalityVector.get(i)));
       }
 
       try
