@@ -75,6 +75,17 @@ public class LinearProgramSolver
       return solve(costVectorC, augmentedInequalityMatrix, augmentedInequalityVector, solutionToPack, solverMethod);
    }
 
+   /**
+    * Solves a standard form linear program
+    * Using the selected SolverMethod [Simplex, or CrissCross]
+    * Defaults to solving Simplex if an invalid Method is supplied/
+    *
+    * <p>
+    * max c<sup>T</sup>x, Ax <= b, x >= 0.
+    * </p>
+    * <p>
+    * Returns true if an optimal solution is computed or false otherwise.
+    */
    public boolean solve(DMatrixRMaj costVectorC, DMatrixRMaj inequalityConstraintMatrixA, DMatrixRMaj inequalityConstraintVectorB, DMatrixRMaj solutionToPack, SolverMethod solverMethod)
    {
       if (costVectorC.getNumCols() != 1 || inequalityConstraintVectorB.getNumCols() != 1)

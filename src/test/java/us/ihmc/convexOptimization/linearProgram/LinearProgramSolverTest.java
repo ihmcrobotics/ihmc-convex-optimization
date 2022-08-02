@@ -190,7 +190,7 @@ public class LinearProgramSolverTest
 
          // SOLVE USING SIMPLEX SOLUTION //
          boolean foundSimplexSolution = customSolver.solve(costVector, inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, simplexSolution, SolverMethod.SIMPLEX);
-         
+
          // SOLVE USING CRISS-CROSS SOLUTION //
          boolean foundCrissCrossSolution = customSolver.solve(costVector, inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, crissCrossSolution, SolverMethod.CRISS_CROSS);
 
