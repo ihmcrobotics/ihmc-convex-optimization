@@ -174,7 +174,7 @@ public class LinearProgramSolverTest
    public void testLPWithEqualityConstraint()
    {
       int tests = 100;
-      for(int run = 0; run < tests; run++)
+      for (int run = 0; run < tests; run++)
       {
          LinearProgramSolver customSolver = new LinearProgramSolver();
          Pair<Pair<DMatrixRMaj, DMatrixRMaj>, Pair<DMatrixRMaj, DMatrixRMaj>> constraintSet = generateRandomEllipsoidBasedConstraintSetSeparated();
@@ -189,13 +189,30 @@ public class LinearProgramSolverTest
          DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
 
          // SOLVE USING SIMPLEX SOLUTION //
-         boolean foundSimplexSolution = customSolver.solve(costVector, inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, simplexSolution, SolverMethod.SIMPLEX);
+         boolean foundSimplexSolution = customSolver.solve(costVector,
+                                                           inequalityMatrixA,
+                                                           inequalityVectorB,
+                                                           equalityMatrixC,
+                                                           equalityVectorD,
+                                                           simplexSolution,
+                                                           SolverMethod.SIMPLEX);
 
          // SOLVE USING CRISS-CROSS SOLUTION //
-         boolean foundCrissCrossSolution = customSolver.solve(costVector, inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, crissCrossSolution, SolverMethod.CRISS_CROSS);
+         boolean foundCrissCrossSolution = customSolver.solve(costVector,
+                                                              inequalityMatrixA,
+                                                              inequalityVectorB,
+                                                              equalityMatrixC,
+                                                              equalityVectorD,
+                                                              crissCrossSolution,
+                                                              SolverMethod.CRISS_CROSS);
 
          // SOLVE WITH APACHE //
-         double[] apacheCommonsSolution = solveWithApacheCommonsWithEqualityConstraints(inequalityMatrixA, inequalityVectorB, equalityMatrixC, equalityVectorD, costVector, Relationship.LEQ);
+         double[] apacheCommonsSolution = solveWithApacheCommonsWithEqualityConstraints(inequalityMatrixA,
+                                                                                        inequalityVectorB,
+                                                                                        equalityMatrixC,
+                                                                                        equalityVectorD,
+                                                                                        costVector,
+                                                                                        Relationship.LEQ);
 
          if (apacheCommonsSolution == null)
          {
@@ -236,7 +253,11 @@ public class LinearProgramSolverTest
 
             // SOLVER WITH CUSTOM IMPL USING SIMPLEX //
             DMatrixRMaj simplexSolution = new DMatrixRMaj(0);
-            boolean foundSimplexSolution = customSolver.solve(costVector, constraintPlanes.getLeft(), constraintPlanes.getRight(), simplexSolution, SolverMethod.SIMPLEX);
+            boolean foundSimplexSolution = customSolver.solve(costVector,
+                                                              constraintPlanes.getLeft(),
+                                                              constraintPlanes.getRight(),
+                                                              simplexSolution,
+                                                              SolverMethod.SIMPLEX);
 
             // SOLVER WITH CUSTOM IMPL USING CRISS CROSS //
             DMatrixRMaj crissCrossSolution = new DMatrixRMaj(0);
@@ -562,9 +583,12 @@ public class LinearProgramSolverTest
       }
    }
 
-   private static double[] solveWithApacheCommonsWithEqualityConstraints(DMatrixRMaj inequalityMatrixA, DMatrixRMaj inequalityVectorB,
-                                                                         DMatrixRMaj equalityMatrixC, DMatrixRMaj equalityVectorD,
-                                                                         DMatrixRMaj costVector, Relationship constraintRelationship)
+   private static double[] solveWithApacheCommonsWithEqualityConstraints(DMatrixRMaj inequalityMatrixA,
+                                                                         DMatrixRMaj inequalityVectorB,
+                                                                         DMatrixRMaj equalityMatrixC,
+                                                                         DMatrixRMaj equalityVectorD,
+                                                                         DMatrixRMaj costVector,
+                                                                         Relationship constraintRelationship)
    {
       SimplexSolver apacheSolver = new SimplexSolver();
 
@@ -614,5 +638,4 @@ public class LinearProgramSolverTest
          return null;
       }
    }
-
 }
