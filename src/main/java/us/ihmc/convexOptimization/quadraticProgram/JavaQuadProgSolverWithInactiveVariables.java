@@ -9,8 +9,9 @@ import org.ejml.dense.row.CommonOps_DDRM;
 import us.ihmc.commons.MathTools;
 import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeCommonOps;
+import us.ihmc.matrixlib.NativeMatrix;
 
-public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver implements ActiveSetQPSolverWithInactiveVariablesInterface
+public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver implements NativeActiveSetQPSolverWithInactiveVariablesInterface
 {
    private final DMatrixRMaj originalQuadraticCostQMatrix = new DMatrixRMaj(0, 0);
    private final DMatrixRMaj originalQuadraticCostQVector = new DMatrixRMaj(0, 0);
@@ -31,7 +32,55 @@ public class JavaQuadProgSolverWithInactiveVariables extends JavaQuadProgSolver 
    private final DMatrixRMaj activeVariableSolution = new DMatrixRMaj(0, 0);
 
    @Override
-   public void setActiveVariables(DMatrixRMaj activeVariables)
+   public NativeMatrix getCostHessianUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getCostGradientUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getAeqUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getBeqUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getAinUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getBinUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getLowerBoundsUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public NativeMatrix getUpperBoundsUnsafe()
+   {
+      throw new RuntimeException("Can't do this.");
+   }
+
+   @Override
+   public void setActiveVariables(DMatrix activeVariables)
    {
       if (activeVariables.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("activeVariables.getNumRows() != quadraticCostQMatrix.getNumRows()");

@@ -2,6 +2,7 @@ package us.ihmc.convexOptimization.quadraticProgram;
 
 import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
+import us.ihmc.matrixlib.NativeMatrix;
 
 /**
  * General interface for a QP solver using under the hood an active set approach, see:

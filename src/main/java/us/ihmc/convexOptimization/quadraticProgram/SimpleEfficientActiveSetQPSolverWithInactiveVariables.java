@@ -9,7 +9,7 @@ import us.ihmc.matrixlib.MatrixTools;
 import us.ihmc.matrixlib.NativeMatrix;
 
 public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends SimpleEfficientActiveSetQPSolver
-      implements ActiveSetQPSolverWithInactiveVariablesInterface
+      implements NativeActiveSetQPSolverWithInactiveVariablesInterface
 {
    private final NativeMatrix originalQuadraticCostQMatrix = new NativeMatrix(0, 0);
    private final NativeMatrix originalQuadraticCostQVector = new NativeMatrix(0, 0);
@@ -129,12 +129,24 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
+   public NativeMatrix getLowerBoundsUnsafe()
+   {
+      return originalVariableLowerBounds;
+   }
+
+   @Override
    public void setUpperBounds(DMatrix variableUpperBounds)
    {
       if (variableUpperBounds.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("variableUpperBounds.getNumRows() != quadraticCostQMatrix.getNumRows()");
 
       originalVariableUpperBounds.set(variableUpperBounds);
+   }
+
+   @Override
+   public NativeMatrix getUpperBoundsUnsafe()
+   {
+      return originalVariableUpperBounds;
    }
 
    @Override
@@ -149,15 +161,25 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
 
       this.costQuadraticMatrix.set(costQuadraticMatrix);
 
-      symmetricCostQuadraticMatrix.transpose(this.costQuadraticMatrix);
-      symmetricCostQuadraticMatrix.add(this.costQuadraticMatrix, symmetricCostQuadraticMatrix); // Note: Check for aliasing
-      symmetricCostQuadraticMatrix.scale(0.5);
-
-      originalQuadraticCostQMatrix.set(symmetricCostQuadraticMatrix);
+      originalQuadraticCostQMatrix.transpose(this.costQuadraticMatrix);
+      originalQuadraticCostQMatrix.addEquals(this.costQuadraticMatrix);
+      originalQuadraticCostQMatrix.scale(0.5);
       originalQuadraticCostQVector.set(costLinearVector);
       this.quadraticCostScalar = quadraticCostScalar;
 
       setAllVariablesActive();
+   }
+
+   @Override
+   public NativeMatrix getCostHessianUnsafe()
+   {
+      return originalQuadraticCostQMatrix;
+   }
+
+   @Override
+   public NativeMatrix getCostGradientUnsafe()
+   {
+      return originalQuadraticCostQVector;
    }
 
    @Override
@@ -185,6 +207,18 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
+   public NativeMatrix getAeqUnsafe()
+   {
+      return originalLinearEqualityConstraintsAMatrix;
+   }
+
+   @Override
+   public NativeMatrix getBeqUnsafe()
+   {
+      return originalLinearEqualityConstraintsBVector;
+   }
+
+   @Override
    public void setLinearInequalityConstraints(DMatrix linearInequalityConstraintCMatrix, DMatrix linearInequalityConstraintDVector)
    {
       if (linearInequalityConstraintDVector.getNumCols() != 1)
@@ -199,7 +233,19 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    }
 
    @Override
-   public void setActiveVariables(DMatrixRMaj activeVariables)
+   public NativeMatrix getAinUnsafe()
+   {
+      return originalLinearInequalityConstraintsCMatrixO;
+   }
+
+   @Override
+   public NativeMatrix getBinUnsafe()
+   {
+      return originalLinearInequalityConstraintsDVectorO;
+   }
+
+   @Override
+   public void setActiveVariables(DMatrix activeVariables)
    {
       if (activeVariables.getNumRows() != originalQuadraticCostQMatrix.getNumRows())
          throw new RuntimeException("activeVariables.getNumRows() != quadraticCostQMatrix.getNumRows()");
@@ -242,21 +288,21 @@ public class SimpleEfficientActiveSetQPSolverWithInactiveVariables extends Simpl
    public void clear()
    {
       super.clear();
-
-      originalQuadraticCostQMatrix.reshape(0, 0);
-      originalQuadraticCostQVector.reshape(0, 0);
-
-      originalLinearEqualityConstraintsAMatrix.reshape(0, 0);
-      originalLinearEqualityConstraintsBVector.reshape(0, 0);
-
-      originalLinearInequalityConstraintsCMatrixO.reshape(0, 0);
-      originalLinearInequalityConstraintsDVectorO.reshape(0, 0);
-
-      originalVariableLowerBounds.reshape(0, 0);
-      originalVariableUpperBounds.reshape(0, 0);
-
-      activeVariables.reshape(0, 0);
-      activeVariableSolution.reshape(0, 0);
+//
+//      originalQuadraticCostQMatrix.reshape(0, 0);
+//      originalQuadraticCostQVector.reshape(0, 0);
+//
+//      originalLinearEqualityConstraintsAMatrix.reshape(0, 0);
+//      originalLinearEqualityConstraintsBVector.reshape(0, 0);
+//
+//      originalLinearInequalityConstraintsCMatrixO.reshape(0, 0);
+//      originalLinearInequalityConstraintsDVectorO.reshape(0, 0);
+//
+//      originalVariableLowerBounds.reshape(0, 0);
+//      originalVariableUpperBounds.reshape(0, 0);
+//
+//      activeVariables.reshape(0, 0);
+//      activeVariableSolution.reshape(0, 0);
    }
 
    @Override

@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
+import org.ejml.data.DMatrix;
 import org.ejml.data.DMatrixRMaj;
 
 /**
@@ -22,7 +23,7 @@ public interface ActiveSetQPSolverWithInactiveVariablesInterface extends ActiveS
     * @param activeVariables the N-by-1 vector used to identify the active and inactive variables. Not
     *                        modified.
     */
-   void setActiveVariables(DMatrixRMaj activeVariables);
+   void setActiveVariables(DMatrix activeVariables);
 
    /**
     * Marks the i<up>th</sup> component of {@code x} has an active variable, i.e. a solution for that
