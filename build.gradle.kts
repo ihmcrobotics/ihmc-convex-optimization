@@ -34,5 +34,5 @@ mainDependencies {
 }
 
 testDependencies {
-   api("us.ihmc:ihmc-matrix-library-test:0.18.8")
+   api("us.ihmc:ihmc-matrix-library-test:0.18.9")
 }
