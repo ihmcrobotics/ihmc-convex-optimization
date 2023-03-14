@@ -6,7 +6,7 @@ plugins {
 
 ihmc {
    group = "us.ihmc"
-   version = "0.17.16"
+   version = "0.17.17"
    vcsUrl = "https://github.com/ihmcrobotics/ihmc-convex-optimization"
    openSource = true
 
@@ -34,5 +34,5 @@ mainDependencies {
 }
 
 testDependencies {
-   api("us.ihmc:ihmc-matrix-library-test:0.18.8")
+   api("us.ihmc:ihmc-matrix-library-test:0.18.9")
 }
