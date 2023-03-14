@@ -71,7 +71,7 @@ public class DictionaryFormLinearProgramSolver
       /* Phase II: optimize feasible dictionary */
       performSimplexPhase(SimplexPhase.PHASE_II);
 
-      packSolution();
+      packSolution(phase2Statistics);
    }
 
    /* package private for testing */
@@ -115,7 +115,7 @@ public class DictionaryFormLinearProgramSolver
       statistics.setSolveTime(timer.lapElapsed());
    }
 
-   private void packSolution()
+   private void packSolution(SolverStatistics solverStatistics)
    {
       solution.reshape(dictionary.getNumberOfColumns() - 1, 1);
       Arrays.fill(solution.getData(), 0.0);
@@ -126,6 +126,16 @@ public class DictionaryFormLinearProgramSolver
          if (variableIndex < solution.getNumRows())
          {
             solution.set(variableIndex, dictionary.getEntry(i, 0));
+         }
+      }
+
+      for (int i = 1; i < dictionary.getNonBasisSize(); i++)
+      {
+         int dictionaryVariableIndex = dictionary.getNonBasisIndex(i);
+
+         if (dictionaryVariableIndex >= dictionary.getNumberOfColumns())
+         { // Only consider active set to be constraints explicitly in A, not the non-negative constraint
+            solverStatistics.addActiveSetIndex(dictionaryVariableIndex - dictionary.getNumberOfColumns());
          }
       }
    }
@@ -301,8 +311,8 @@ public class DictionaryFormLinearProgramSolver
          dictionary.performPivot(basisPivot, nonBasisPivot);
       }
 
+      packSolution(crissCrossStatistics);
       crissCrossStatistics.setSolveTime(timer.totalElapsed());
-      packSolution();
    }
 
    private int findNegativeColumnEntryWithBlandRule(int column)

@@ -126,4 +126,24 @@ public class LinearProgramSolver
       solutionToPack.set(dictionaryFormSolver.getSolution());
       return true;
    }
+
+   public SolverStatistics getSimplexStatistics()
+   {
+      return dictionaryFormSolver.getPhase2Statistics();
+   }
+
+   public SolverStatistics getCrissCrossStatistics()
+   {
+      return dictionaryFormSolver.getCrissCrossStatistics();
+   }
+
+   public DMatrixRMaj getAugmentedInequalityMatrix()
+   {
+      return augmentedInequalityMatrix;
+   }
+
+   public DMatrixRMaj getAugmentedInequalityVector()
+   {
+      return augmentedInequalityVector;
+   }
 }

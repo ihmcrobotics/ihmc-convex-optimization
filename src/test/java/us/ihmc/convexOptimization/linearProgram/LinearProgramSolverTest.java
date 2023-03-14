@@ -1,5 +1,6 @@
 package us.ihmc.convexOptimization.linearProgram;
 
+import gnu.trove.list.array.TIntArrayList;
 import org.apache.commons.math3.optim.MaxIter;
 import org.apache.commons.math3.optim.linear.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
@@ -28,6 +29,106 @@ public class LinearProgramSolverTest
       private final DMatrixRMaj inequalityVector = new DMatrixRMaj(0);
       private final DMatrixRMaj equalityMatrix = new DMatrixRMaj(0);
       private final DMatrixRMaj equalityVector = new DMatrixRMaj(0);
+   }
+
+   @Test
+   public void testSimpleActiveSet()
+   {
+      LinearProgramSolver solver = new LinearProgramSolver();
+
+      for (SolverMethod solverMethod : SolverMethod.values())
+      {
+         SolverStatistics solverStatistics = solverMethod == SolverMethod.SIMPLEX ? solver.getSimplexStatistics() : solver.getCrissCrossStatistics();
+         TIntArrayList activeSetIndices = solverStatistics.getActiveSetIndices();
+
+         DMatrixRMaj cost = new DMatrixRMaj(2, 1);
+         DMatrixRMaj A = new DMatrixRMaj(3, 2);
+         DMatrixRMaj b = new DMatrixRMaj(3, 1);
+
+         A.set(0, 0, 1.0);
+         A.set(1, 1, 1.0);
+         A.set(2, 0, 1.0);
+         A.set(2, 1, 1.0);
+
+         b.set(0, 0, 2.0);
+         b.set(1, 0, 2.0);
+         b.set(2, 0, 3.0);
+
+         DMatrixRMaj solution = new DMatrixRMaj(2, 1);
+
+         /* Pointing to the origin */
+         cost.set(0, 0, -1.0);
+         cost.set(1, 0, -1.0);
+         solver.solve(cost, A, b, solution, solverMethod);
+         Assertions.assertTrue(activeSetIndices.isEmpty());
+
+         /* Pointing right and down */
+         cost.set(0, 0, 1.0);
+         cost.set(1, 0, -1.0);
+         solver.solve(cost, A, b, solution, solverMethod);
+         Assertions.assertEquals(activeSetIndices.size(), 1);
+         Assertions.assertTrue(activeSetIndices.contains(0));
+
+         /* Pointing right and a little up */
+         cost.set(0, 0, 1.0);
+         cost.set(1, 0, 0.01);
+         solver.solve(cost, A, b, solution, solverMethod);
+         Assertions.assertEquals(activeSetIndices.size(), 2);
+         Assertions.assertTrue(activeSetIndices.contains(0));
+         Assertions.assertTrue(activeSetIndices.contains(2));
+
+         /* Pointing up and a little right */
+         cost.set(0, 0, 0.01);
+         cost.set(1, 0, 1.0);
+         solver.solve(cost, A, b, solution, solverMethod);
+         Assertions.assertEquals(activeSetIndices.size(), 2);
+         Assertions.assertTrue(activeSetIndices.contains(1));
+         Assertions.assertTrue(activeSetIndices.contains(2));
+
+         /* Pointing up and left */
+         cost.set(0, 0, -1.0);
+         cost.set(1, 0, 1.0);
+         solver.solve(cost, A, b, solution, solverMethod);
+         Assertions.assertEquals(activeSetIndices.size(), 1);
+         Assertions.assertTrue(activeSetIndices.contains(1));
+      }
+   }
+
+   @Test
+   public void testActiveSetSaturatesInequalityConstraints()
+   {
+      int numTests = 100;
+      LinearProgramSolver lpSolver = new LinearProgramSolver();
+
+      for (int i = 0; i < numTests; i++)
+      {
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(false, false);
+         DMatrixRMaj costVector = generateRandomCostVector(constraintSet.inequalityMatrix.getNumCols());
+         DMatrixRMaj solution = new DMatrixRMaj(0);
+
+         boolean foundSolution = lpSolver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, solution, SolverMethod.SIMPLEX);
+         TIntArrayList activeSetIndices = lpSolver.getSimplexStatistics().getActiveSetIndices();
+
+         if (foundSolution && !activeSetIndices.isEmpty())
+         {
+            DMatrixRMaj A_active = new DMatrixRMaj(activeSetIndices.size(), constraintSet.inequalityMatrix.getNumCols());
+            DMatrixRMaj b_active = new DMatrixRMaj(activeSetIndices.size(), 1);
+
+            for (int j = 0; j < activeSetIndices.size(); j++)
+            {
+               MatrixTools.setMatrixBlock(A_active, j, 0, constraintSet.inequalityMatrix, activeSetIndices.get(j), 0, 1, constraintSet.inequalityMatrix.getNumCols(), 1.0);
+               b_active.set(j, 0, constraintSet.inequalityVector.get(activeSetIndices.get(j), 0));
+            }
+
+            DMatrixRMaj b_solution = new DMatrixRMaj(constraintSet.inequalityMatrix.getNumCols(), 1);
+            CommonOps_DDRM.mult(A_active, solution, b_solution);
+
+            for (int j = 0; j < activeSetIndices.size(); j++)
+            {
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(b_active.get(j, 0), b_solution.get(j, 0), epsilon));
+            }
+         }
+      }
    }
 
    @Test
@@ -128,14 +229,17 @@ public class LinearProgramSolverTest
 
          if (apacheCommonsSolution == null)
          {
+            /* Assert that custom solver could not find solution when apache commons could not */
             Assertions.assertFalse(foundSimplexSolution);
             Assertions.assertFalse(foundCrissCrossSolution);
          }
          else
          {
+            /* Assert that custom solver could find solution when apache commons could */
             Assertions.assertTrue(foundSimplexSolution);
             Assertions.assertTrue(foundCrissCrossSolution);
 
+            /* Assert that solutions are equal */
             for (int k = 0; k < apacheCommonsSolution.length; k++)
             {
                Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
