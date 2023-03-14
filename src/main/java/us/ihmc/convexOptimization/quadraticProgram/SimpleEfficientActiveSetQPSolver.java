@@ -49,7 +49,6 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
    // Some temporary matrices:
    protected final NativeMatrix nativexSolutionMatrix = new NativeMatrix(0, 0);
    protected final NativeMatrix costQuadraticMatrix = new NativeMatrix(0, 0);
-   protected final NativeMatrix symmetricCostQuadraticMatrix = new NativeMatrix(0, 0);
 
    private final NativeMatrix linearInequalityConstraintsCheck = new NativeMatrix(0, 0);
 
@@ -242,11 +241,9 @@ public class SimpleEfficientActiveSetQPSolver implements ActiveSetQPSolver
          throw new RuntimeException("costQuadraticMatrix.getNumRows() != costQuadraticMatrix.getNumCols()");
 
       this.costQuadraticMatrix.set(costQuadraticMatrix);
-      symmetricCostQuadraticMatrix.transpose(this.costQuadraticMatrix);
 
-      symmetricCostQuadraticMatrix.add(this.costQuadraticMatrix, symmetricCostQuadraticMatrix);
-
-      quadraticCostQMatrix.set(symmetricCostQuadraticMatrix);
+      quadraticCostQMatrix.transpose(this.costQuadraticMatrix);
+      quadraticCostQMatrix.addEquals(this.costQuadraticMatrix);
       quadraticCostQMatrix.scale(0.5);
 
       quadraticCostQVector.set(costLinearVector);

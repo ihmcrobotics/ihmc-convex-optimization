@@ -1,7 +1,7 @@
 package us.ihmc.convexOptimization.quadraticProgram;
 
 import org.ejml.data.DMatrixRMaj;
-import org.ojalgo.matrix.store.PrimitiveDenseStore;
+import org.ojalgo.matrix.store.Primitive64Store;
 import org.ojalgo.optimisation.ExpressionsBasedModel;
 import org.ojalgo.optimisation.convex.ConvexSolver;
 
@@ -22,8 +22,8 @@ public class OJAlgoConstrainedQPSolver extends ConstrainedQPSolver
                     boolean initialize)
          throws NoConvergenceException
    {
-      PrimitiveDenseStore QDenseStore = PrimitiveDenseStore.FACTORY.columns(Q.data);
-      PrimitiveDenseStore CDenseStore = PrimitiveDenseStore.FACTORY.columns(f.data);
+      Primitive64Store QDenseStore = Primitive64Store.FACTORY.columns(Q.data);
+      Primitive64Store CDenseStore = Primitive64Store.FACTORY.columns(f.data);
 
       ConvexSolver.Builder builder = new ConvexSolver.Builder(QDenseStore, CDenseStore);
 
