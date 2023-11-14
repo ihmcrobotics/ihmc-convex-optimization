@@ -26,7 +26,7 @@ mainDependencies {
    }
 
    api("us.ihmc:ihmc-commons:0.32.0")
-   api("us.ihmc:euclid:0.21.0")
+   api("us.ihmc:euclid:0.20.0")
    api("us.ihmc:euclid-frame:0.20.0")
    api("us.ihmc:ihmc-matrix-library:0.18.9")
    api("us.ihmc:ihmc-native-library-loader:2.0.2")
