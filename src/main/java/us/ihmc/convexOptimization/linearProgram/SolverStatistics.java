@@ -1,25 +1,40 @@
 package us.ihmc.convexOptimization.linearProgram;
 
-import gnu.trove.list.array.TIntArrayList;
-
 public class SolverStatistics
 {
+   /* Time taken by DictionaryFormLinearProgramSolver.solve{CrissCross, Simplex} in seconds */
    private double solveTime;
+
+   /* Number of iterations (or pivots) taken by DictionaryFormLinearProgramSolver.solve{CrissCross, Simplex} */
    private int iterations;
+
+   /* Whether DictionaryFormLinearProgramSolver.solve{CrissCross, Simplex} found a solution */
    private boolean foundSolution;
 
-   /**
-    * Given the inequality that parameterizes the LP: Ax <= b
-    * Each index i in this list means that row i of A constrains the solution.
-    */
-   private final TIntArrayList activeSetIndices = new TIntArrayList();
+   /* Min entry of the d_rg for r in B-f. A zero entry means the solution is degenerate and additional pivots will not improve optimality */
+   private double minDictionaryRHSColumnEntry;
+
+   /* If foundSolution is false, reports failure reason */
+   private LinearProgramFailureReason failureReason = null;
+
+   /* If using Simplex and the solver failed, this is true if the failure occurred during Phase I */
+   private boolean failedForPhaseI = false;
+
+   public enum LinearProgramFailureReason
+   {
+      MAX_ITERATIONS_REACHED,
+      NO_CANDIDATE_PIVOT,
+      INVALID_PHASE_I_SOLUTION;
+   }
 
    public void clear()
    {
       solveTime = Double.NaN;
       iterations = 0;
       foundSolution = false;
-      activeSetIndices.reset();
+      minDictionaryRHSColumnEntry = Double.NaN;
+      failureReason = null;
+      failedForPhaseI = false;
    }
 
    public void setSolveTime(double solveTime)
@@ -37,9 +52,9 @@ public class SolverStatistics
       this.foundSolution = foundSolution;
    }
 
-   public void addActiveSetIndex(int index)
+   public void setMinDictionaryRHSColumnEntry(double minDictionaryRHSColumnEntry)
    {
-      activeSetIndices.add(index);
+      this.minDictionaryRHSColumnEntry = minDictionaryRHSColumnEntry;
    }
 
    public double getSolveTime()
@@ -57,9 +72,31 @@ public class SolverStatistics
       return foundSolution;
    }
 
-   public TIntArrayList getActiveSetIndices()
+   public double getMinDictionaryRHSColumnEntry()
    {
-      return activeSetIndices;
+      return minDictionaryRHSColumnEntry;
+   }
+
+   public void onSolutionFound()
+   {
+      foundSolution = true;
+   }
+
+   public void onSolverFailure(LinearProgramFailureReason failureReason, boolean failedForPhaseI)
+   {
+      foundSolution = false;
+      this.failureReason = failureReason;
+      this.failedForPhaseI = failedForPhaseI;
+   }
+
+   public LinearProgramFailureReason getFailureReason()
+   {
+      return failureReason;
+   }
+
+   public boolean isFailedForPhaseI()
+   {
+      return failedForPhaseI;
    }
 
    @Override

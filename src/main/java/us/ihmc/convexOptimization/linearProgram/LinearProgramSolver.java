@@ -1,22 +1,26 @@
 package us.ihmc.convexOptimization.linearProgram;
 
+import gnu.trove.list.array.TIntArrayList;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.ops.MatrixIO;
-import us.ihmc.euclid.tools.EuclidCoreIOTools;
+import org.ejml.dense.row.CommonOps_DDRM;
 import us.ihmc.matrixlib.MatrixTools;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.Arrays;
 
 import static us.ihmc.convexOptimization.linearProgram.DictionaryFormLinearProgramSolver.maxVariables;
 
 public class LinearProgramSolver
 {
-   private final DMatrixRMaj startingDictionary = new DMatrixRMaj(maxVariables, maxVariables);
+   /* Fields for performing dictionary-form Linear Program optimization */
    private final DictionaryFormLinearProgramSolver dictionaryFormSolver = new DictionaryFormLinearProgramSolver();
+   private final DMatrixRMaj startingDictionary = new DMatrixRMaj(maxVariables, maxVariables);
    private final DMatrixRMaj augmentedInequalityMatrix = new DMatrixRMaj(maxVariables, maxVariables);
    private final DMatrixRMaj augmentedInequalityVector = new DMatrixRMaj(maxVariables, maxVariables);
+
+   /* Fields for performing fixed-basis Linear Program optimization */
+   private final DMatrixRMaj basisMatrix = new DMatrixRMaj(0);
+   private final DMatrixRMaj basisMatrixInv = new DMatrixRMaj(0);
+   private final DMatrixRMaj dictionaryLeftColumn = new DMatrixRMaj(0);
 
    /**
     * Solves a standard form linear program
@@ -78,7 +82,8 @@ public class LinearProgramSolver
    }
 
    /**
-    * Solves a standard form linear program using the selected SolverMethod (Simplex or Criss-Cross)
+    * Solves a standard form linear program using the selected SolverMethod (Simplex or Criss-Cross). If A contains implicit equality constraints,
+    * then the number of equality constraints can be passed in to notify the solver.
     *
     * <p>
     * max c<sup>T</sup>x, Ax <= b, x >= 0.
@@ -117,7 +122,7 @@ public class LinearProgramSolver
       else
       {
          dictionaryFormSolver.solveSimplex(startingDictionary);
-         if (!dictionaryFormSolver.getPhase2Statistics().foundSolution())
+         if (!dictionaryFormSolver.getSimplexStatistics().foundSolution())
          {
             return false;
          }
@@ -127,9 +132,61 @@ public class LinearProgramSolver
       return true;
    }
 
+   /**
+    * Given a Linear Program problem, this can directly compute the solution given a basis index set, assuming it is the optimal basis.
+    * Useful for computing how the output may change as the constraint matrix or cost vector changes, where small deviations maintain the same optimal basis.
+    * See doi.org/10.3929/ethz-b-000426221 CH 5 for details.
+    */
+   public void solveForFixedBasis(DMatrixRMaj inequalityConstraintMatrixA, DMatrixRMaj inequalityConstraintVectorB, TIntArrayList basisIndices, DMatrixRMaj solutionToPack)
+   {
+      int numberOfNominalDecisionVariables = inequalityConstraintMatrixA.getNumCols();
+      int numberOfConstraints = inequalityConstraintMatrixA.getNumRows();
+
+      basisMatrix.reshape(numberOfConstraints, numberOfConstraints);
+      basisMatrix.zero();
+
+      for (int i = 1; i < basisIndices.size(); i++)
+      {
+         int basisMatrixColumn = i - 1;
+         int lexicalBasisIndex = basisIndices.get(i);
+
+         if (isNonNegativeConstraint(lexicalBasisIndex, numberOfNominalDecisionVariables))
+         {
+            int variableIndex = toVariableIndex(lexicalBasisIndex);
+            for (int j = 0; j < numberOfConstraints; j++)
+            {
+               basisMatrix.set(j, basisMatrixColumn, inequalityConstraintMatrixA.get(j, variableIndex));
+            }
+         }
+         else
+         {
+            int constraintIndex = toConstraintIndex(lexicalBasisIndex, numberOfNominalDecisionVariables);
+            basisMatrix.set(constraintIndex, basisMatrixColumn, 1.0);
+         }
+      }
+
+      CommonOps_DDRM.invert(basisMatrix, basisMatrixInv);
+      CommonOps_DDRM.mult(basisMatrixInv, inequalityConstraintVectorB, dictionaryLeftColumn);
+
+      solutionToPack.reshape(numberOfNominalDecisionVariables, 1);
+      solutionToPack.zero();
+
+      for (int i = 1; i < basisIndices.size(); i++)
+      {
+         int basisMatrixColumn = i - 1;
+         int lexicalBasisIndex = basisIndices.get(i);
+
+         if (isNonNegativeConstraint(lexicalBasisIndex, numberOfNominalDecisionVariables))
+         {
+            int variableIndex = toVariableIndex(lexicalBasisIndex);
+            solutionToPack.set(variableIndex, 0, dictionaryLeftColumn.get(basisMatrixColumn, 0));
+         }
+      }
+   }
+
    public SolverStatistics getSimplexStatistics()
    {
-      return dictionaryFormSolver.getPhase2Statistics();
+      return dictionaryFormSolver.getSimplexStatistics();
    }
 
    public SolverStatistics getCrissCrossStatistics()
@@ -145,5 +202,80 @@ public class LinearProgramSolver
    public DMatrixRMaj getAugmentedInequalityVector()
    {
       return augmentedInequalityVector;
+   }
+
+   /**
+    * Basis indices of the solution dictionary. See {@link LinearProgramDictionary} for details.
+    * The first entry always represents the objective xf variable.
+    */
+   public TIntArrayList getBasisIndices()
+   {
+      return dictionaryFormSolver.getBasisIndices();
+   }
+
+   /**
+    * Non-basis indices of the solution dictionary. See {@link LinearProgramDictionary} for details.
+    * The first entry always represents the RHS xg variable.
+    */
+   public TIntArrayList getNonBasisIndices()
+   {
+      return dictionaryFormSolver.getNonBasisIndices();
+   }
+
+   /**
+    * Returns true if the given lexical index corresponds to a non-negative constraint (x>0) or
+    * false if corresponds to a canonical form inequality constraint Ax<=b.
+    */
+   public boolean isNonNegativeConstraint(int lexicalIndex)
+   {
+      return isNonNegativeConstraint(lexicalIndex, startingDictionary.getNumCols() - 1);
+   }
+
+   /**
+    * Returns the zero-indexed constraint index corresponding to the given lexical index
+    */
+   public int toConstraintIndex(int lexicalIndex)
+   {
+      return toConstraintIndex(lexicalIndex, startingDictionary.getNumCols() - 1);
+   }
+
+   /**
+    * Returns true if the given lexical index corresponds to a non-negative constraint (x>0) or
+    * false if corresponds to a canonical form inequality constraint Ax<=b.
+    */
+   public static boolean isNonNegativeConstraint(int lexicalIndex, int numCanonicalFormVariables)
+   {
+      if (lexicalIndex <= 0)
+      {
+         throw new RuntimeException("Invalid lexical index " + lexicalIndex + ", should be a constraint index");
+      }
+
+      return lexicalIndex <= numCanonicalFormVariables;
+   }
+
+   /**
+    * Returns the zero-indexed variable index corresponding to the given lexical index
+    */
+   public static int toVariableIndex(int lexicalIndex)
+   {
+      if (lexicalIndex <= 0)
+      {
+         throw new RuntimeException("Invalid lexical index " + lexicalIndex + ", should be a constraint index");
+      }
+
+      return lexicalIndex - 1;
+   }
+
+   /**
+    * Returns the zero-indexed constraint index corresponding to the given lexical index
+    */
+   public static int toConstraintIndex(int lexicalIndex, int numCanonicalFormVariables)
+   {
+      if (lexicalIndex <= 0)
+      {
+         throw new RuntimeException("Invalid lexical index " + lexicalIndex + ", should be a constraint index");
+      }
+
+      return lexicalIndex - numCanonicalFormVariables - 1;
    }
 }

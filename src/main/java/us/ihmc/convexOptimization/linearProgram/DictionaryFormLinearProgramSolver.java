@@ -4,6 +4,7 @@ import gnu.trove.list.array.TIntArrayList;
 import org.apache.commons.math3.util.Precision;
 import org.ejml.data.DMatrixRMaj;
 import us.ihmc.commons.time.Stopwatch;
+import us.ihmc.convexOptimization.linearProgram.SolverStatistics.LinearProgramFailureReason;
 
 import java.util.Arrays;
 
@@ -26,8 +27,7 @@ public class DictionaryFormLinearProgramSolver
    private final DMatrixRMaj solution = new DMatrixRMaj(maxVariables);
 
    private final Stopwatch timer = new Stopwatch();
-   private final SolverStatistics phase1Statistics = new SolverStatistics();
-   private final SolverStatistics phase2Statistics = new SolverStatistics();
+   private final SolverStatistics simplexStatistics = new SolverStatistics();
    private final SolverStatistics crissCrossStatistics = new SolverStatistics();
 
    private enum SimplexPhase
@@ -51,17 +51,21 @@ public class DictionaryFormLinearProgramSolver
          throw new IllegalArgumentException("Simplex method has a maximum of " + maxVariables + " decision variables, " + startingDictionary.getNumCols() + " provided.");
       }
 
-      phase1Statistics.clear();
-      phase2Statistics.clear();
+      timer.reset();
+      simplexStatistics.clear();
 
       if (dictionary.initialize(startingDictionary, SolverMethod.SIMPLEX))
       {
          /* Phase I: compute feasible dictionary */
          performSimplexPhase(SimplexPhase.PHASE_I);
 
-         if (!phase1Statistics.foundSolution() || dictionary.getEntry(0, 0) < -epsilon)
+         if (!simplexStatistics.foundSolution())
          {
-            phase1Statistics.setFoundSolution(false);
+            return;
+         }
+         else if (dictionary.getEntry(0, 0) < -epsilon)
+         {
+            simplexStatistics.onSolverFailure(LinearProgramFailureReason.INVALID_PHASE_I_SOLUTION, true);
             return;
          }
 
@@ -71,27 +75,24 @@ public class DictionaryFormLinearProgramSolver
       /* Phase II: optimize feasible dictionary */
       performSimplexPhase(SimplexPhase.PHASE_II);
 
-      packSolution(phase2Statistics);
+      packSolution(simplexStatistics);
+      simplexStatistics.setSolveTime(timer.lapElapsed());
    }
 
    /* package private for testing */
    void performSimplexPhase(SimplexPhase phase)
    {
-      SolverStatistics statistics = phase == SimplexPhase.PHASE_I ? phase1Statistics : phase2Statistics;
-
-      timer.reset();
-
       while (true)
       {
-         if (statistics.getAndIncrementIterations() > maxSimplexIterations)
+         if (simplexStatistics.getAndIncrementIterations() > maxSimplexIterations)
          {
-            statistics.setFoundSolution(false);
+            simplexStatistics.onSolverFailure(LinearProgramFailureReason.MAX_ITERATIONS_REACHED, phase == SimplexPhase.PHASE_I);
             break;
          }
 
          if (isSimplexOptimal())
          {
-            statistics.setFoundSolution(true);
+            simplexStatistics.onSolutionFound();
             break;
          }
 
@@ -100,7 +101,7 @@ public class DictionaryFormLinearProgramSolver
 
          if (r == nullMatrixIndex)
          {
-            statistics.setFoundSolution(false);
+            simplexStatistics.onSolverFailure(LinearProgramFailureReason.NO_CANDIDATE_PIVOT, phase == SimplexPhase.PHASE_I);
             break;
          }
 
@@ -111,33 +112,27 @@ public class DictionaryFormLinearProgramSolver
 
          dictionary.performPivot(r, s);
       }
-
-      statistics.setSolveTime(timer.lapElapsed());
    }
 
    private void packSolution(SolverStatistics solverStatistics)
    {
       solution.reshape(dictionary.getNumberOfColumns() - 1, 1);
       Arrays.fill(solution.getData(), 0.0);
+      double minDictionaryRHSColumnEntry = Double.POSITIVE_INFINITY;
 
       for (int i = 1; i < dictionary.getBasisSize(); i++)
       {
          int variableIndex = dictionary.getBasisIndex(i) - 1;
+         double entry = dictionary.getEntry(i, 0);
+         minDictionaryRHSColumnEntry = Math.min(entry, minDictionaryRHSColumnEntry);
+
          if (variableIndex < solution.getNumRows())
          {
-            solution.set(variableIndex, dictionary.getEntry(i, 0));
+            solution.set(variableIndex, entry);
          }
       }
-
-      for (int i = 1; i < dictionary.getNonBasisSize(); i++)
-      {
-         int dictionaryVariableIndex = dictionary.getNonBasisIndex(i);
-
-         if (dictionaryVariableIndex >= dictionary.getNumberOfColumns())
-         { // Only consider active set to be constraints explicitly in A, not the non-negative constraint
-            solverStatistics.addActiveSetIndex(dictionaryVariableIndex - dictionary.getNumberOfColumns());
-         }
-      }
+      
+      solverStatistics.setMinDictionaryRHSColumnEntry(minDictionaryRHSColumnEntry);
    }
 
    /* Checks optimality assuming feasibility, so only the objective row needs to be checked */
@@ -281,7 +276,7 @@ public class DictionaryFormLinearProgramSolver
          int basisPivot, nonBasisPivot;
          if (candidateBasisPivot == nullMatrixIndex && candidateNonBasisPivot == nullMatrixIndex)
          {
-            crissCrossStatistics.setFoundSolution(true);
+            crissCrossStatistics.onSolutionFound();
             break;
          }
          else if (candidateBasisPivot != nullMatrixIndex && (candidateNonBasisPivot == nullMatrixIndex
@@ -355,19 +350,24 @@ public class DictionaryFormLinearProgramSolver
       return column;
    }
 
-   public SolverStatistics getPhase1Statistics()
-   {
-      return phase1Statistics;
-   }
-
-   public SolverStatistics getPhase2Statistics()
-   {
-      return phase2Statistics;
-   }
-
    public SolverStatistics getCrissCrossStatistics()
    {
       return crissCrossStatistics;
+   }
+
+   public SolverStatistics getSimplexStatistics()
+   {
+      return simplexStatistics;
+   }
+
+   public TIntArrayList getBasisIndices()
+   {
+      return dictionary.getBasisIndices();
+   }
+
+   public TIntArrayList getNonBasisIndices()
+   {
+      return dictionary.getNonBasisIndices();
    }
 }
 

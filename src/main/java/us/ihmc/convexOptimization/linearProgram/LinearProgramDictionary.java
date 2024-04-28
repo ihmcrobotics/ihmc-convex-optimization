@@ -343,4 +343,14 @@ public class LinearProgramDictionary
          return Integer.toString(index);
       }
    }
+
+   public TIntArrayList getBasisIndices()
+   {
+      return basisIndices;
+   }
+
+   public TIntArrayList getNonBasisIndices()
+   {
+      return nonBasisIndices;
+   }
 }

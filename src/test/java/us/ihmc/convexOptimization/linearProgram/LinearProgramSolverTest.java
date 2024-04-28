@@ -32,14 +32,14 @@ public class LinearProgramSolverTest
    }
 
    @Test
-   public void testSimpleActiveSet()
+   public void testSolutionDictionaryIndices()
    {
       LinearProgramSolver solver = new LinearProgramSolver();
 
       for (SolverMethod solverMethod : SolverMethod.values())
       {
-         SolverStatistics solverStatistics = solverMethod == SolverMethod.SIMPLEX ? solver.getSimplexStatistics() : solver.getCrissCrossStatistics();
-         TIntArrayList activeSetIndices = solverStatistics.getActiveSetIndices();
+         TIntArrayList nonBasisIndices = solver.getNonBasisIndices();
+         TIntArrayList basisIndices = solver.getBasisIndices();
 
          DMatrixRMaj cost = new DMatrixRMaj(2, 1);
          DMatrixRMaj A = new DMatrixRMaj(3, 2);
@@ -54,48 +54,70 @@ public class LinearProgramSolverTest
          b.set(1, 0, 2.0);
          b.set(2, 0, 3.0);
 
+         int nonNegConstraint1 = 1;
+         int nonNegConstraint2 = 2;
+         int AConstraint1 = 3;
+         int AConstraint2 = 4;
+         int AConstraint3 = 5;
+
          DMatrixRMaj solution = new DMatrixRMaj(2, 1);
 
          /* Pointing to the origin */
          cost.set(0, 0, -1.0);
          cost.set(1, 0, -1.0);
          solver.solve(cost, A, b, solution, solverMethod);
-         Assertions.assertTrue(activeSetIndices.isEmpty());
+         Assertions.assertEquals(basisIndices.size(), 1 + A.getNumRows());
+         Assertions.assertEquals(nonBasisIndices.size(), 1 + A.getNumCols());
+         Assertions.assertTrue(nonBasisIndices.contains(nonNegConstraint1));
+         Assertions.assertTrue(nonBasisIndices.contains(nonNegConstraint2));
+         Assertions.assertTrue(basisIndices.contains(AConstraint1));
+         Assertions.assertTrue(basisIndices.contains(AConstraint2));
+         Assertions.assertTrue(basisIndices.contains(AConstraint3));
 
          /* Pointing right and down */
          cost.set(0, 0, 1.0);
          cost.set(1, 0, -1.0);
          solver.solve(cost, A, b, solution, solverMethod);
-         Assertions.assertEquals(activeSetIndices.size(), 1);
-         Assertions.assertTrue(activeSetIndices.contains(0));
+         Assertions.assertTrue(nonBasisIndices.contains(nonNegConstraint2));
+         Assertions.assertTrue(nonBasisIndices.contains(AConstraint1));
+         Assertions.assertTrue(basisIndices.contains(nonNegConstraint1));
+         Assertions.assertTrue(basisIndices.contains(AConstraint2));
+         Assertions.assertTrue(basisIndices.contains(AConstraint3));
 
          /* Pointing right and a little up */
          cost.set(0, 0, 1.0);
          cost.set(1, 0, 0.01);
          solver.solve(cost, A, b, solution, solverMethod);
-         Assertions.assertEquals(activeSetIndices.size(), 2);
-         Assertions.assertTrue(activeSetIndices.contains(0));
-         Assertions.assertTrue(activeSetIndices.contains(2));
+         Assertions.assertTrue(nonBasisIndices.contains(AConstraint1));
+         Assertions.assertTrue(nonBasisIndices.contains(AConstraint3));
+         Assertions.assertTrue(basisIndices.contains(nonNegConstraint1));
+         Assertions.assertTrue(basisIndices.contains(nonNegConstraint2));
+         Assertions.assertTrue(basisIndices.contains(AConstraint2));
 
          /* Pointing up and a little right */
          cost.set(0, 0, 0.01);
          cost.set(1, 0, 1.0);
          solver.solve(cost, A, b, solution, solverMethod);
-         Assertions.assertEquals(activeSetIndices.size(), 2);
-         Assertions.assertTrue(activeSetIndices.contains(1));
-         Assertions.assertTrue(activeSetIndices.contains(2));
+         Assertions.assertTrue(nonBasisIndices.contains(AConstraint2));
+         Assertions.assertTrue(nonBasisIndices.contains(AConstraint3));
+         Assertions.assertTrue(basisIndices.contains(nonNegConstraint1));
+         Assertions.assertTrue(basisIndices.contains(nonNegConstraint2));
+         Assertions.assertTrue(basisIndices.contains(AConstraint1));
 
          /* Pointing up and left */
          cost.set(0, 0, -1.0);
          cost.set(1, 0, 1.0);
          solver.solve(cost, A, b, solution, solverMethod);
-         Assertions.assertEquals(activeSetIndices.size(), 1);
-         Assertions.assertTrue(activeSetIndices.contains(1));
+         Assertions.assertTrue(nonBasisIndices.contains(nonNegConstraint1));
+         Assertions.assertTrue(nonBasisIndices.contains(AConstraint2));
+         Assertions.assertTrue(basisIndices.contains(nonNegConstraint2));
+         Assertions.assertTrue(basisIndices.contains(AConstraint1));
+         Assertions.assertTrue(basisIndices.contains(AConstraint3));
       }
    }
 
    @Test
-   public void testActiveSetSaturatesInequalityConstraints()
+   public void testNonBasisIndicesSaturateConstraints()
    {
       int numTests = 100;
       LinearProgramSolver lpSolver = new LinearProgramSolver();
@@ -107,25 +129,44 @@ public class LinearProgramSolverTest
          DMatrixRMaj solution = new DMatrixRMaj(0);
 
          boolean foundSolution = lpSolver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, solution, SolverMethod.SIMPLEX);
-         TIntArrayList activeSetIndices = lpSolver.getSimplexStatistics().getActiveSetIndices();
+         TIntArrayList nonBasisIndices = lpSolver.getNonBasisIndices();
 
-         if (foundSolution && !activeSetIndices.isEmpty())
+         if (foundSolution)
          {
-            DMatrixRMaj A_active = new DMatrixRMaj(activeSetIndices.size(), constraintSet.inequalityMatrix.getNumCols());
-            DMatrixRMaj b_active = new DMatrixRMaj(activeSetIndices.size(), 1);
+            TIntArrayList saturatedConstraintIndices = new TIntArrayList();
 
-            for (int j = 0; j < activeSetIndices.size(); j++)
+            for (int j = 1; j < nonBasisIndices.size(); j++)
             {
-               MatrixTools.setMatrixBlock(A_active, j, 0, constraintSet.inequalityMatrix, activeSetIndices.get(j), 0, 1, constraintSet.inequalityMatrix.getNumCols(), 1.0);
-               b_active.set(j, 0, constraintSet.inequalityVector.get(activeSetIndices.get(j), 0));
+               int nonBasisIndex = nonBasisIndices.get(j);
+               if (lpSolver.isNonNegativeConstraint(nonBasisIndex))
+               { // Non-negative constraint is saturated, check that solution value is 0.0
+                  int saturatedVariableIndex = LinearProgramSolver.toVariableIndex(nonBasisIndex);
+                  Assertions.assertTrue(EuclidCoreTools.epsilonEquals(solution.get(saturatedVariableIndex), 0.0, epsilon));
+               }
+               else
+               { // Canonical-form matrix constraint, add to list
+                  int saturatedConstraintIndex = lpSolver.toConstraintIndex(nonBasisIndex);
+                  saturatedConstraintIndices.add(saturatedConstraintIndex);
+               }
+            }
+
+            int numSaturatedMatrixConstraints = saturatedConstraintIndices.size();
+            DMatrixRMaj A_saturated = new DMatrixRMaj(numSaturatedMatrixConstraints, constraintSet.inequalityMatrix.getNumCols());
+            DMatrixRMaj b_saturated = new DMatrixRMaj(numSaturatedMatrixConstraints, 1);
+
+            for (int j = 0; j < numSaturatedMatrixConstraints; j++)
+            {
+               int saturatedConstraintIndex = saturatedConstraintIndices.get(j);
+               MatrixTools.setMatrixBlock(A_saturated, j, 0, constraintSet.inequalityMatrix, saturatedConstraintIndex, 0, 1, constraintSet.inequalityMatrix.getNumCols(), 1.0);
+               b_saturated.set(j, 0, constraintSet.inequalityVector.get(saturatedConstraintIndex, 0));
             }
 
             DMatrixRMaj b_solution = new DMatrixRMaj(constraintSet.inequalityMatrix.getNumCols(), 1);
-            CommonOps_DDRM.mult(A_active, solution, b_solution);
+            CommonOps_DDRM.mult(A_saturated, solution, b_solution);
 
-            for (int j = 0; j < activeSetIndices.size(); j++)
+            for (int j = 0; j < numSaturatedMatrixConstraints; j++)
             {
-               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(b_active.get(j, 0), b_solution.get(j, 0), epsilon));
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(b_saturated.get(j, 0), b_solution.get(j, 0), epsilon));
             }
          }
       }
@@ -199,6 +240,75 @@ public class LinearProgramSolverTest
          ConstraintSet constraintSet = generateRandomConstraints();
          runTest(constraintSet, costVectorsPerProblem);
       }
+   }
+
+   @Test
+   public void testSensitivity()
+   {
+      int tests = 200;
+
+      // debug to check that this is testing something
+//      int numSameBasis = 0;
+
+      for (int i = 0; i < tests; i++)
+      {
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(false, false);
+
+         DMatrixRMaj costVector = generateRandomCostVector(constraintSet.inequalityMatrix.getNumCols());
+         DMatrixRMaj expectedSolution = new DMatrixRMaj(0);
+
+         LinearProgramSolver solver = new LinearProgramSolver();
+         solver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, expectedSolution);
+         TIntArrayList originalBasisIndices = new TIntArrayList(solver.getBasisIndices());
+
+         DMatrixRMaj mutatedInequalityMatrix = new DMatrixRMaj(constraintSet.inequalityMatrix);
+         mutateInequalityMatrix(constraintSet.inequalityMatrix, mutatedInequalityMatrix);
+         solver.solve(costVector, mutatedInequalityMatrix, constraintSet.inequalityVector, expectedSolution);
+         TIntArrayList mutatedBasisIndices = new TIntArrayList(solver.getBasisIndices());
+
+         if (!containsSameElements(originalBasisIndices, mutatedBasisIndices))
+            continue;
+
+//         numSameBasis++;
+
+         DMatrixRMaj calculatedSolution = new DMatrixRMaj(0);
+         solver.solveForFixedBasis(mutatedInequalityMatrix, constraintSet.inequalityVector, originalBasisIndices, calculatedSolution);
+
+         for (int j = 0; j < expectedSolution.getNumRows(); j++)
+         {
+            double epsilon = 1e-12;
+            Assertions.assertTrue(EuclidCoreTools.epsilonEquals(calculatedSolution.get(j), expectedSolution.get(j), epsilon));
+         }
+      }
+
+//      System.out.println("numSame: " + numSameBasis + "/" + tests);
+   }
+
+   private static void mutateInequalityMatrix(DMatrixRMaj inequalityMatrix, DMatrixRMaj mutatedInequalityMatrix)
+   {
+      for (int i = 0; i < inequalityMatrix.getNumRows(); i++)
+      {
+         for (int j = 0; j < inequalityMatrix.getNumCols(); j++)
+         {
+            boolean mutate = random.nextInt(2) == 0;
+            if (!mutate)
+               continue;
+
+            double val = inequalityMatrix.get(i, j);
+            double mutationMultiplier = 1.0 + EuclidCoreRandomTools.nextDouble(random, 0.05);
+            mutatedInequalityMatrix.set(i, j, val * mutationMultiplier);
+         }
+      }
+   }
+
+   private static boolean containsSameElements(TIntArrayList listA, TIntArrayList listB)
+   {
+      for (int i = 0; i < listA.size(); i++)
+      {
+         if (!listB.contains(listA.get(i)))
+            return false;
+      }
+      return true;
    }
 
    private static void runTest(ConstraintSet constraintSet, int numberOfTests)
