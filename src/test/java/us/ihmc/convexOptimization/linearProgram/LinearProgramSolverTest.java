@@ -350,11 +350,29 @@ public class LinearProgramSolverTest
             Assertions.assertTrue(foundCrissCrossSolution);
 
             /* Assert that solutions are equal */
-            for (int k = 0; k < apacheCommonsSolution.length; k++)
+            for (int j = 0; j < apacheCommonsSolution.length; j++)
             {
-               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
-               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[j], simplexSolution.get(j), epsilon));
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[j], crissCrossSolution.get(j), epsilon));
             }
+
+            /* Check duality conditions are met */
+            double primalObjective = 0.0;
+            double dualObjective = 0.0;
+
+            DMatrixRMaj b = constraintSet.equalityMatrix.getNumRows() == 0 ? constraintSet.inequalityVector : customSolver.getAugmentedInequalityVector();
+            DMatrixRMaj dualSolution = customSolver.getDualSolution();
+
+            for (int j = 0; j < costVector.getNumRows(); j++)
+            {
+               primalObjective += costVector.get(j) * simplexSolution.get(j);
+            }
+            for (int j = 0; j < b.getNumRows(); j++)
+            {
+               dualObjective += b.get(j) * dualSolution.get(j);
+            }
+
+            Assertions.assertTrue(Math.abs(primalObjective - dualObjective) < 1.0e-6);
          }
       }
    }

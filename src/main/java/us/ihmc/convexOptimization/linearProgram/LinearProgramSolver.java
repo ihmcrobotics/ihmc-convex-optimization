@@ -128,7 +128,7 @@ public class LinearProgramSolver
          }
       }
 
-      solutionToPack.set(dictionaryFormSolver.getSolution());
+      solutionToPack.set(dictionaryFormSolver.getPrimalSolution());
       return true;
    }
 
@@ -182,6 +182,11 @@ public class LinearProgramSolver
             solutionToPack.set(variableIndex, 0, dictionaryLeftColumn.get(basisMatrixColumn, 0));
          }
       }
+   }
+
+   public DMatrixRMaj getDualSolution()
+   {
+      return dictionaryFormSolver.getDualSolution();
    }
 
    public SolverStatistics getSimplexStatistics()

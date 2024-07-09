@@ -8,6 +8,8 @@ import us.ihmc.convexOptimization.linearProgram.SolverStatistics.LinearProgramFa
 
 import java.util.Arrays;
 
+import static us.ihmc.convexOptimization.linearProgram.LinearProgramSolver.*;
+
 /**
  * Solves a dictionary form LP using the criss-cross or simplex methods.
  * Simplex implementation borrows from org.apache.commons.math3.optim.linear.SimplexSolver and doi.org/10.3929/ethz-b-000426221 (ch. 4)
@@ -24,7 +26,8 @@ public class DictionaryFormLinearProgramSolver
    static final double zeroCutoff = 1e-10;
 
    private final LinearProgramDictionary dictionary = new LinearProgramDictionary();
-   private final DMatrixRMaj solution = new DMatrixRMaj(maxVariables);
+   private final DMatrixRMaj primalSolution = new DMatrixRMaj(maxVariables);
+   private final DMatrixRMaj dualSolution = new DMatrixRMaj(maxVariables);
 
    private final Stopwatch timer = new Stopwatch();
    private final SolverStatistics simplexStatistics = new SolverStatistics();
@@ -116,19 +119,36 @@ public class DictionaryFormLinearProgramSolver
 
    private void packSolution(SolverStatistics solverStatistics)
    {
-      solution.reshape(dictionary.getNumberOfColumns() - 1, 1);
-      Arrays.fill(solution.getData(), 0.0);
+      primalSolution.reshape(dictionary.getNumberOfColumns() - 1, 1);
+      dualSolution.reshape(dictionary.getNumberOfRows() - 1, 1);
+
+      Arrays.fill(primalSolution.getData(), 0.0);
+      Arrays.fill(dualSolution.getData(), 0.0);
+
       double minDictionaryRHSColumnEntry = Double.POSITIVE_INFINITY;
 
       for (int i = 1; i < dictionary.getBasisSize(); i++)
       {
-         int variableIndex = dictionary.getBasisIndex(i) - 1;
+         int lexicalIndex = dictionary.getBasisIndex(i);
          double entry = dictionary.getEntry(i, 0);
          minDictionaryRHSColumnEntry = Math.min(entry, minDictionaryRHSColumnEntry);
 
-         if (variableIndex < solution.getNumRows())
+         if (isNonNegativeConstraint(lexicalIndex, primalSolution.getNumRows()))
          {
-            solution.set(variableIndex, entry);
+            int variableIndex = toVariableIndex(lexicalIndex);
+            primalSolution.set(variableIndex, entry);
+         }
+      }
+
+      for (int i = 1; i < dictionary.getNonBasisSize(); i++)
+      {
+         int lexicalIndex = dictionary.getNonBasisIndex(i);
+         double entry = dictionary.getEntry(0, i);
+
+         if (!isNonNegativeConstraint(lexicalIndex, primalSolution.getNumRows()))
+         {
+            int constraintIndex = toConstraintIndex(lexicalIndex, primalSolution.getNumRows());
+            dualSolution.set(constraintIndex, -entry);
          }
       }
       
@@ -237,17 +257,22 @@ public class DictionaryFormLinearProgramSolver
       }
    }
 
-   public DMatrixRMaj getSolution()
+   public DMatrixRMaj getPrimalSolution()
    {
-      return solution;
+      return primalSolution;
+   }
+
+   public DMatrixRMaj getDualSolution()
+   {
+      return dualSolution;
    }
 
    public void printSolution()
    {
       System.out.println("Solution:");
-      for (int i = 0; i < solution.getNumRows(); i++)
+      for (int i = 0; i < primalSolution.getNumRows(); i++)
       {
-         System.out.println("\t " + solution.get(i));
+         System.out.println("\t " + primalSolution.get(i));
       }
    }
 
