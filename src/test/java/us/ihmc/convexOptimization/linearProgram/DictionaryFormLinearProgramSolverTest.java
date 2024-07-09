@@ -6,6 +6,7 @@ import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import us.ihmc.euclid.tools.EuclidCoreTestTools;
 import us.ihmc.euclid.tools.EuclidCoreTools;
 
 public class DictionaryFormLinearProgramSolverTest
@@ -16,10 +17,18 @@ public class DictionaryFormLinearProgramSolverTest
    @Test
    public void testDictionary0()
    {
+      /* The example problem given in doi.org/10.3929/ethz-b-000426221 */
       DMatrixRMaj dictionary = new DMatrixRMaj(new double[] {0.0, 3.0, 4.0, 2.0, 4.0, -2.0, 0.0, 0.0, 8.0, -1.0, 0.0, -2.0, 6.0, 0.0, -3.0, -1.0});
       dictionary.reshape(4, 4);
       TDoubleArrayList expectedSolution = new TDoubleArrayList(new double[] {2.0, 1.0, 3.0});
       runTest(dictionary, expectedSolution);
+
+      DictionaryFormLinearProgramSolver solver = new DictionaryFormLinearProgramSolver();
+      solver.solveSimplex(dictionary);
+      DMatrixRMaj dualSolution = solver.getDualSolution();
+      Assertions.assertTrue(EuclidCoreTools.epsilonEquals(dualSolution.get(0), 4.0 / 3.0, 1e-10), "Invalid dual solution");
+      Assertions.assertTrue(EuclidCoreTools.epsilonEquals(dualSolution.get(1), 1.0 / 3.0, 1e-10), "Invalid dual solution");
+      Assertions.assertTrue(EuclidCoreTools.epsilonEquals(dualSolution.get(2), 4.0 / 3.0, 1e-10), "Invalid dual solution");
    }
 
    @Test
@@ -99,7 +108,7 @@ public class DictionaryFormLinearProgramSolverTest
       LinearProgramSolver solver = new LinearProgramSolver();
       solver.solve(c, Ain, b, solution);
 
-      System.out.println(solution);
+//      System.out.println(solution);
 
       TIntArrayList basisIndices = new TIntArrayList(solver.getBasisIndices());
 
@@ -159,7 +168,7 @@ public class DictionaryFormLinearProgramSolverTest
       DictionaryFormLinearProgramSolver solver = new DictionaryFormLinearProgramSolver();
       solver.solveSimplex(dictionary1);
       System.out.println("with solver:");
-      System.out.println(solver.getSolution());
+      System.out.println(solver.getPrimalSolution());
    }
 
    private static void runTest(DMatrixRMaj dictionary, TDoubleArrayList expectedSolution)
@@ -170,7 +179,7 @@ public class DictionaryFormLinearProgramSolverTest
       Assertions.assertTrue(solver.getCrissCrossStatistics().foundSolution());
       for (int i = 0; i < expectedSolution.size(); i++)
       {
-         boolean equal = EuclidCoreTools.epsilonEquals(solver.getSolution().get(i), expectedSolution.get(i), epsilon);
+         boolean equal = EuclidCoreTools.epsilonEquals(solver.getPrimalSolution().get(i), expectedSolution.get(i), epsilon);
          Assertions.assertTrue(equal, "Criss-cross has invalid solution");
       }
 
@@ -178,7 +187,7 @@ public class DictionaryFormLinearProgramSolverTest
       Assertions.assertTrue(solver.getSimplexStatistics().foundSolution());
       for (int i = 0; i < expectedSolution.size(); i++)
       {
-         boolean equal = EuclidCoreTools.epsilonEquals(solver.getSolution().get(i), expectedSolution.get(i), epsilon);
+         boolean equal = EuclidCoreTools.epsilonEquals(solver.getPrimalSolution().get(i), expectedSolution.get(i), epsilon);
          Assertions.assertTrue(equal, "Simplex has invalid solution");
       }
    }

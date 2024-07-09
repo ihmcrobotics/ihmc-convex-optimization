@@ -243,7 +243,7 @@ public class LinearProgramSolverTest
    }
 
    @Test
-   public void testSensitivity()
+   public void testSolveForFixedBasis()
    {
       int tests = 200;
 
@@ -284,6 +284,60 @@ public class LinearProgramSolverTest
 //      System.out.println("numSame: " + numSameBasis + "/" + tests);
    }
 
+   @Test
+   public void testComputeSensitivity()
+   {
+      int tests = 200;
+      double theta = 1e-8;
+
+      // debug to check that this is testing something
+      //      int numSameBasis = 0;
+
+      for (int i = 0; i < tests; i++)
+      {
+         ConstraintSet constraintSet = generateRandomEllipsoidBasedConstraintSet(false, false);
+         DMatrixRMaj costVector = generateRandomCostVector(constraintSet.inequalityMatrix.getNumCols());
+         DMatrixRMaj solution = new DMatrixRMaj(0);
+
+         LinearProgramSolver solver = new LinearProgramSolver();
+         solver.solve(costVector, constraintSet.inequalityMatrix, constraintSet.inequalityVector, solution);
+
+         DMatrixRMaj z0 = new DMatrixRMaj(0);
+         CommonOps_DDRM.multTransA(costVector, solution, z0);
+         TIntArrayList originalBasisIndices = new TIntArrayList(solver.getBasisIndices());
+
+         DMatrixRMaj constraintMatrixVariation = generateRandomConstraintMatrixVariation(constraintSet.inequalityMatrix.getNumRows(),
+                                                                                         constraintSet.inequalityMatrix.getNumCols());
+         double expectedSensitivity = solver.computeSensitivity(constraintMatrixVariation);
+
+         CommonOps_DDRM.scale(theta, constraintMatrixVariation);
+         DMatrixRMaj modifiedConstraintMatrix = new DMatrixRMaj(constraintSet.inequalityMatrix);
+         CommonOps_DDRM.addEquals(modifiedConstraintMatrix, constraintMatrixVariation);
+
+         solver.solve(costVector, modifiedConstraintMatrix, constraintSet.inequalityVector, solution);
+         TIntArrayList mutatedBasisIndices = new TIntArrayList(solver.getBasisIndices());
+
+         if (!containsSameElements(originalBasisIndices, mutatedBasisIndices))
+            continue;
+
+         //         numSameBasis++;
+
+         DMatrixRMaj directSensitivitySolution = new DMatrixRMaj(0);
+         solver.solve(costVector, modifiedConstraintMatrix, constraintSet.inequalityVector, directSensitivitySolution);
+
+         DMatrixRMaj zi = new DMatrixRMaj(0);
+         CommonOps_DDRM.multTransA(costVector, directSensitivitySolution, zi);
+
+         double computedSensitivity = (zi.get(0) - z0.get(0)) / theta;
+         Assertions.assertTrue(Math.abs(expectedSensitivity - computedSensitivity) < 1.0e-3, "Expected and computed sensitivity do not match.");
+
+//         System.out.println((expectedSensitivity - computedSensitivity) + "\n " + expectedSensitivity + "\n " + computedSensitivity);
+//         System.out.println();
+      }
+
+      //      System.out.println("numSame: " + numSameBasis + "/" + tests);
+   }
+
    private static void mutateInequalityMatrix(DMatrixRMaj inequalityMatrix, DMatrixRMaj mutatedInequalityMatrix)
    {
       for (int i = 0; i < inequalityMatrix.getNumRows(); i++)
@@ -299,6 +353,21 @@ public class LinearProgramSolverTest
             mutatedInequalityMatrix.set(i, j, val * mutationMultiplier);
          }
       }
+   }
+
+   private static DMatrixRMaj generateRandomConstraintMatrixVariation(int numRows, int numCols)
+   {
+      DMatrixRMaj constraintMatrixVariation = new DMatrixRMaj(numRows, numCols);
+
+      for (int i = 0; i < numRows; i++)
+      {
+         for (int j = 0; j < numCols; j++)
+         {
+            constraintMatrixVariation.set(i, j, EuclidCoreRandomTools.nextDouble(random, 1.0));
+         }
+      }
+
+      return constraintMatrixVariation;
    }
 
    private static boolean containsSameElements(TIntArrayList listA, TIntArrayList listB)
@@ -350,12 +419,95 @@ public class LinearProgramSolverTest
             Assertions.assertTrue(foundCrissCrossSolution);
 
             /* Assert that solutions are equal */
-            for (int k = 0; k < apacheCommonsSolution.length; k++)
+            for (int j = 0; j < apacheCommonsSolution.length; j++)
             {
-               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], simplexSolution.get(k), epsilon));
-               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[k], crissCrossSolution.get(k), epsilon));
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[j], simplexSolution.get(j), epsilon));
+               Assertions.assertTrue(EuclidCoreTools.epsilonEquals(apacheCommonsSolution[j], crissCrossSolution.get(j), epsilon));
             }
+
+            /* Check duality conditions are met */
+            double primalObjective = 0.0;
+            double dualObjective = 0.0;
+
+            DMatrixRMaj b = constraintSet.equalityMatrix.getNumRows() == 0 ? constraintSet.inequalityVector : customSolver.getAugmentedInequalityVector();
+            DMatrixRMaj dualSolution = customSolver.getDualSolution();
+
+            for (int j = 0; j < costVector.getNumRows(); j++)
+            {
+               primalObjective += costVector.get(j) * simplexSolution.get(j);
+            }
+            for (int j = 0; j < b.getNumRows(); j++)
+            {
+               dualObjective += b.get(j) * dualSolution.get(j);
+            }
+
+            Assertions.assertTrue(Math.abs(primalObjective - dualObjective) < 1.0e-6);
          }
+      }
+   }
+
+   @Test
+   public void testComputeSensitivityToyProblem()
+   {
+      DMatrixRMaj Ain = new DMatrixRMaj(3, 2);
+      Ain.set(0, 0, 1.0);
+      Ain.set(1, 1, 1.0);
+      Ain.set(2, 0, 1.0);
+      Ain.set(2, 1, 1.0);
+
+      DMatrixRMaj b = new DMatrixRMaj(3, 1);
+      b.set(0, 0, 2.0);
+      b.set(1, 0, 2.0);
+      b.set(2, 0, 3.0);
+
+      DMatrixRMaj c = new DMatrixRMaj(2, 1);
+      c.set(0, 0, 2.0);
+      c.set(1, 0, 1.0);
+
+      DMatrixRMaj solution = new DMatrixRMaj(0);
+
+      LinearProgramSolver solver = new LinearProgramSolver();
+      solver.solve(c, Ain, b, solution);
+
+      { // test variation of the constraint that is not in the active set, should have zero sensitivity
+         DMatrixRMaj constraintVariation = new DMatrixRMaj(3, 2);
+         constraintVariation.set(1, 0, 1.0);
+         constraintVariation.set(1, 1, 1.0);
+         double sensitivity = solver.computeSensitivity(constraintVariation);
+         Assertions.assertTrue(Math.abs(sensitivity) < 1e-10, "Expected zero sensitivity for non-active constraints");
+      }
+
+      { // test variation of the constraint that is in the active set. compare to direct calculation
+         DMatrixRMaj constraintVariation = new DMatrixRMaj(3, 2);
+
+         Random random = new Random(3290);
+         constraintVariation.set(0, 0, EuclidCoreRandomTools.nextDouble(random, 1.0));
+         constraintVariation.set(0, 1, EuclidCoreRandomTools.nextDouble(random, 1.0));
+         constraintVariation.set(2, 0, EuclidCoreRandomTools.nextDouble(random, 1.0));
+         constraintVariation.set(2, 1, EuclidCoreRandomTools.nextDouble(random, 1.0));
+
+         double expectedSensitivity = solver.computeSensitivity(constraintVariation);
+
+         // direct calculation
+         DMatrixRMaj z0 = new DMatrixRMaj(0);
+         CommonOps_DDRM.multTransA(c, solution, z0);
+
+         double theta = 1e-6;
+         DMatrixRMaj constraintModification = new DMatrixRMaj(constraintVariation);
+         CommonOps_DDRM.scale(theta, constraintModification);
+
+         DMatrixRMaj modifiedConstraintMatrix = new DMatrixRMaj(Ain);
+         CommonOps_DDRM.addEquals(modifiedConstraintMatrix, constraintModification);
+
+         LinearProgramSolver directSensitivitySolver = new LinearProgramSolver();
+         DMatrixRMaj directSensitivitySolution = new DMatrixRMaj(0);
+         directSensitivitySolver.solve(c, modifiedConstraintMatrix, b, directSensitivitySolution);
+
+         DMatrixRMaj zi = new DMatrixRMaj(0);
+         CommonOps_DDRM.multTransA(c, directSensitivitySolution, zi);
+
+         double computedSensitivity = (zi.get(0) - z0.get(0)) / theta;
+         Assertions.assertTrue(Math.abs(expectedSensitivity - computedSensitivity) < 1e-6, "Expected and computed sensitivity do not match.");
       }
    }
 
