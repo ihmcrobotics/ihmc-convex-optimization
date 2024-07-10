@@ -6,7 +6,7 @@ plugins {
 
 ihmc {
    group = "us.ihmc"
-   version = "0.17.19"
+   version = "0.17.20"
    vcsUrl = "https://github.com/ihmcrobotics/ihmc-convex-optimization"
    openSource = true
 
