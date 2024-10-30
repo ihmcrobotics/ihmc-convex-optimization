@@ -25,14 +25,14 @@ mainDependencies {
       exclude(group = "log4j", module = "log4j")
    }
 
-   api("us.ihmc:ihmc-commons:0.32.0")
-   api("us.ihmc:euclid:0.21.0")
-   api("us.ihmc:euclid-frame:0.21.0")
-   api("us.ihmc:ihmc-matrix-library:0.19.0")
+   api("us.ihmc:ihmc-commons:0.34.0")
+   api("us.ihmc:euclid:0.22.2")
+   api("us.ihmc:euclid-frame:0.22.2")
+   api("us.ihmc:ihmc-matrix-library:0.19.1")
    api("us.ihmc:ihmc-native-library-loader:2.0.3")
    api("us.ihmc:ihmc-optimizer-wrappers:0.0.32")
 }
 
 testDependencies {
-   api("us.ihmc:ihmc-matrix-library-test:0.19.0")
+   api("us.ihmc:ihmc-matrix-library-test:0.19.1")
 }
