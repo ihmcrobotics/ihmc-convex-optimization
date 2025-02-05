@@ -23,7 +23,7 @@ mainDependencies {
       exclude(group = "log4j", module = "log4j")
    }
 
-   api("us.ihmc:ihmc-commons:0.34.0")
+   api("us.ihmc:ihmc-commons:0.35.1")
    api("us.ihmc:euclid:0.22.2")
    api("us.ihmc:euclid-frame:0.22.2")
    api("us.ihmc:ihmc-matrix-library:0.19.1")
