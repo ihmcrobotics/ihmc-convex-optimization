@@ -6,5 +6,8 @@ public enum SolverMethod
    SIMPLEX,
 
    /* Slower but more robust method */
-   CRISS_CROSS
+   CRISS_CROSS,
+
+   /* Performs linear feasibility test by solving only phase I Simplex */
+   LINEAR_FEASIBILITY;
 }

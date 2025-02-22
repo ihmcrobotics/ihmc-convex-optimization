@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import us.ihmc.commons.MathTools;
 import us.ihmc.euclid.tools.EuclidCoreRandomTools;
 import us.ihmc.euclid.tools.EuclidCoreTools;
+import us.ihmc.log.LogTools;
 import us.ihmc.matrixlib.MatrixTools;
 
 import java.util.ArrayList;
@@ -336,6 +337,53 @@ public class LinearProgramSolverTest
       }
 
       //      System.out.println("numSame: " + numSameBasis + "/" + tests);
+   }
+
+   @Test
+   public void testSimpleLinearFeasibilityProblems()
+   {
+      LinearProgramSolver solver = new LinearProgramSolver();
+
+      // Check simple unbounded single constraint
+      DMatrixRMaj c = new DMatrixRMaj(2, 1);
+      DMatrixRMaj A = new DMatrixRMaj(1, 2);
+      DMatrixRMaj b = new DMatrixRMaj(1, 1);
+      DMatrixRMaj solution = new DMatrixRMaj(0);
+
+      c.set(0, 0, 1.0);
+      c.set(1, 0, 1.0);
+      A.set(0, 0, -1.0);
+      A.set(0, 1, -1.0);
+      b.set(0, 0, -1.0);
+
+      boolean hasFeasibleSolution = solver.solve(c, A, b, solution, SolverMethod.LINEAR_FEASIBILITY);
+      Assertions.assertFalse(hasFeasibleSolution);
+
+      // Check simple bounded single constraint
+      CommonOps_DDRM.scale(-1.0, A);
+      CommonOps_DDRM.scale(-1.0, b);
+
+      hasFeasibleSolution = solver.solve(c, A, b, solution, SolverMethod.LINEAR_FEASIBILITY);
+      Assertions.assertTrue(hasFeasibleSolution);
+
+      // Check simple unbounded set of constraints
+      A.reshape(2, 2);
+      b.reshape(2, 1);
+
+      A.set(0, 0, -1.1);
+      A.set(0, 1, -1.0);
+      A.set(1, 0, 1.0);
+      A.set(1, 1, 1.0);
+
+      b.set(0, 0, -2.0);
+      b.set(1, 0, 1.0);
+      hasFeasibleSolution = solver.solve(c, A, b, solution, SolverMethod.LINEAR_FEASIBILITY);
+      Assertions.assertFalse(hasFeasibleSolution);
+
+      CommonOps_DDRM.scale(-1.0, A);
+      CommonOps_DDRM.scale(-1.0, b);
+      hasFeasibleSolution = solver.solve(c, A, b, solution, SolverMethod.LINEAR_FEASIBILITY);
+      Assertions.assertTrue(hasFeasibleSolution);
    }
 
    private static void mutateInequalityMatrix(DMatrixRMaj inequalityMatrix, DMatrixRMaj mutatedInequalityMatrix)

@@ -49,9 +49,15 @@ public class DictionaryFormLinearProgramSolver
 
    public void solveSimplex(DMatrixRMaj startingDictionary)
    {
+      solveSimplex(startingDictionary, false);
+   }
+
+   public void solveSimplex(DMatrixRMaj startingDictionary, boolean onlySolveProblemFeasibility)
+   {
       if (startingDictionary.getNumCols() > maxVariables)
       {
-         throw new IllegalArgumentException("Simplex method has a maximum of " + maxVariables + " decision variables, " + startingDictionary.getNumCols() + " provided.");
+         throw new IllegalArgumentException(
+               "Simplex method has a maximum of " + maxVariables + " decision variables, " + startingDictionary.getNumCols() + " provided.");
       }
 
       timer.reset();
@@ -73,6 +79,12 @@ public class DictionaryFormLinearProgramSolver
          }
 
          dictionary.dropPhaseIVariables();
+      }
+
+      if (onlySolveProblemFeasibility)
+      {
+         checkForCandidatePivot();
+         return;
       }
 
       /* Phase II: optimize feasible dictionary */
@@ -115,6 +127,30 @@ public class DictionaryFormLinearProgramSolver
 
          dictionary.performPivot(r, s);
       }
+   }
+
+   private void checkForCandidatePivot()
+   {
+      if (isSimplexOptimal())
+      {
+         simplexStatistics.onSolutionFound();
+      }
+      else
+      {
+         int s = computeSimplexPivotColumn();
+         int r = computeSimplexPivotRow(s, SimplexPhase.PHASE_II);
+
+         if (r == nullMatrixIndex)
+         {
+            simplexStatistics.onSolverFailure(LinearProgramFailureReason.NO_CANDIDATE_PIVOT, false);
+         }
+         else
+         {
+            simplexStatistics.onSolutionFound();
+         }
+      }
+
+      simplexStatistics.setSolveTime(timer.lapElapsed());
    }
 
    private void packSolution(SolverStatistics solverStatistics)
