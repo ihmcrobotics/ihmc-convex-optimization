@@ -25,8 +25,8 @@ public class LinearProgramDictionary
    private static final int objectiveLexicalIndex = -1;
    private static final int auxObjectiveLexicalIndex = -2;
 
-   private DMatrixRMaj dictionary = new DMatrixRMaj(maxVariables + 1, maxVariables + 1);
-   private DMatrixRMaj tempDictionary = new DMatrixRMaj(maxVariables + 1, maxVariables + 1);
+   private DMatrixRMaj dictionary = new DMatrixRMaj(0);
+   private DMatrixRMaj tempDictionary = new DMatrixRMaj(0);
    private DMatrixRMaj startingDictionary;
 
    private final TIntArrayList basisIndices = new TIntArrayList(maxVariables);
